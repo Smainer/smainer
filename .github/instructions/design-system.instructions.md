@@ -15,13 +15,13 @@ Enforce these design standards across all frontend code. Question any deviation 
 
 ### Brand Colors (Tailwind Config via HSL CSS Variables)
 ```typescript
-// Light mode
-primary: '#6366F1',    // Indigo-500 — Vibrant, modern, trust
-primary-hover: '#4F46E5', // Indigo-600
-primary-light: '#818CF8', // Indigo-400
+// Primary Brand — Professional champagne for compute marketplace
+primary: '#B5A082',    // Champagne — Sophisticated, warm, professional
+primary-hover: '#A18F6E', // Champagne-hover — Interaction state
+primary-light: '#C4B396', // Champagne-light — Backgrounds
 
 // Accent
-accent: '#06B6D4',     // Cyan-500 — Energy, technology
+accent: '#06B6D4',     // Cyan-500 — Energy, technology (unchanged)
 accent-hover: '#0891B2', // Cyan-600
 
 // Secondary
@@ -33,7 +33,7 @@ secondary: '#0F172A',  // Slate-900 — Depth, professionalism
 success: '#22C55E',  // Green-500
 warning: '#F59E0B',  // Amber-500
 error: '#EF4444',    // Red-500
-info: '#6366F1',     // Indigo-500
+info: '#B5A082',     // Champagne — Brand consistency
 ```
 
 ### Grays (Use Tailwind Slate Scale)
@@ -44,7 +44,7 @@ info: '#6366F1',     // Indigo-500
 
 ### Rules
 - **NO gradients inside components** — Use solid colors only for cards, badges, buttons
-- **Hero/CTA gradient exception**: ONE `bg-gradient-to-r from-indigo-500 to-cyan-500` gradient allowed per page, only in hero sections or final CTA banners
+- **Hero/CTA gradient exception**: ONE `bg-gradient-to-r from-[#B5A082] to-cyan-500` gradient allowed per page, only in hero sections or final CTA banners
 - **Contrast Minimum**: WCAG AA (4.5:1 text, 3:1 UI components)
 - **Maximum 3 brand colors** in any single component
 - **Semantic colors** for states only (success/warning/error/info)
