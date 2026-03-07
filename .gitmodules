@@ -1,0 +1,12 @@
+[submodule "frontend"]
+	path = frontend
+	url = https://github.com/Smainer/smainer-frontend.git
+[submodule "contracts"]
+	path = contracts
+	url = https://github.com/Smainer/smainer-contracts.git
+[submodule "backend"]
+	path = backend
+	url = https://github.com/Smainer/smainer-backend.git
+[submodule "telegram"]
+	path = telegram
+	url = https://github.com/Smainer/smainer-telegram.git

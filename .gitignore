@@ -1,0 +1,27 @@
+# Dependencies & environments
+node_modules/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Build outputs
+.next/
+dist/
+build/
+target/
+
+# Environment files
+.env
+.env.local
+
+# OS files
+.DS_Store
+*.log
+*.swp
+*.swo
+
+# IDE
+.idea/
+.vscode/
