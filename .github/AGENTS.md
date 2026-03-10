@@ -34,8 +34,8 @@ Protocol fee structure, treasury splits, gas subsidy logic, token economics mode
 
 ### ⚙️ Operations  
 
-**[@it-guy](./agents/it-guy.agent.md)**  
-Git operations, repository management, branching strategies, deployment, DevOps, infrastructure setup, dependency management
+**[@repository-architect](./agents/repository-architect.agent.md)**  
+Comprehensive repository management, open source governance, Git coordination, deployment orchestration, community management, release engineering, infrastructure setup
 
 **[@chief-director](./agents/chief-director.agent.md)**  
 System-wide status reporting, cross-agent coordination, launch prerequisites, go-to-market strategy, development roadmap guidance
@@ -47,13 +47,13 @@ System-wide status reporting, cross-agent coordination, launch prerequisites, go
 2. **[@frontend-engineer]** OR **[@starknet-engineer]** - Build core functionality  
 3. **[@brand-designer]** - Design review and visual optimization
 4. **[@marketing-copywriter]** - User-facing copy and messaging
-5. **[@it-guy]** - Deployment and infrastructure
+5. **[@repository-architect]** - Security audit, deployment coordination, and release management
 
 ### Telegram Bot Development  
 1. **[@telegram-bot-developer]** - Bot architecture and security design
 2. **[@starknet-engineer]** - Blockchain integration patterns
 3. **[@systems-engineer]** - Infrastructure and scaling considerations
-4. **[@it-guy]** - Deployment pipeline setup
+4. **[@repository-architect]** - Deployment pipeline setup and release coordination
 
 ### Security & Privacy Features
 1. **[@telegram-bot-developer]** - Privacy architecture design  
@@ -75,7 +75,9 @@ System-wide status reporting, cross-agent coordination, launch prerequisites, go
 - `@fee-economist` Model pricing strategy
 
 **Operations:**
-- `@it-guy` Set up deployment pipeline
+- `@repository-architect` Coordinate deployment across components
+- `@repository-architect` Audit security and dependency status 
+- `@repository-architect` Manage release and version coordination
 - `@chief-director` Status report and next milestones
 
 ## Cross-Agent Communication
