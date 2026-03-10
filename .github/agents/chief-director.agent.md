@@ -122,7 +122,7 @@ Task: Add volume discount tiers for high-frequency demanders
 Dependency: Fee structure architecture must be finalized
 Owner: fee-economist (protocol design) + starknet-engineer (contract updates)
 Success: 
-  - Fee structure documented in ARTICLE.md
+  - Fee structure documented in README.md and DEEP_DIVE.md
   - Contract enforces discounts in Cairo
   - Frontend shows discounted price in CostEstimator
 Risk: Rounding errors in discount calculation

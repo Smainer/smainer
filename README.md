@@ -83,6 +83,22 @@ cd provider && pip install -e ".[dev]" && pytest
 cd frontend && npm install && npm run dev
 ```
 
+## Documentation
+
+- `DEEP_DIVE.md`: Detailed architecture and implementation status
+- `TESTNET_DEPLOYMENT_INSTRUCTIONS.md`: Testnet deployment runbook
+- `FIRST_NODE_PRIVACY_AI_TEST_GUIDE.md`: First provider node setup and validation
+- `LAUNCH_GUIDE.md`: End-to-end launch flow, including Telegram integration
+- `LAUNCH_ACTION_CHECKLIST.md`: Operational launch checklist
+- `SUCCESS_METRICS.md`: Live test success targets
+- `TIERED_REWARDS_IMPLEMENTATION_GUIDE.md`: Tier/reward implementation notes
+
+## Community and Security
+
+- `CONTRIBUTING.md`: How to contribute changes
+- `SECURITY.md`: How to report vulnerabilities
+- `CODE_OF_CONDUCT.md`: Community behavior expectations
+
 ## License
 
 MIT

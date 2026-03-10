@@ -1,7 +1,7 @@
 # Smainer — Deep Dive: Architecture, Innovation & Implementation Status
 
 > Last updated: March 2026  
-> Purpose: Internal reference — understand every component, what is built, and what makes Smainer unique.
+> Purpose: Public technical reference for architecture, implementation status, and roadmap.
 
 ---
 
