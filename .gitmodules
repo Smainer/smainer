@@ -10,3 +10,6 @@
 [submodule "telegram"]
 	path = telegram
 	url = https://github.com/Smainer/smainer-telegram.git
+[submodule "desktop"]
+	path = desktop
+	url = https://github.com/Smainer/smainer-desktop.git

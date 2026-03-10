@@ -63,6 +63,9 @@ When users submit tasks, the cost estimator shows a full breakdown:
 | `relayer/` | Coordination middleware | Python, FastAPI, Redis |
 | `provider/` | Compute node daemon | Python, Docker SDK, starknet.py |
 | `frontend/` | Web3 dashboard | Next.js, starknet-react, shadcn/ui |
+| `desktop/` | Windows node onboarding app | Tauri v2, Rust, React |
+
+Desktop repository: https://github.com/Smainer/smainer-desktop
 
 ## Quick Start
 
