@@ -1,6 +1,39 @@
-# Smainer — Decentralized Compute-Sharing Protocol
+<div align="center">
 
-A Web3 compute marketplace built on Starknet where **Providers** share hardware resources and **Demanders** pay for compute tasks using ERC-20 tokens.
+# ⚡ Smainer
+
+### Decentralized Compute-Sharing Protocol on Starknet
+
+*Share your GPU. Earn STRK. Power the future of permissionless compute.*
+
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Built on Starknet](https://img.shields.io/badge/Built%20on-Starknet-ff6b35.svg)](https://starknet.io)
+[![Cairo](https://img.shields.io/badge/Cairo-Smart%20Contracts-blueviolet.svg)](https://book.cairo-lang.org)
+[![Next.js](https://img.shields.io/badge/Frontend-Next.js-black.svg)](https://nextjs.org)
+[![Python](https://img.shields.io/badge/Backend-Python%203.11+-3776AB.svg)](https://python.org)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+
+</div>
+
+---
+
+A Web3 compute marketplace built on Starknet where **Providers** share hardware resources and **Demanders** pay for compute tasks using ERC-20 tokens — transparently, on-chain, and without intermediaries.
+
+> Pull Requests are welcomed. Please see the [Contributing Guide](CONTRIBUTING.md) before opening a Pull Request.
+
+---
+
+## Index
+
+- [Architecture](#architecture)
+- [Protocol Economics](#protocol-economics)
+- [Monorepo Structure](#monorepo-structure)
+- [Quick Start](#quick-start)
+- [Documentation](#documentation)
+- [Community & Security](#community--security)
+- [License](#license)
+
+---
 
 ## Architecture
 
@@ -24,6 +57,8 @@ A Web3 compute marketplace built on Starknet where **Providers** share hardware 
     └─────────────────────────────────────┘
 ```
 
+---
+
 ## Protocol Economics
 
 ### Fee Structure (15% Total — 1500 Basis Points)
@@ -42,30 +77,37 @@ On successful job completion, the smart contract automatically splits the escrow
 - Fee split is enforced on-chain in `submit_proof_and_claim` — no off-chain calculation
 
 ### Gas Subsidies
+
 The 3% gas subsidy is automatically added to the provider's payout so providers don't have to pay out-of-pocket to submit proofs. This lowers the barrier to onboarding new compute nodes.
 
-### Transparent Display (Frontend)
+### Transparent Pricing (Frontend)
+
 When users submit tasks, the cost estimator shows a full breakdown:
+
 ```
-  Compute Cost:                      X STRK
-  Smainer Network Fee (15%):         Y STRK
-    |-- Treasury (12%):              ...
+  Compute Cost:                       X STRK
+  Smainer Network Fee (15%):          Y STRK
+    |-- Treasury (12%):               ...
     |-- Gas Subsidy to Provider (3%): ...
-  ─────────────────────────────────────────
-  Total:                             Z STRK
+  ──────────────────────────────────────────
+  Total:                              Z STRK
 ```
+
+---
 
 ## Monorepo Structure
 
 | Directory | Description | Stack |
 |-----------|-------------|-------|
-| `contracts/` | Starknet smart contracts | Cairo, Scarb, OpenZeppelin |
-| `relayer/` | Coordination middleware | Python, FastAPI, Redis |
-| `provider/` | Compute node daemon | Python, Docker SDK, starknet.py |
-| `frontend/` | Web3 dashboard | Next.js, starknet-react, shadcn/ui |
-| `desktop/` | Windows node onboarding app | Tauri v2, Rust, React |
+| [`contracts/`](contracts/) | Starknet smart contracts | Cairo, Scarb, OpenZeppelin |
+| [`backend/`](backend/) | Coordination middleware & provider daemon | Python, FastAPI, Redis |
+| [`frontend/`](frontend/) | Web3 dashboard | Next.js, starknet-react, shadcn/ui |
+| [`telegram/`](telegram/) | Telegram bot integration | Python, aiogram |
+| [`desktop/`](desktop/) | Windows node onboarding app | Tauri v2, Rust, React |
 
-Desktop repository: https://github.com/Smainer/smainer-desktop
+> Desktop app repository: [Smainer/smainer-desktop](https://github.com/Smainer/smainer-desktop)
+
+---
 
 ## Quick Start
 
@@ -73,32 +115,42 @@ Desktop repository: https://github.com/Smainer/smainer-desktop
 # Smart Contracts
 cd contracts && scarb build && scarb test
 
-# Relayer
-cd relayer && pip install -e ".[dev]" && pytest
-
-# Provider Node
-cd provider && pip install -e ".[dev]" && pytest
+# Backend (Relayer + Provider Node)
+cd backend && pip install -e ".[dev]" && pytest
 
 # Frontend
 cd frontend && npm install && npm run dev
+
+# Telegram Bot
+cd telegram && pip install -e ".[dev]"
 ```
+
+---
 
 ## Documentation
 
-- `DEEP_DIVE.md`: Detailed architecture and implementation status
-- `TESTNET_DEPLOYMENT_INSTRUCTIONS.md`: Testnet deployment runbook
-- `FIRST_NODE_PRIVACY_AI_TEST_GUIDE.md`: First provider node setup and validation
-- `LAUNCH_GUIDE.md`: End-to-end launch flow, including Telegram integration
-- `LAUNCH_ACTION_CHECKLIST.md`: Operational launch checklist
-- `SUCCESS_METRICS.md`: Live test success targets
-- `TIERED_REWARDS_IMPLEMENTATION_GUIDE.md`: Tier/reward implementation notes
+| Document | Description |
+|----------|-------------|
+| [`DEEP_DIVE.md`](DEEP_DIVE.md) | Detailed architecture and implementation status |
+| [`TESTNET_DEPLOYMENT_INSTRUCTIONS.md`](TESTNET_DEPLOYMENT_INSTRUCTIONS.md) | Testnet deployment runbook |
+| [`FIRST_NODE_PRIVACY_AI_TEST_GUIDE.md`](FIRST_NODE_PRIVACY_AI_TEST_GUIDE.md) | First provider node setup and validation |
+| [`LAUNCH_GUIDE.md`](LAUNCH_GUIDE.md) | End-to-end launch flow, including Telegram integration |
+| [`LAUNCH_ACTION_CHECKLIST.md`](LAUNCH_ACTION_CHECKLIST.md) | Operational launch checklist |
+| [`SUCCESS_METRICS.md`](SUCCESS_METRICS.md) | Live test success targets |
+| [`TIERED_REWARDS_IMPLEMENTATION_GUIDE.md`](TIERED_REWARDS_IMPLEMENTATION_GUIDE.md) | Tier/reward implementation notes |
 
-## Community and Security
+---
 
-- `CONTRIBUTING.md`: How to contribute changes
-- `SECURITY.md`: How to report vulnerabilities
-- `CODE_OF_CONDUCT.md`: Community behavior expectations
+## Community & Security
+
+| Document | Description |
+|----------|-------------|
+| [`CONTRIBUTING.md`](CONTRIBUTING.md) | How to contribute changes |
+| [`SECURITY.md`](SECURITY.md) | How to report vulnerabilities |
+| [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) | Community behavior expectations |
+
+---
 
 ## License
 
-MIT
+Released under the [MIT License](LICENSE).
