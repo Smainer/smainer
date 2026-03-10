@@ -1,0 +1,331 @@
+name: Create Sprint Issues
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (print issues without creating)'
+        required: false
+        default: 'false'
+        type: boolean
+
+jobs:
+  create-issues:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Create Labels
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const labels = [
+              { name: 'contracts',     color: '0075ca', description: 'Smart contract related' },
+              { name: 'week-1',        color: 'e4e669', description: 'Week 1 tasks' },
+              { name: 'week-2',        color: 'd93f0b', description: 'Week 2 tasks' },
+              { name: 'sepolia',       color: '0052cc', description: 'Sepolia testnet' },
+              { name: 'validation',    color: '006b75', description: 'Validation and testing' },
+              { name: 'backend',       color: '1d76db', description: 'Backend services' },
+              { name: 'relayer',       color: '0075ca', description: 'Relayer service' },
+              { name: 'redis',         color: 'cc0000', description: 'Redis integration' },
+              { name: 'provider',      color: '5319e7', description: 'Provider node' },
+              { name: 'daemon',        color: 'fbca04', description: 'Background daemon service' },
+              { name: 'integration',   color: '006b75', description: 'Integration work' },
+              { name: 'e2e',           color: '0e8a16', description: 'End-to-end testing' },
+              { name: 'milestone',     color: 'ee0701', description: 'Sprint milestone' },
+              { name: 'frontend',      color: '1d76db', description: 'Frontend work' },
+              { name: 'miniapp',       color: '0052cc', description: 'Telegram mini app' },
+              { name: 'ssl',           color: '006b75', description: 'SSL/TLS configuration' },
+              { name: 'production',    color: 'ee0701', description: 'Production environment' },
+              { name: 'marketing',     color: 'e4e669', description: 'Marketing tasks' },
+              { name: 'creative',      color: 'bfd4f2', description: 'Creative assets' },
+              { name: '2x-rewards',    color: '0e8a16', description: '2x rewards campaign' },
+              { name: 'social',        color: 'c5def5', description: 'Social media' },
+              { name: 'announcements', color: 'd4c5f9', description: 'Community announcements' },
+              { name: 'mainnet',       color: 'b60205', description: 'Starknet mainnet' },
+              { name: 'deployment',    color: 'ee0701', description: 'Deployment tasks' },
+              { name: 'rewards',       color: '0e8a16', description: 'Rewards system' },
+              { name: '2x-campaign',   color: 'fbca04', description: '2x campaign execution' },
+              { name: 'launch',        color: 'ee0701', description: 'Launch activities' },
+              { name: 'campaign',      color: 'c5def5', description: 'Campaign management' },
+            ];
+
+            for (const label of labels) {
+              try {
+                await github.rest.issues.createLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: label.name,
+                  color: label.color,
+                  description: label.description,
+                });
+                console.log(`Created label: ${label.name}`);
+              } catch (e) {
+                if (e.status === 422) {
+                  console.log(`Label already exists: ${label.name}`);
+                } else {
+                  console.error(`Failed to create label ${label.name}: ${e.message}`);
+                }
+              }
+            }
+
+      - name: Create Sprint Issues
+        uses: actions/github-script@v7
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
+        with:
+          script: |
+            const dryRun = process.env.DRY_RUN === 'true';
+
+            const issues = [
+              {
+                title: '[W1] Contract final validation on Sepolia',
+                labels: ['contracts', 'week-1', 'sepolia', 'validation'],
+                body: `**Owner:** Engineering
+            **Due Date:** 2026-03-14
+            **Dependencies:** None
+
+            ## Objective
+            Complete final smart contract validation on Sepolia testnet before mainnet deployment.
+
+            ## Acceptance Criteria
+
+            - [ ] All contract functions tested and verified on Sepolia
+            - [ ] Gas optimization review completed
+            - [ ] Security audit findings addressed
+            - [ ] Contract verification on Sepolia block explorer successful
+            - [ ] Integration tests with test tokens passing
+            `,
+              },
+              {
+                title: '[W1] Relayer + Redis integration validation',
+                labels: ['backend', 'relayer', 'redis', 'week-1'],
+                body: `**Owner:** Engineering
+            **Due Date:** 2026-03-12
+            **Dependencies:** #ISSUE_1
+
+            ## Objective
+            Validate relayer service with Redis for task queue management and caching.
+
+            ## Acceptance Criteria
+
+            - [ ] Redis connection and failover handling tested
+            - [ ] Task queue processing validated under load
+            - [ ] WebSocket coordination working with Redis pub/sub
+            - [ ] Performance metrics within acceptable thresholds
+            - [ ] Error handling and recovery mechanisms verified
+            `,
+              },
+              {
+                title: '[W1] Provider daemon/seamon integration validation',
+                labels: ['backend', 'provider', 'daemon', 'week-1'],
+                body: `**Owner:** Engineering
+            **Due Date:** 2026-03-13
+            **Dependencies:** #ISSUE_2
+
+            ## Objective
+            Ensure provider daemon integrates properly with relayer and executes AI tasks.
+
+            ## Acceptance Criteria
+
+            - [ ] Provider daemon connects to relayer successfully
+            - [ ] AI task execution pipeline validated
+            - [ ] Resource monitoring and reporting functional
+            - [ ] Provider registration and health checks working
+            - [ ] Logging and debugging capabilities verified
+            `,
+              },
+              {
+                title: '[W1] First end-to-end task execution proof',
+                labels: ['integration', 'e2e', 'week-1', 'milestone'],
+                body: `**Owner:** Engineering
+            **Due Date:** 2026-03-13
+            **Dependencies:** #ISSUE_3
+
+            ## Objective
+            Demonstrate complete task flow from frontend request to provider execution and reward distribution.
+
+            ## Acceptance Criteria
+
+            - [ ] Full task submission through frontend works
+            - [ ] Provider picks up and executes task successfully
+            - [ ] Results returned to user correctly
+            - [ ] Smart contract reward distribution verified
+            - [ ] Transaction fees and gas usage tracked
+            - [ ] End-to-end latency measured and acceptable
+            `,
+              },
+              {
+                title: '[W1] Frontend and mini app build + SSL production readiness',
+                labels: ['frontend', 'miniapp', 'ssl', 'production', 'week-1'],
+                body: `**Owner:** Engineering
+            **Due Date:** 2026-03-12
+            **Dependencies:** #ISSUE_4
+
+            ## Objective
+            Prepare frontend and Telegram mini app for production deployment with SSL certificates.
+
+            ## Acceptance Criteria
+
+            - [ ] Frontend build optimized for production
+            - [ ] SSL certificates configured and tested
+            - [ ] Telegram mini app deployed and functional
+            - [ ] Mobile responsiveness verified
+            - [ ] Performance metrics meet production standards
+            - [ ] Security headers and HTTPS enforcement active
+            `,
+              },
+              {
+                title: '[W1] benco creative assets draft for 2x campaign',
+                labels: ['marketing', 'creative', '2x-rewards', 'week-1'],
+                body: `**Owner:** benco team
+            **Due Date:** 2026-03-13
+            **Dependencies:** #ISSUE_5
+
+            ## Objective
+            Create initial creative assets for 2x rewards launch campaign.
+
+            ## Acceptance Criteria
+
+            - [ ] Visual assets for 2x rewards campaign created
+            - [ ] Social media graphics designed (Twitter/X, Discord, Telegram)
+            - [ ] Website banner and promotional materials ready
+            - [ ] Campaign messaging and copy finalized
+            - [ ] Asset review and approval process completed
+            `,
+              },
+              {
+                title: '[W1] benco announcement schedule draft (Discord/Telegram/X)',
+                labels: ['marketing', 'social', 'announcements', 'week-1'],
+                body: `**Owner:** benco team
+            **Due Date:** 2026-03-14
+            **Dependencies:** #ISSUE_5
+
+            ## Objective
+            Plan and schedule announcement timeline across all social channels.
+
+            ## Acceptance Criteria
+
+            - [ ] Launch announcement timeline created
+            - [ ] Discord announcement strategy planned
+            - [ ] Telegram community engagement plan ready
+            - [ ] Twitter/X content calendar prepared
+            - [ ] Cross-platform coordination schedule finalized
+            `,
+              },
+              {
+                title: '[W2] Mainnet contract deployment and verification',
+                labels: ['contracts', 'mainnet', 'deployment', 'week-2'],
+                body: `**Owner:** Engineering
+            **Due Date:** 2026-03-19
+            **Dependencies:** #ISSUE_5
+
+            ## Objective
+            Deploy validated smart contracts to Starknet mainnet and verify functionality.
+
+            ## Acceptance Criteria
+
+            - [ ] Smart contracts deployed to Starknet mainnet
+            - [ ] Contract verification on mainnet explorer successful
+            - [ ] Initial liquidity and token allocations configured
+            - [ ] Contract permissions and access controls verified
+            - [ ] Mainnet integration tests passing
+            - [ ] Emergency procedures and pause mechanisms tested
+            `,
+              },
+              {
+                title: '[W2] 2x rewards activation and frontend verification',
+                labels: ['rewards', 'frontend', '2x-campaign', 'week-2'],
+                body: `**Owner:** Engineering
+            **Due Date:** 2026-03-19
+            **Dependencies:** #ISSUE_8
+
+            ## Objective
+            Activate 2x rewards mechanism and verify frontend displays correct multipliers.
+
+            ## Acceptance Criteria
+
+            - [ ] 2x rewards smart contract functionality activated
+            - [ ] Frontend displays 2x multiplier correctly
+            - [ ] Reward calculation logic verified
+            - [ ] User balance updates reflect 2x rewards
+            - [ ] Analytics and tracking for campaign metrics implemented
+            `,
+              },
+              {
+                title: '[W2] benco launch blitz and first-week 2x campaign execution',
+                labels: ['marketing', 'launch', 'campaign', 'week-2', 'milestone'],
+                body: `**Owner:** benco team
+            **Due Date:** 2026-03-19 to 2026-03-21
+            **Dependencies:** #ISSUE_9
+
+            ## Objective
+            Execute coordinated launch campaign across all channels with 2x rewards promotion.
+
+            ## Acceptance Criteria
+
+            - [ ] Launch announcements posted across Discord, Telegram, Twitter/X
+            - [ ] 2x rewards campaign messaging deployed
+            - [ ] Community engagement and support responses active
+            - [ ] First user onboarding and task completions tracked
+            - [ ] @smainer_ai_bot deployment verified for Telegram support
+            - [ ] Campaign performance metrics monitored and reported
+            `,
+              },
+            ];
+
+            const createdNumbers = [];
+
+            // Fetch existing issues to avoid duplicates
+            const existingIssues = await github.paginate(github.rest.issues.listForRepo, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'all',
+              per_page: 100,
+            });
+            const existingTitles = new Map(existingIssues.map(i => [i.title, i.number]));
+
+            for (let i = 0; i < issues.length; i++) {
+              const issueData = issues[i];
+
+              // Replace placeholders with real issue numbers from previously created issues
+              let body = issueData.body;
+              for (let j = 0; j < createdNumbers.length; j++) {
+                body = body.replaceAll(`#ISSUE_${j + 1}`, `#${createdNumbers[j]}`);
+              }
+
+              // Check if issue already exists (idempotent)
+              if (existingTitles.has(issueData.title)) {
+                const existingNumber = existingTitles.get(issueData.title);
+                console.log(`Issue already exists #${existingNumber}: ${issueData.title}`);
+                createdNumbers.push(existingNumber);
+                continue;
+              }
+
+              if (dryRun) {
+                console.log(`[DRY RUN] Would create issue: ${issueData.title}`);
+                console.log(`  Labels: ${issueData.labels.join(', ')}`);
+                console.log(`  Body preview: ${body.substring(0, 100)}...`);
+                createdNumbers.push(9000 + i); // fake numbers for dry run
+                continue;
+              }
+
+              try {
+                const response = await github.rest.issues.create({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  title: issueData.title,
+                  labels: issueData.labels,
+                  body: body,
+                });
+                const issueNumber = response.data.number;
+                createdNumbers.push(issueNumber);
+                console.log(`Created issue #${issueNumber}: ${issueData.title}`);
+              } catch (e) {
+                console.error(`Failed to create issue "${issueData.title}": ${e.message}`);
+                throw e;
+              }
+            }
+
+            console.log('\nSprint issues processed successfully!');
+            console.log('Issue numbers:', createdNumbers.join(', '));
