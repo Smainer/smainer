@@ -96,41 +96,46 @@ Minimum spec: 8 cores, 16 GB RAM, 10 Mbps connection.
 ## 3. System Architecture
 
 ```
-┌──────────────────┐      REST/HTTPS      ┌──────────────────────────┐
-│  Frontend         │◄────────────────────►│  Relayer (FastAPI)        │
-│  Next.js 14       │                      │  Port: 8000 (fallback: 8001) │
-│  starknet-react   │                      │                           │
-└────────┬──────────┘      WebSocket       │  Core Services:           │
-         │                                 │  • NodePool               │
-         │  starknet-react                 │  • JobScheduler           │
-         │  (wallet TXs)                   │  • ResultAggregator       │
-         ▼                                 │  • WebSocketManager       │
-┌──────────────────────────────────┐       │  • StarknetClient         │
-│  Starknet L2                     │       │  • SignatureVerifier       │
-│  ┌────────────────────────────┐  │       └────────────┬─────────────┘
-│  │  SmainerContract (Cairo)   │  │                    │
-│  │  • Provider Registry       │  │◄───────────────────┘
-│  │  • Escrow System           │  │  starknet.py
-│  │  • Proof Verification      │  │  (batch proof submission)
-│  │  • Fee Split on Payout     │  │
-│  └────────────────────────────┘  │       ┌──────────────────────────┐
-└──────────────────────────────────┘       │  Provider Daemon (Python) │
-                                           │                           │
-                                           │  • SandboxedExecutor      │
-                                     WS    │  • StarknetSigner         │
-                                     ◄────►│  • RelayerAPIClient       │
-                                           │  • ResourceMonitor        │
-                                           └──────────────────────────┘
+┌────────────────────┐   REST/HTTPS (task submit,     ┌───────────────────────────────────┐
+│  Frontend           │◄──status poll, node list)─────►│  Relayer (FastAPI)                 │
+│  Next.js 14         │                                 │  Port: 8000 (fallback: 8001)       │
+│  starknet-react     │◄── WebSocket (real-time) ──────►│                                    │
+└────────┬────────────┘     task status updates         │  Core Services:                    │
+         │                                              │  • NodePool                        │
+         │ starknet-react (wallet TXs)                  │  • JobScheduler                    │
+         │ create_task, cancel_task                      │  • ResultAggregator                │
+         ▼                                              │  • WebSocketManager                │
+┌──────────────────────────────────┐                   │  • StarknetClient                  │
+│  Starknet L2                     │◄──────────────────│  • SignatureVerifier                │
+│  ┌────────────────────────────┐  │  starknet.py       └──────────────┬────────────────────┘
+│  │  SmainerContract (Cairo)   │  │  (batch proofs)                   │
+│  │  • Provider Registry       │  │                                   │ WebSocket
+│  │  • Escrow System           │  │             ┌─────────────────────┴──────────────────────┐
+│  │  • Proof Verification      │  │             │  register → node announces hardware+address │
+│  │  • Fee Split on Payout     │  │             │  heartbeat → cpu/memory metrics (every 30s) │
+│  └────────────────────────────┘  │             │  task_assigned → relayer sends payload       │
+└──────────────────────────────────┘             │  task_completed → node returns result+sig   │
+                                                 │  ping/pong → connection health              │
+                                                 ▼
+                                   ┌───────────────────────────────┐
+                                   │  Provider Daemon (Python)      │
+                                   │  • SandboxedExecutor           │
+                                   │  • StarknetSigner              │
+                                   │  • RelayerAPIClient            │
+                                   │  • ResourceMonitor             │
+                                   └───────────────────────────────┘
 
-                                           ┌──────────────────────────┐
-                                           │  Redis                    │
-                                           │  • Node registry & state  │
-                                           │  • Task queue (pending)   │
-                                           │  • Assigned task set      │
-                                           │  • Timeout sorted set     │
-                                           │  • Verified results list  │
-                                           │  • Batch queue            │
-                                           └──────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────┐
+│  Redis  (Relayer-internal — not accessible by providers or frontend)     │
+│                                                                          │
+│  NodePool   → node:{id} hash, active_nodes set, heartbeat TTL keys      │
+│  Scheduler  → pending_tasks list, assigned_tasks set,                   │
+│               task_timeouts sorted set, task:{id} hash                  │
+│  Aggregator → verified_results list, batch_queue                        │
+└─────────────────────────────────────────────────────────────────────────┘
+                          ▲
+                          │  used exclusively by Relayer (all read/write)
+                          └──────────────────────────────────────────────
 ```
 
 ---
