@@ -96,46 +96,36 @@ Minimum spec: 8 cores, 16 GB RAM, 10 Mbps connection.
 ## 3. System Architecture
 
 ```
-┌────────────────────┐   REST/HTTPS (task submit,     ┌───────────────────────────────────┐
-│  Frontend           │◄──status poll, node list)─────►│  Relayer (FastAPI)                 │
-│  Next.js 14         │                                 │  Port: 8000 (fallback: 8001)       │
-│  starknet-react     │◄── WebSocket (real-time) ──────►│                                    │
-└────────┬────────────┘     task status updates         │  Core Services:                    │
-         │                                              │  • NodePool                        │
-         │ starknet-react (wallet TXs)                  │  • JobScheduler                    │
-         │ create_task, cancel_task                      │  • ResultAggregator                │
-         ▼                                              │  • WebSocketManager                │
-┌──────────────────────────────────┐                   │  • StarknetClient                  │
-│  Starknet L2                     │◄──────────────────│  • SignatureVerifier                │
-│  ┌────────────────────────────┐  │  starknet.py       └──────────────┬────────────────────┘
-│  │  SmainerContract (Cairo)   │  │  (batch proofs)                   │
-│  │  • Provider Registry       │  │                                   │ WebSocket
-│  │  • Escrow System           │  │             ┌─────────────────────┴──────────────────────┐
-│  │  • Proof Verification      │  │             │  register → node announces hardware+address │
-│  │  • Fee Split on Payout     │  │             │  heartbeat → cpu/memory metrics (every 30s) │
-│  └────────────────────────────┘  │             │  task_assigned → relayer sends payload       │
-└──────────────────────────────────┘             │  task_completed → node returns result+sig   │
-                                                 │  ping/pong → connection health              │
-                                                 ▼
-                                   ┌───────────────────────────────┐
-                                   │  Provider Daemon (Python)      │
-                                   │  • SandboxedExecutor           │
-                                   │  • StarknetSigner              │
-                                   │  • RelayerAPIClient            │
-                                   │  • ResourceMonitor             │
-                                   └───────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────────────────┐
-│  Redis  (Relayer-internal — not accessible by providers or frontend)     │
-│                                                                          │
-│  NodePool   → node:{id} hash, active_nodes set, heartbeat TTL keys      │
-│  Scheduler  → pending_tasks list, assigned_tasks set,                   │
-│               task_timeouts sorted set, task:{id} hash                  │
-│  Aggregator → verified_results list, batch_queue                        │
-└─────────────────────────────────────────────────────────────────────────┘
-                          ▲
-                          │  used exclusively by Relayer (all read/write)
-                          └──────────────────────────────────────────────
+  ┌─────────────────────┐    REST/HTTPS (task submit, status poll, node list)   ┌─────────────────────────────────────┐
+  │  Frontend            │◄──────────────────────────────────────────────────►│  Relayer  (FastAPI)                   │
+  │  Next.js 14          │    WebSocket (real-time task status updates)         │  Port: 8000  (fallback: 8001)         │
+  │  starknet-react      │◄──────────────────────────────────────────────────►│                                       │
+  └──────────┬───────────┘                                                       │  NodePool · JobScheduler             │
+             │                                                                   │  ResultAggregator · WebSocketManager │
+             │ starknet-react                                                    │  StarknetClient · SignatureVerifier   │
+             │ (wallet TXs)                                                      │                                       │
+             ▼                                                                   │  ┌─────────────────────────────────┐ │
+  ┌──────────────────────────────────┐                                           │  │  Redis  (Relayer-internal only)  │ │
+  │  Starknet L2                     │◄── starknet.py ────────────────────────│  │  node:* hash · heartbeat TTL    │ │
+  │                                  │    (batch proof submission)               │  │  pending_tasks · assigned_tasks  │ │
+  │  SmainerContract  (Cairo)        │                                           │  │  task_timeouts · batch_queue     │ │
+  │  • Provider Registry             │                                           │  └─────────────────────────────────┘ │
+  │  • Escrow System                 │                                           └──────────────────┬────────────────────┘
+  │  • Proof Verification            │                                                              │
+  │  • Fee Split on Payout           │                                WebSocket  ws://relayer:8000/ws/{node_id}
+  └──────────────────────────────────┘                                                              │
+                                                                       Relayer → Node:  task_assigned · ping
+                                                                       Node → Relayer:  register · heartbeat
+                                                                                        task_completed · task_failed
+                                                                                              │
+                                                                                              ▼
+                                                                   ┌──────────────────────────────────────────┐
+                                                                   │  Provider Daemon  (Python)                │
+                                                                   │  • SandboxedExecutor                      │
+                                                                   │  • StarknetSigner                         │
+                                                                   │  • RelayerAPIClient                       │
+                                                                   │  • ResourceMonitor                        │
+                                                                   └──────────────────────────────────────────┘
 ```
 
 ---
