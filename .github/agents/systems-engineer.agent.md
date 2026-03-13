@@ -1,6 +1,6 @@
 ---
 description: "Use when building Python daemons, system services, distributed compute workers, WebSocket/REST API clients, subprocess/Docker sandboxing, cryptographic signing with starknet.py, resource monitoring, or security hardening for off-chain infrastructure"
-tools: [execute, read, edit, search, todo, agent]
+tools: [execute/getTerminalOutput, execute/awaitTerminal, execute/killTerminal, execute/createAndRunTask, execute/runTests, execute/runNotebookCell, execute/testFailure, execute/runInTerminal, read/terminalSelection, read/terminalLastCommand, read/getNotebookSummary, read/problems, read/readFile, agent/runSubagent, edit/createDirectory, edit/createFile, edit/createJupyterNotebook, edit/editFiles, edit/editNotebook, edit/rename, search/changes, search/codebase, search/fileSearch, search/listDirectory, search/searchResults, search/textSearch, search/usages, web/fetch, web/githubRepo, todo]
 model: "Claude Sonnet 4"
 argument-hint: "Python systems/daemon development task..."
 ---
