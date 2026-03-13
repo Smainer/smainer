@@ -1,6 +1,6 @@
-# Smainer Live Test & Launch Guide
+# Smainer Deployment Guide
 
-Complete step-by-step configuration for deploying Smainer frontend to Vercel and testing with Telegram bot integration.
+Complete configuration for deploying Smainer frontend and testing with Telegram bot integration.
 
 ---
 
@@ -47,7 +47,7 @@ In BotFather:
 /setdescription
 → Select your bot
 → Enter description:
-"Private AI that never stores your data. Send a prompt, get instant responses. No accounts needed."
+"AI compute tasks on Starknet. Connect wallet to submit tasks and view results."
 
 /setcommands
 → Select your bot

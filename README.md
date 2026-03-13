@@ -1,6 +1,6 @@
-# Smainer — Decentralized Compute-Sharing Protocol
+# Smainer — Starknet Compute Marketplace
 
-A Web3 compute marketplace built on Starknet where **Providers** share hardware resources and **Demanders** pay for compute tasks using ERC-20 tokens.
+Run compute tasks on verified hardware. **Providers** earn STRK tokens by sharing resources. **Users** pay per task with transparent, on-chain settlement.
 
 ## Architecture
 
@@ -24,11 +24,11 @@ A Web3 compute marketplace built on Starknet where **Providers** share hardware 
     └─────────────────────────────────────┘
 ```
 
-## Protocol Economics
+## Economics
 
-### Fee Structure (15% Total — 1500 Basis Points)
+### Fee Structure (15% Total)
 
-On successful job completion, the smart contract automatically splits the escrowed payment:
+On task completion, the smart contract automatically splits payment:
 
 | Recipient | Share | BPS | Description |
 |-----------|-------|-----|-------------|
@@ -42,10 +42,10 @@ On successful job completion, the smart contract automatically splits the escrow
 - Fee split is enforced on-chain in `submit_proof_and_claim` — no off-chain calculation
 
 ### Gas Subsidies
-The 3% gas subsidy is automatically added to the provider's payout so providers don't have to pay out-of-pocket to submit proofs. This lowers the barrier to onboarding new compute nodes.
+Providers receive 3% gas subsidy automatically. Submit proofs without out-of-pocket gas costs.
 
-### Transparent Display (Frontend)
-When users submit tasks, the cost estimator shows a full breakdown:
+### Cost Breakdown
+Task submission shows exact fees upfront:
 ```
   Compute Cost:                      X STRK
   Smainer Network Fee (15%):         Y STRK

@@ -1,6 +1,6 @@
-# Success Metrics
+# Validation Metrics
 
-Realistic targets for an initial live test.
+Network performance and reliability standards for active deployment.
 
 ## Technical
 

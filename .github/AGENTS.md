@@ -21,6 +21,9 @@ Python daemons, distributed compute workers, WebSocket/REST clients, Docker sand
 **[@telegram-bot-developer](./agents/telegram-bot-developer.agent.md)**  
 Telegram bots, WebApp integration, wallet connectivity, crypto payment flows, encrypted messaging, miniapps, security architecture
 
+**[@security-expert](./agents/security-expert.agent.md)**  
+Application security reviews, threat modeling, auth hardening, callback/webhook integrity, secret handling, and security regression testing
+
 ### 🎨 Product & Brand
 
 **[@brand-designer](./agents/brand-designer.agent.md)**  
@@ -40,11 +43,15 @@ Comprehensive repository management, open source governance, Git coordination, d
 **[@chief-director](./agents/chief-director.agent.md)**  
 System-wide status reporting, cross-agent coordination, launch prerequisites, go-to-market strategy, development roadmap guidance
 
+**[@planner](./agents/planner.agent.md)**  
+Sprint planning, backlog prioritization, task decomposition, dependency mapping, and distribution of work to specialist agents — the bridge between strategy and execution
+
 ## Specialized Workflows
 
 ### Feature Development Pipeline
-1. **[@chief-director]** - Plan feature and coordinate team
-2. **[@frontend-engineer]** OR **[@starknet-engineer]** - Build core functionality  
+1. **[@chief-director]** - Define goal and coordinate team
+2. **[@planner]** - Decompose goal into sprint tasks, sequence by dependency, assign owners
+3. **[@frontend-engineer]** OR **[@starknet-engineer]** - Build core functionality  
 3. **[@brand-designer]** - Design review and visual optimization
 4. **[@marketing-copywriter]** - User-facing copy and messaging
 5. **[@repository-architect]** - Security audit, deployment coordination, and release management
@@ -56,6 +63,7 @@ System-wide status reporting, cross-agent coordination, launch prerequisites, go
 4. **[@repository-architect]** - Deployment pipeline setup and release coordination
 
 ### Security & Privacy Features
+1. **[@security-expert]** - Threat modeling, security review, and abuse-case test planning
 1. **[@telegram-bot-developer]** - Privacy architecture design  
 2. **[@systems-engineer]** - Secure execution environment
 3. **[@starknet-engineer]** - On-chain security verification
@@ -75,10 +83,12 @@ System-wide status reporting, cross-agent coordination, launch prerequisites, go
 - `@fee-economist` Model pricing strategy
 
 **Operations:**
+- `@security-expert` Review auth, callbacks, and secret handling
 - `@repository-architect` Coordinate deployment across components
 - `@repository-architect` Audit security and dependency status 
 - `@repository-architect` Manage release and version coordination
 - `@chief-director` Status report and next milestones
+- `@planner` Break down [feature] into sprint tasks with owners and dependencies
 
 ## Cross-Agent Communication
 
@@ -91,6 +101,7 @@ Coordinate with @brand-designer for visual design and @starknet-engineer for con
 
 **Best Practices:**
 - Start with **[@chief-director]** for complex multi-component features
+- Use **[@security-expert]** before launch reviews or when adding external callbacks, auth, or wallet flows
 - Use **[@brand-designer]** early in UI development for consistent aesthetics
 - Involve **[@telegram-bot-developer]** for any privacy-sensitive features
 - Coordinate **[@fee-economist]** when building payment/reward systems
