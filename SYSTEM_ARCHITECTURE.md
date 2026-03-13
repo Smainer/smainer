@@ -28,7 +28,7 @@ Key Redis patterns: Streams for event coordination, sorted sets for rate limitin
 
 | Component | Runtime Location | Ownership | Network Access |
 |-----------|-----------------|-----------|----------------|
-| **Relayer API** | Docker container @ port 8000 | Smainer team (centralized) | FastAPI/uvicorn with WebSocket endpoints |
+| **Relayer API** | Docker container @ port 8000 (fallback: 8001) | Smainer team (centralized) | FastAPI/uvicorn with WebSocket endpoints |
 | **Orchestration** | Same container as Relayer | Smainer team | Redis Streams coordination, batch processing |
 | **Provider Daemon** | User machines (distributed) | Individual providers | Python subprocess, WebSocket client to relayer |
 | **Telegram Bot** | VPS/cloud instance | Smainer team | Polling mode, webhook callbacks to bot handlers |
@@ -310,6 +310,7 @@ flowchart TD
 ```bash
 # IMMEDIATE: Start relayer in first terminal
 cd /home/smainer/Smainer/backend/relayer && source /home/smainer/Smainer/.venv/bin/activate && pip install -e . && uvicorn relayer.main:app --host 0.0.0.0 --port 8000
+# Note: If port 8000 is occupied, use --port 8001 and update RELAYER_API_URL accordingly
 
 # Start provider daemon in second terminal
 cd /home/smainer/Smainer/backend/provider && source /home/smainer/Smainer/.venv/bin/activate && RELAYER_WS_URL=ws://localhost:8000 provider-daemon

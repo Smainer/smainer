@@ -41,7 +41,7 @@ CONTRACT_ADDRESS=0xYOUR_DEPLOYED_COMPUTE_CONTRACT
 API_KEY=dev-api-key
 LOG_LEVEL=INFO
 HOST=0.0.0.0
-PORT=8000
+PORT=8000  # Fallback to 8001 if occupied
 CORS_ORIGINS=http://localhost:3000
 ```
 
@@ -65,8 +65,8 @@ NEXT_PUBLIC_STARKNET_CHAIN_ID=SN_SEPOLIA
 NEXT_PUBLIC_COMPUTE_CONTRACT_ADDRESS=0xYOUR_DEPLOYED_COMPUTE_CONTRACT
 NEXT_PUBLIC_TOKEN_CONTRACT_ADDRESS=0xYOUR_TOKEN_CONTRACT
 NEXT_PUBLIC_RPC_URL=https://starknet-sepolia.public.blastapi.io
-RELAYER_API_URL=http://localhost:8000
-NEXT_PUBLIC_RELAYER_WS_URL=ws://localhost:8000/ws
+RELAYER_API_URL=http://localhost:8000  # Configurable endpoint
+NEXT_PUBLIC_RELAYER_WS_URL=ws://localhost:8000/ws  # Update port if using 8001
 ```
 
 ## Start Services
@@ -83,6 +83,7 @@ redis-server
 cd /home/smainer/Smainer/backend/relayer
 source ../../.venv/bin/activate
 uvicorn relayer.main:app --host 0.0.0.0 --port 8000 --reload
+# If port 8000 is occupied, use: uvicorn relayer.main:app --host 0.0.0.0 --port 8001 --reload
 ```
 
 ### Terminal 3: Provider

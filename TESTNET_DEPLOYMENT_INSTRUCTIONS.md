@@ -53,7 +53,7 @@ CONTRACT_ADDRESS=0xYOUR_DEPLOYED_COMPUTE_CONTRACT
 API_KEY=dev-api-key
 LOG_LEVEL=INFO
 HOST=0.0.0.0
-PORT=8000
+PORT=8000  # Fallback to 8001 if occupied
 CORS_ORIGINS=http://localhost:3000
 ```
 
@@ -65,6 +65,7 @@ source ../../.venv/bin/activate
 pip install -e .
 pytest tests/ -v
 uvicorn relayer.main:app --host 0.0.0.0 --port 8000 --reload
+# Note: Use --port 8001 if 8000 is occupied, update RELAYER_API_URL accordingly
 ```
 
 ## 3. Provider

@@ -98,7 +98,7 @@ Minimum spec: 8 cores, 16 GB RAM, 10 Mbps connection.
 ```
 ┌──────────────────┐      REST/HTTPS      ┌──────────────────────────┐
 │  Frontend         │◄────────────────────►│  Relayer (FastAPI)        │
-│  Next.js 14       │                      │  Port: 8000               │
+│  Next.js 14       │                      │  Port: 8000 (fallback: 8001) │
 │  starknet-react   │                      │                           │
 └────────┬──────────┘      WebSocket       │  Core Services:           │
          │                                 │  • NodePool               │
@@ -342,7 +342,7 @@ batch_queue             → Queue of ready batches
 
 Handles persistent WebSocket connections from provider nodes. Each node connects to:
 ```
-ws://relayer:8000/ws/{node_id}
+ws://relayer:8000/ws/{node_id}  # or :8001 based on deployment
 ```
 
 **Message types (from `models/events.py`):**

@@ -113,7 +113,7 @@ Exit Criteria:
 ### Phase C: Relayer + Provider Integration
 1. Start Redis.
 2. Run relayer tests: `cd backend/relayer && pytest tests/ -v`
-3. Start relayer: `uvicorn relayer.main:app --host 0.0.0.0 --port 8000 --reload`
+3. Start relayer: `uvicorn relayer.main:app --host 0.0.0.0 --port 8000 --reload` (fallback: port 8001)
 4. Run provider tests: `cd backend/provider && pytest tests/ -v`
 5. Start provider: `bash launch_provider.sh`
 6. Verify health and nodes:

@@ -12,15 +12,15 @@
 - [ ] `cd backend/relayer && pip install -e .`
 - [ ] Create `backend/relayer/.env` with `REDIS_URL`, `STARKNET_RPC_URL`, `RELAYER_PRIVATE_KEY`, `CONTRACT_ADDRESS`, `API_KEY`, `LOG_LEVEL`, `HOST`, `PORT`, `CORS_ORIGINS`
 - [ ] `cd backend/relayer && pytest tests/ -v`
-- [ ] `cd backend/relayer && uvicorn relayer.main:app --host 0.0.0.0 --port 8000 --reload`
-- [ ] Verify `curl http://localhost:8000/api/v1/health`
+- [ ] `cd backend/relayer && uvicorn relayer.main:app --host 0.0.0.0 --port 8000 --reload` (use 8001 if 8000 occupied)
+- [ ] Verify `curl http://localhost:8000/api/v1/health` (or 8001 if using alternate port)
 
 ## Provider
 - [ ] `cd backend/provider && pip install -e .`
 - [ ] Create `backend/provider/.env` with `RELAYER_WS_URL`, `STARKNET_PRIVATE_KEY`, `NODE_ID`, `MAX_CONCURRENT_TASKS`, `HEARTBEAT_INTERVAL`, `LOG_LEVEL`, `SANDBOX_TEMP_DIR`, `ENABLE_CUSTOM_TASKS`
 - [ ] `cd backend/provider && pytest tests/ -v`
 - [ ] `cd backend/provider && bash launch_provider.sh`
-- [ ] Verify node registration with `curl -H "Authorization: Bearer dev-api-key" http://localhost:8000/api/v1/nodes`
+- [ ] Verify node registration with `curl -H "Authorization: Bearer dev-api-key" http://localhost:8000/api/v1/nodes` (or 8001 if using alternate port)
 
 ## Frontend
 - [ ] `cd frontend && npm install`

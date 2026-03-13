@@ -124,6 +124,8 @@ cd frontend && npm install && npm run dev
 cd telegram && pip install -e ".[dev]"
 ```
 
+**Note**: The relayer service runs on port 8000 by default, with automatic fallback to 8001 if occupied. The relayer endpoint is fully configurable via `RELAYER_API_URL` environment variable for both security and operational flexibility.
+
 ---
 
 ## Documentation

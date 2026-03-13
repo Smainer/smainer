@@ -89,7 +89,8 @@ NEXT_PUBLIC_CONTRACT_ADDRESS=0x0... (will update after deployment)
 NEXT_PUBLIC_TOKEN_ADDRESS=0x0... (STRK testnet address)
 
 # Relayer Configuration
-NEXT_PUBLIC_RELAYER_API=https://relayer.smainer.io (production) or http://localhost:8000 (dev)
+NEXT_PUBLIC_RELAYER_API=https://relayer.smainer.io (production) or http://localhost:8000 (dev, fallback: 8001)
+RELAYER_API_URL=http://localhost:8000  # Configurable for local development
 
 # Feature Flags
 NEXT_PUBLIC_ENV=production
@@ -266,7 +267,7 @@ export async function POST(req: NextRequest) {
     const timestamp = message.date;
 
     // Route prompt to Relayer API
-    const relayerUrl = process.env.NEXT_PUBLIC_RELAYER_API || 'http://localhost:8000';
+    const relayerUrl = process.env.NEXT_PUBLIC_RELAYER_API || 'http://localhost:8000';  // Configurable endpoint
 
     try {
       const taskResponse = await fetch(`${relayerUrl}/api/v1/tasks`, {
@@ -454,9 +455,10 @@ source /home/smainer/Smainer/.venv/bin/activate
 
 # Run relayer
 python -m uvicorn src.relayer.main:app --host 0.0.0.0 --port 8000 --reload
+# Note: If port 8000 is occupied, use --port 8001 and update environment variables
 
 # Should show:
-# Uvicorn running on http://0.0.0.0:8000
+# Uvicorn running on http://0.0.0.0:8000 (or 8001 if fallback used)
 ```
 
 ### Step 6.3: Verify Relayer is Running
@@ -633,7 +635,7 @@ python -c "from pynvml import nvmlInit; nvmlInit(); print('pynvml OK')"
 ### Issue: Telegram bot times out (> 30s response)
 
 **Diagnosis**:
-- Check Relayer is running: `curl http://localhost:8000/health`
+- Check Relayer is running: `curl http://localhost:8000/health` (or 8001 if using alternate port)
 - Check Provider daemon is connected: grep "Connected node" in relayer logs
 - Check LLM inference time (depends on model size)
 
