@@ -12,9 +12,10 @@ dist/
 build/
 target/
 
-# Environment files
-.env
-.env.local
+# Environment files (keep templates)
+.env*
+!.env.example
+!.env.*.template
 
 # OS files
 .DS_Store

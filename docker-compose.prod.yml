@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: smainer-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    sysctls:
+      - net.core.somaxconn=65535
+    ulimits:
+      memlock: -1
+
+  relayer:
+    build: 
+      context: ./backend/relayer
+      dockerfile: Dockerfile
+    container_name: smainer-relayer
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
+      - API_KEY=${API_KEY}
+      - STARKNET_RPC_URL=${STARKNET_RPC_URL}
+      - RELAYER_PRIVATE_KEY=${RELAYER_PRIVATE_KEY}
+      - CONTRACT_ADDRESS=${CONTRACT_ADDRESS}
+      - LOG_LEVEL=${LOG_LEVEL}
+      - CORS_ORIGINS=${CORS_ORIGINS}
+      - ENABLE_BATCH_SUBMISSION=${ENABLE_BATCH_SUBMISSION}
+      - HOST=0.0.0.0
+      - PORT=8000
+      - WORKERS=1
+    volumes:
+      - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    user: "smainer:smainer"
+    read_only: true
+    tmpfs:
+      - /tmp
+
+volumes:
+  redis_data:
+    driver: local
+
+networks:
+  default:
+    name: smainer-network

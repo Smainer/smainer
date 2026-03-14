@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: smainer-redis
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - redis_data:/data
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+    env_file:
+      - .env.prod
+    command: sh -c 'redis-server /usr/local/etc/redis/redis.conf --requirepass "$REDIS_PASSWORD"'
+    restart: unless-stopped
+    networks:
+      - smainer-network
+
+  relayer:
+    build:
+      context: ../backend/relayer
+      dockerfile: Dockerfile
+    container_name: smainer-relayer
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - HOST=0.0.0.0
+      - PORT=8000
+    env_file:
+      - .env.prod
+    depends_on:
+      - redis
+    restart: unless-stopped
+    networks:
+      - smainer-network
+    volumes:
+      - ./logs:/app/logs
+
+volumes:
+  redis_data:
+
+networks:
+  smainer-network:
+    driver: bridge

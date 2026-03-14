@@ -1,0 +1,266 @@
+# Smainer Infrastructure Alerting Rules
+# Critical SLA monitoring for decentralization migration
+
+groups:
+  # SLA Compliance Alerts
+  - name: sla_compliance
+    rules:
+      - alert: EventProcessingLatencyHigh
+        expr: histogram_quantile(0.95, rate(smainer_event_processing_duration_seconds_bucket[5m])) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          component: orchestration
+        annotations:
+          summary: "Event processing latency exceeds SLA"
+          description: "95th percentile event processing latency is {{ $value }}s, exceeding 100ms SLA target"
+          runbook: "https://docs.smainer.com/runbooks/latency-high"
+
+      - alert: TaskAssignmentSlow
+        expr: histogram_quantile(0.90, rate(smainer_task_assignment_duration_seconds_bucket[10m])) > 7
+        for: 10m
+        labels:
+          severity: critical
+          component: scheduler
+        annotations:
+          summary: "Task assignment taking too long"
+          description: "90th percentile task assignment time is {{ $value }}s, exceeding 5s target"
+          runbook: "https://docs.smainer.com/runbooks/assignment-slow"
+
+      - alert: SystemAvailabilityLow
+        expr: (up{job="smainer-relayer"} == 0) or (rate(smainer_http_requests_total{status=~"5.."}[15m]) / rate(smainer_http_requests_total[15m]) > 0.05)
+        for: 2m
+        labels:
+          severity: critical
+          component: relayer
+        annotations:
+          summary: "System availability below SLA"
+          description: "Relayer is down or error rate exceeds 5% for 15 minutes"
+          runbook: "https://docs.smainer.com/runbooks/availability-low"
+
+  # Provider Network Health
+  - name: provider_network
+    rules:
+      - alert: ProviderChurnHigh
+        expr: (rate(smainer_provider_disconnects_total[15m]) / on() smainer_providers_connected) > 0.3
+        for: 15m
+        labels:
+          severity: warning
+          component: network
+        annotations:
+          summary: "High provider churn detected"
+          description: "Provider disconnect rate is {{ $value | humanizePercentage }}, indicating network instability"
+          runbook: "https://docs.smainer.com/runbooks/provider-churn"
+
+      - alert: ProviderNetworkPartition
+        expr: smainer_providers_connected < (smainer_providers_registered * 0.7)
+        for: 5m
+        labels:
+          severity: critical
+          component: network
+        annotations:
+          summary: "Potential network partition detected"
+          description: "Only {{ $value }} of {{ smainer_providers_registered }} registered providers are connected"
+          runbook: "https://docs.smainer.com/runbooks/network-partition"
+
+      - alert: TaskQueueBacklog
+        expr: smainer_tasks_pending_total > 500
+        for: 10m
+        labels:
+          severity: warning
+          component: scheduler
+        annotations:
+          summary: "Task queue backlog building"
+          description: "{{ $value }} tasks pending, indicating provider capacity issues"
+          runbook: "https://docs.smainer.com/runbooks/queue-backlog"
+
+  # Infrastructure Health
+  - name: infrastructure
+    rules:
+      - alert: RedisMemoryHigh
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.85
+        for: 5m
+        labels:
+          severity: warning
+          component: redis
+        annotations:
+          summary: "Redis memory usage high"
+          description: "Redis memory usage at {{ $value | humanizePercentage }}"
+          runbook: "https://docs.smainer.com/runbooks/redis-memory"
+
+      - alert: RedisClusterUnhealthy
+        expr: redis_cluster_state != 1
+        for: 2m
+        labels:
+          severity: critical
+          component: redis
+        annotations:
+          summary: "Redis cluster in unhealthy state"
+          description: "Redis cluster state is not OK, potential split-brain or node failure"
+          runbook: "https://docs.smainer.com/runbooks/redis-cluster"
+
+      - alert: DatabaseConnectionsFull
+        expr: pg_stat_database_numbackends / pg_settings_max_connections > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          component: database
+        annotations:
+          summary: "Database connection pool near capacity"
+          description: "Database connections at {{ $value | humanizePercentage }} of maximum"
+          runbook: "https://docs.smainer.com/runbooks/db-connections"
+
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_avail_bytes{mountpoint="/data"} / node_filesystem_size_bytes{mountpoint="/data"}) < 0.15
+        for: 5m
+        labels:
+          severity: critical
+          component: storage
+        annotations:
+          summary: "Disk space running low"
+          description: "Only {{ $value | humanizePercentage }} disk space remaining on /data"
+          runbook: "https://docs.smainer.com/runbooks/disk-space"
+
+  # Consensus Layer (Phase 2+ alerts)
+  - name: consensus
+    rules:
+      - alert: ConsensusStalled
+        expr: increase(smainer_consensus_rounds_total[5m]) == 0 and on() smainer_coordinators_active > 0
+        for: 3m
+        labels:
+          severity: critical
+          component: consensus
+        annotations:
+          summary: "Consensus mechanism stalled"
+          description: "No consensus rounds completed in 5 minutes despite active coordinators"
+          runbook: "https://docs.smainer.com/runbooks/consensus-stalled"
+
+      - alert: CoordinatorElectionFailed
+        expr: smainer_coordinator_elections_failed_total > 3
+        for: 1m
+        labels:
+          severity: critical
+          component: consensus
+        annotations:
+          summary: "Coordinator election repeatedly failing"
+          description: "{{ $value }} coordinator election failures detected"
+          runbook: "https://docs.smainer.com/runbooks/election-failed"
+
+      - alert: ByzantineNodeDetected
+        expr: smainer_byzantine_behaviors_detected_total > 0
+        for: 0m
+        labels:
+          severity: critical
+          component: security
+        annotations:
+          summary: "Potential Byzantine node behavior"
+          description: "{{ $value }} Byzantine behaviors detected in consensus layer"
+          runbook: "https://docs.smainer.com/runbooks/byzantine-node"
+
+  # Performance and Scaling
+  - name: performance
+    rules:
+      - alert: CPUUsageHigh
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 85
+        for: 10m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "High CPU usage detected"
+          description: "CPU usage on {{ $labels.instance }} is {{ $value }}%"
+          runbook: "https://docs.smainer.com/runbooks/cpu-high"
+
+      - alert: MemoryUsageHigh
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes > 0.9
+        for: 5m
+        labels:
+          severity: critical
+          component: system
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage on {{ $labels.instance }} is {{ $value | humanizePercentage }}"
+          runbook: "https://docs.smainer.com/runbooks/memory-high"
+
+      - alert: ThroughputDegraded
+        expr: rate(smainer_tasks_completed_total[15m]) < (rate(smainer_tasks_completed_total[1h] offset 1h) * 0.7)
+        for: 15m
+        labels:
+          severity: warning
+          component: performance
+        annotations:
+          summary: "Task throughput degraded"
+          description: "Current task completion rate 30% below historical average"
+          runbook: "https://docs.smainer.com/runbooks/throughput-low"
+
+  # Blockchain Integration
+  - name: blockchain
+    rules:
+      - alert: StarknetTransactionsFailing
+        expr: rate(smainer_starknet_transactions_failed_total[15m]) / rate(smainer_starknet_transactions_total[15m]) > 0.1
+        for: 15m
+        labels:
+          severity: critical
+          component: blockchain
+        annotations:
+          summary: "High Starknet transaction failure rate"
+          description: "{{ $value | humanizePercentage }} of Starknet transactions failing"
+          runbook: "https://docs.smainer.com/runbooks/starknet-failures"
+
+      - alert: PaymentDelayed
+        expr: time() - smainer_last_payment_timestamp_seconds > 3600
+        for: 0m
+        labels:
+          severity: critical
+          component: finance
+        annotations:
+          summary: "Provider payments delayed"
+          description: "No payments processed for {{ $value | humanizeDuration }}"
+          runbook: "https://docs.smainer.com/runbooks/payment-delayed"
+
+      - alert: GasPriceSpike
+        expr: smainer_gas_price_gwei > (avg_over_time(smainer_gas_price_gwei[1h]) * 3)
+        for: 5m
+        labels:
+          severity: warning
+          component: blockchain
+        annotations:
+          summary: "Gas price spike detected"
+          description: "Current gas price {{ $value }} gwei is 3x above hourly average"
+          runbook: "https://docs.smainer.com/runbooks/gas-spike"
+
+  # Security Alerts
+  - name: security
+    rules:
+      - alert: UnauthorizedAccessAttempt
+        expr: rate(smainer_auth_failures_total[5m]) > 10
+        for: 2m
+        labels:
+          severity: critical
+          component: security
+        annotations:
+          summary: "High rate of authentication failures"
+          description: "{{ $value }} auth failures per second, possible attack"
+          runbook: "https://docs.smainer.com/runbooks/auth-failures"
+
+      - alert: SuspiciousTaskPattern
+        expr: rate(smainer_tasks_failed_validation_total[10m]) > 5
+        for: 10m
+        labels:
+          severity: warning
+          component: security
+        annotations:
+          summary: "High task validation failure rate"
+          description: "{{ $value }} task validation failures per second"
+          runbook: "https://docs.smainer.com/runbooks/task-validation"
+
+      - alert: CertificateExpiring
+        expr: probe_ssl_earliest_cert_expiry - time() < 86400 * 7
+        for: 0m
+        labels:
+          severity: warning
+          component: security
+        annotations:
+          summary: "SSL certificate expiring soon"
+          description: "Certificate expires in {{ $value | humanizeDuration }}"
+          runbook: "https://docs.smainer.com/runbooks/cert-renewal"

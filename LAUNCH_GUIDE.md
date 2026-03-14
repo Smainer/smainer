@@ -77,10 +77,10 @@ Create `.env.local` in `/home/smainer/Smainer/frontend/`:
 ```bash
 # Telegram Bot Configuration
 NEXT_PUBLIC_TELEGRAM_BOT_URL=https://t.me/smainer_ai_bot
-TELEGRAM_BOT_TOKEN=7123456789:ABCdefGHIjklMNOPqrsTUVwxyzABCDEfGHI
+TELEGRAM_BOT_TOKEN=YOUR_BOT_TOKEN_FROM_BOTFATHER
 TELEGRAM_WEBHOOK_URL=https://your-vercel-domain.vercel.app/api/telegram
 
-# Starknet Configuration (testnet for now)
+# Starknet Configuration (mainnet)
 NEXT_PUBLIC_STARKNET_RPC=https://starknet-testnet.public.blastapi.io/rpc/v0_7
 NEXT_PUBLIC_STARKNET_CHAIN_ID=SN_SEPOLIA
 
