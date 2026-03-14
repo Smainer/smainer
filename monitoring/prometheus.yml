@@ -1,0 +1,112 @@
+# Prometheus Configuration for Smainer Infrastructure Monitoring
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'smainer'
+    environment: 'production'
+
+rule_files:
+  - "rules/*.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+
+scrape_configs:
+  # System-level monitoring
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: 
+        - 'node-exporter:9100'
+    metrics_path: /metrics
+    scrape_interval: 15s
+
+  # Smainer Relayer API monitoring
+  - job_name: 'smainer-relayer'
+    static_configs:
+      - targets:
+        - 'relayer:8000'
+    metrics_path: /metrics
+    scrape_interval: 10s
+    scrape_timeout: 5s
+
+  # Redis monitoring
+  - job_name: 'redis'
+    static_configs:
+      - targets:
+        - 'redis-exporter:9121'
+    metrics_path: /metrics
+    scrape_interval: 15s
+
+  # PostgreSQL monitoring
+  - job_name: 'postgresql'
+    static_configs:
+      - targets:
+        - 'postgres-exporter:9187'
+    metrics_path: /metrics
+    scrape_interval: 15s
+
+  # Provider nodes monitoring (via relayer proxy)
+  - job_name: 'provider-nodes'
+    http_sd_configs:
+      - url: http://relayer:8000/api/metrics/providers
+        refresh_interval: 30s
+    metrics_path: /metrics
+    scrape_interval: 30s
+    relabel_configs:
+      - source_labels: [__meta_provider_id]
+        target_label: provider_id
+      - source_labels: [__meta_provider_region]
+        target_label: region
+      - source_labels: [__meta_provider_gpu_model]
+        target_label: gpu_model
+
+  # Task processing metrics
+  - job_name: 'task-metrics'
+    static_configs:
+      - targets:
+        - 'relayer:8000'
+    metrics_path: /api/metrics/tasks
+    scrape_interval: 5s
+    scrape_timeout: 3s
+
+  # Consensus layer monitoring (for Phase 2+)
+  - job_name: 'consensus-coordinators'
+    http_sd_configs:
+      - url: http://relayer:8000/api/metrics/coordinators
+        refresh_interval: 60s
+    metrics_path: /metrics
+    scrape_interval: 20s
+    relabel_configs:
+      - source_labels: [__meta_coordinator_id]
+        target_label: coordinator_id
+      - source_labels: [__meta_coordinator_stake]
+        target_label: stake_amount
+
+  # Starknet integration monitoring
+  - job_name: 'starknet-integration'
+    static_configs:
+      - targets:
+        - 'relayer:8000'
+    metrics_path: /api/metrics/blockchain
+    scrape_interval: 30s
+    scrape_timeout: 10s
+
+  # WebSocket connection monitoring
+  - job_name: 'websocket-metrics'
+    static_configs:
+      - targets:
+        - 'relayer:8000'
+    metrics_path: /api/metrics/websockets
+    scrape_interval: 10s
+
+# Remote write configuration for long-term storage (optional)
+# remote_write:
+#   - url: "https://prometheus-remote.smainer.com/api/v1/write"
+#     queue_config:
+#       max_samples_per_send: 1000
+#       max_shards: 200
+#       capacity: 2500

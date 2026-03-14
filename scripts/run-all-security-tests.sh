@@ -74,8 +74,14 @@ else
 fi
 
 # Check for secrets in git history (recent commits)
-if git log --oneline -10 | xargs git show --name-only | grep -E '\.env$|\.key$|secret' >/dev/null 2>&1; then
-    log_warn "Potential secrets committed to git history"
+recent_commits=$(git log --oneline -10 --pretty=format:"%H" 2>/dev/null || echo "")
+if [ -n "$recent_commits" ]; then
+    for commit in $recent_commits; do
+        if git show --name-only "$commit" 2>/dev/null | grep -E '\.env$|\.key$|secret' >/dev/null 2>&1; then
+            log_warn "Potential secrets committed to git history in commit $commit"
+            break
+        fi
+    done
 fi
 
 # Main test execution
@@ -115,8 +121,11 @@ SECRET_PATTERNS=(
 
 log_info "Scanning for secrets in codebase..."
 for pattern in "${SECRET_PATTERNS[@]}"; do
-    if git ls-files | xargs grep -l "$pattern" 2>/dev/null | grep -v -E "\.(test|spec|example)\.|test/|tests/|\.md$"; then
+    # Get list of files containing the pattern, excluding test/example files
+    matches=$(git ls-files | xargs grep -l "$pattern" 2>/dev/null | grep -v -E "\.(test|spec|example)\.|test/|tests/|\.env\.example|\.md$|README" | head -10)
+    if [ -n "$matches" ]; then
         log_fail "Potential secrets found matching pattern: $pattern"
+        echo "Files: $matches"
         SECRET_SCAN_RESULT=1
     fi
 done
