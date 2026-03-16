@@ -95,7 +95,7 @@ validate_secrets() {
         log_error "Missing required secrets: ${missing_secrets[*]}"
         log_error "Set these environment variables before running:"
         for secret in "${missing_secrets[@]}"; do
-            echo "export $secret='your-secret-here'"
+            echo "export $secret='<set-in-env>'"
         done
         exit 1
     fi

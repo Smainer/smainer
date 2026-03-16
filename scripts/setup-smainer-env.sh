@@ -65,8 +65,8 @@ CONTRACT_ADDRESS=0x044bf558b2e5ba7b3b24a18ff4944833ef9526b47907bcbdcbf94c33f4431
 
 # REQUIRED: Replace with your actual private keys
 # Format: 0x followed by 64 hexadecimal characters
-RELAYER_PRIVATE_KEY=0x0000000000000000000000000000000000000000000000000000000000000000
-STARKNET_PRIVATE_KEY=0x0000000000000000000000000000000000000000000000000000000000000000
+RELAYER_PRIVATE_KEY=\${RELAYER_PRIVATE_KEY:-REPLACE_WITH_YOUR_RELAYER_PRIVATE_KEY}
+STARKNET_PRIVATE_KEY=\${STARKNET_PRIVATE_KEY:-REPLACE_WITH_YOUR_STARKNET_PRIVATE_KEY}
 
 # ============================================================================
 # API CONFIGURATION
@@ -179,7 +179,7 @@ validate_environment() {
     
     # Check private key format
     if [[ ! "${RELAYER_PRIVATE_KEY:-}" =~ ^0x[0-9a-fA-F]{64}$ ]]; then
-        if [ "${RELAYER_PRIVATE_KEY:-}" = "0x0000000000000000000000000000000000000000000000000000000000000000" ]; then
+        if [[ "${RELAYER_PRIVATE_KEY:-}" =~ REPLACE_WITH_YOUR.*PRIVATE_KEY ]] || [ "${RELAYER_PRIVATE_KEY:-}" = "" ]; then
             log_error "RELAYER_PRIVATE_KEY is placeholder - replace with real private key"
         else
             log_error "RELAYER_PRIVATE_KEY invalid format (must be 0x + 64 hex chars)"
@@ -188,7 +188,7 @@ validate_environment() {
     fi
     
     if [[ ! "${STARKNET_PRIVATE_KEY:-}" =~ ^0x[0-9a-fA-F]{64}$ ]]; then
-        if [ "${STARKNET_PRIVATE_KEY:-}" = "0x0000000000000000000000000000000000000000000000000000000000000000" ]; then
+        if [[ "${STARKNET_PRIVATE_KEY:-}" =~ REPLACE_WITH_YOUR.*PRIVATE_KEY ]] || [ "${STARKNET_PRIVATE_KEY:-}" = "" ]; then
             log_error "STARKNET_PRIVATE_KEY is placeholder - replace with real private key"
         else
             log_error "STARKNET_PRIVATE_KEY invalid format (must be 0x + 64 hex chars)"

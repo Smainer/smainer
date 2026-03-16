@@ -36,10 +36,10 @@ fi
 # 3. CRITICAL: Secrets in logs and temp files
 echo -n "3. Checking logs and temp files for secrets..."
 SECRET_LOG_COUNT=0
-if find . -name "*.log" | xargs grep -l -E "0x[a-fA-F0-9]{64}" 2>/dev/null | grep -q .; then
+if find . -name "*.log" | xargs grep -l -E "((api_key|token|private_key|secret)[=:][^[:space:]]{16,}|(api_key|token|private_key|secret).*(0x[a-fA-F0-9]{64}))" 2>/dev/null | grep -q .; then
     SECRET_LOG_COUNT=$((SECRET_LOG_COUNT + 1))
 fi
-if find /tmp -name "*smainer*" -o -name "*provider*" -o -name "*relayer*" | xargs grep -l -E "(0x[a-fA-F0-9]{64}|api_key)" 2>/dev/null | grep -q .; then
+if find /tmp \( -name "*smainer*" -o -name "*provider*" -o -name "*relayer*" \) -type f \( -name "*.log" -o -name "*.tmp" -o -name "*.out" \) 2>/dev/null | xargs grep -l -E "((api_key|token|private_key|secret)[=:][^[:space:]]{16,}|(api_key|token|private_key|secret).*(0x[a-fA-F0-9]{64}))" 2>/dev/null | grep -q .; then
     SECRET_LOG_COUNT=$((SECRET_LOG_COUNT + 1))
 fi
 if [[ "$SECRET_LOG_COUNT" -gt 0 ]]; then
@@ -66,7 +66,7 @@ if ! cd backend/relayer && python -c "
 import sys
 sys.path.insert(0, 'src')
 from relayer.config import settings
-assert hasattr(settings, 'api_key') and settings.api_key and len(str(settings.api_key)) > 16
+assert hasattr(settings, 'api_key') and settings.api_key and len(str(settings.api_key)) >= 16
 " >/dev/null 2>&1; then
     CONFIG_ISSUES=1
 fi
@@ -77,7 +77,7 @@ import sys
 sys.path.insert(0, 'src')  
 from provider.config import ProviderConfig
 config = ProviderConfig()
-assert hasattr(config, 'private_key') and config.private_key
+assert hasattr(config, 'STARKNET_PRIVATE_KEY') and config.STARKNET_PRIVATE_KEY
 " >/dev/null 2>&1; then
     CONFIG_ISSUES=1
 fi

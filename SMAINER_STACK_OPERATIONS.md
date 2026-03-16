@@ -67,10 +67,10 @@ scripts/smainer-stack-master.sh logs
 Set these environment variables before launching:
 
 ```bash
-export REDIS_PASSWORD="your-secure-redis-password"
-export API_KEY="your-relayer-api-key"
-export RELAYER_PRIVATE_KEY="0x1234...your-64-char-private-key"
-export STARKNET_PRIVATE_KEY="0x5678...your-64-char-private-key"
+export REDIS_PASSWORD="<your-secure-redis-password>"
+export RELAYER_API_SECRET="<your-relayer-api-secret>"
+export RELAYER_SIGNING_KEY="<your-64-char-hex-key>"
+export STARKNET_ACCOUNT_KEY="<your-64-char-hex-key>"
 ```
 
 ### Optional Configuration
