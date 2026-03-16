@@ -1,9 +1,22 @@
 ---
 description: "Use when handling cryptocurrency, private keys, wallet integration, blockchain transactions, secure data storage, or crypto payment flows. Covers security patterns and privacy-preserving practices."
-applyTo: ["**/telegram/**", "**/bot/**", "**/crypto/**", "**/wallet/**", "**/blockchain/**"]
+applyTo: ["**/*"]
 ---
 
 # Crypto Security Guidelines
+
+## ABSOLUTE RULE — NEVER REPEAT SECRETS IN OUTPUT
+
+**This is the #1 rule. It overrides everything else.**
+
+When you read a file, environment variable, terminal output, or tool result that contains a private key, mnemonic, seed phrase, API secret, or any credential:
+
+1. **NEVER repeat the actual value** in your response text, code samples, usage examples, scripts, or any output whatsoever.
+2. **Always substitute with a placeholder** like `<REDACTED>`, `$ENV_VAR`, or `<your-private-key>`.
+3. This applies even when the user explicitly provided the key — do not echo it back.
+4. This applies to accounts files (e.g. `starknet_open_zeppelin_accounts.json`), `.env` files, keystore files, and any config containing secrets.
+5. If you need to reference a key for diagnostic purposes, show only the **first 6 and last 4 hex characters** with `…` in between (e.g. `0x1078…e4b4`).
+6. **Violation of this rule causes permanent, irreversible compromise.** There is no undo once a secret appears in conversation history.
 
 ## Key Management
 
