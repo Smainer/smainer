@@ -46,6 +46,12 @@ System-wide status reporting, cross-agent coordination, launch prerequisites, go
 **[@planner](./agents/planner.agent.md)**  
 Sprint planning, backlog prioritization, task decomposition, dependency mapping, and distribution of work to specialist agents — the bridge between strategy and execution
 
+**[@agent-runtime-engineer](./agents/agent-runtime-engineer.agent.md)**  
+Autonomous AI runtime orchestration across relayer/provider/telegram flows, including session lifecycle, sandbox guardrails, and execution policies
+
+**[@ai-inference-benchmarker](./agents/ai-inference-benchmarker.agent.md)**  
+Tier-aware inference benchmarking, latency/throughput reporting, STRK cost consistency checks, and launch performance gate recommendations
+
 ## Specialized Workflows
 
 ### Feature Development Pipeline
@@ -89,6 +95,8 @@ Sprint planning, backlog prioritization, task decomposition, dependency mapping,
 - `@repository-architect` Manage release and version coordination
 - `@chief-director` Status report and next milestones
 - `@planner` Break down [feature] into sprint tasks with owners and dependencies
+- `@agent-runtime-engineer` Define runtime policies and agent execution guardrails
+- `@ai-inference-benchmarker` Produce tiered performance baseline and bottleneck report
 
 ## Cross-Agent Communication
 
