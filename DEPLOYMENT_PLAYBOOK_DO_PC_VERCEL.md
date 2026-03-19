@@ -20,6 +20,51 @@ Scope on DO:
 
 Do not run website frontend on DO.
 
+### Mandatory: Start From 0 (Clean DO Server)
+
+Use this section first, every time you rebuild the DO environment from scratch.
+
+1. Fresh droplet baseline
+- New Ubuntu 22.04+ droplet preferred.
+- If reusing an old server, remove previous Smainer services and data first.
+
+2. Remove previous runtime (if server is reused)
+- Stop old services:
+	- sudo systemctl stop smainer-relayer || true
+	- sudo systemctl stop smainer-bot || true
+	- sudo systemctl stop smainer-provider || true
+- Disable old services:
+	- sudo systemctl disable smainer-relayer || true
+	- sudo systemctl disable smainer-bot || true
+	- sudo systemctl disable smainer-provider || true
+- Remove old unit files:
+	- sudo rm -f /etc/systemd/system/smainer-relayer.service
+	- sudo rm -f /etc/systemd/system/smainer-bot.service
+	- sudo rm -f /etc/systemd/system/smainer-provider.service
+	- sudo systemctl daemon-reload
+
+3. Remove old app folders and stale state (if reused)
+- sudo rm -rf /opt/smainer /root/Smainer
+- Keep Redis only if you explicitly want to preserve state.
+- For full reset, clear Redis data:
+	- sudo systemctl stop redis-server
+	- sudo rm -rf /var/lib/redis/*
+	- sudo systemctl start redis-server
+
+4. Reinstall base dependencies
+- sudo apt update && sudo apt upgrade -y
+- sudo apt install -y git curl jq python3 python3-venv python3-pip redis-server
+
+5. Re-prepare clean app directory
+- sudo mkdir -p /opt/smainer
+- sudo chown -R $USER:$USER /opt/smainer
+
+6. Clean-start verification before install
+- systemctl list-units --type=service | grep -E "smainer|relayer|provider|telegram" || true
+- Expected: no active old smainer services.
+- redis-cli ping
+- Expected: PONG
+
 ### Steps
 
 1. Prepare server
@@ -46,6 +91,14 @@ Do not run website frontend on DO.
 - curl http://127.0.0.1:8000/health
 - curl with auth to /api/v1/nodes
 - Expected: healthy status, nodes array present
+
+### DO Clean-State Acceptance Criteria
+
+All must pass:
+1. No leftover smainer systemd units from previous installs.
+2. Redis responds and has expected clean or intentional state.
+3. Relayer starts from clean config and passes health endpoint.
+4. No stale processes binding old ports (8000/8110) before relaunch.
 
 ### Success criteria
 - Relayer health endpoint returns healthy
