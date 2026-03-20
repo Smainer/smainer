@@ -126,7 +126,7 @@ INVESTIGATION ACTIONS (within 4 hours):
 
 RECOVERY ACTIONS (when ready):
 1. Verify new keys are secure
-2. Run: ./war-room-security-gates.sh
+2. Run: ./scripts/war-room-security-gates.sh
 3. If gates pass: restart services
 4. If gates fail: repeat fix cycle
 EOF
@@ -134,6 +134,6 @@ EOF
 echo ""
 echo -e "${YELLOW}Incident log saved to: $INCIDENT_LOG${NC}"
 echo -e "${RED}${BOLD}⚠ SYSTEM REMAINS IN EMERGENCY MODE${NC}"
-echo -e "Run security gates before restart: ./war-room-security-gates.sh"
+echo -e "Run security gates before restart: ./scripts/war-room-security-gates.sh"
 
 exit 0

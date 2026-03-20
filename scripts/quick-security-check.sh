@@ -94,10 +94,10 @@ fi
 echo ""
 if [[ $CRITICAL_FAILURE -eq 0 ]]; then
     echo "🟢 LAUNCH CLEARED - No critical security issues"
-    echo "Run full gates: ./war-room-security-gates.sh"
+    echo "Run full gates: ./scripts/war-room-security-gates.sh"
     exit 0
 else  
     echo "🔴 LAUNCH BLOCKED - Critical security failures detected"
-    echo "Fix issues above, then run: ./war-room-security-gates.sh"
+    echo "Fix issues above, then run: ./scripts/war-room-security-gates.sh"
     exit 1
 fi

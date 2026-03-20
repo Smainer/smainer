@@ -6,7 +6,9 @@
 
 set -euo pipefail
 
-AGGREGATOR_FILE="/home/smainer/Smainer/backend/relayer/src/relayer/core/aggregator.py"
+REPO_ROOT="/home/smainer/Smainer"
+AGGREGATOR_FILE="${REPO_ROOT}/backend/relayer/src/relayer/core/aggregator.py"
+PATCH_FILE="/tmp/batch_processor_fix.patch"
 
 echo "==== Applying Redis Timeout Fix to Batch Processor ===="
 
@@ -14,8 +16,8 @@ echo "==== Applying Redis Timeout Fix to Batch Processor ===="
 cp "$AGGREGATOR_FILE" "$AGGREGATOR_FILE.backup"
 echo "✅ Backed up original file to $AGGREGATOR_FILE.backup"
 
-# Create the patch
-cat > batch_processor_fix.patch << 'EOF'
+# Create the patch in /tmp to avoid re-cluttering the repo root
+cat > "$PATCH_FILE" << 'EOF'
 --- aggregator.py.orig
 +++ aggregator.py
 @@ -292,13 +292,18 @@
@@ -57,8 +59,10 @@ EOF
 python3 << 'PYTHON_EOF'
 import sys
 
+AGGREGATOR_FILE = "/home/smainer/Smainer/backend/relayer/src/relayer/core/aggregator.py"
+
 # Read the file
-with open("backend/relayer/src/relayer/core/aggregator.py", "r") as f:
+with open(AGGREGATOR_FILE, "r") as f:
     content = f.read()
 
 # Replace the batch processor method with improved error handling
@@ -120,12 +124,12 @@ if old_method in content:
     new_content = content.replace(old_method, new_method)
     
     # Write back
-    with open("backend/relayer/src/relayer/core/aggregator.py", "w") as f:
+    with open(AGGREGATOR_FILE, "w") as f:
         f.write(new_content)
     print("✅ Applied batch processor timeout fix")
 else:
     print("❌ Could not find exact method to replace")
-    print("Manual patch required - see batch_processor_fix.patch")
+    print("Manual patch required - see /tmp/batch_processor_fix.patch")
     sys.exit(1)
 PYTHON_EOF
 

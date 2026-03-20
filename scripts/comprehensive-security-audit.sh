@@ -37,7 +37,7 @@ SECRET_PATTERNS=(
 
 for pattern in "${SECRET_PATTERNS[@]}"; do
     echo -n "    - Testing pattern: ${pattern:0:20}..."
-    if git grep -i -q -E "$pattern" -- ':!test*' ':!**/tests/**' ':!**/test_*.py' ':!*.example' ':!*.template' ':!*.md' ':!node_modules' ':!TEMP_GREEN_INSTRUCTIONS_*' ':!quick-security-check.sh' ':!comprehensive-security-audit.sh' ':!war-room-security-gates.sh' ':!backend/run-security-tests.sh' 2>/dev/null; then
+    if git grep -i -q -E "$pattern" -- ':!test*' ':!**/tests/**' ':!**/test_*.py' ':!*.example' ':!*.template' ':!*.md' ':!node_modules' ':!TEMP_GREEN_INSTRUCTIONS_*' ':!scripts/quick-security-check.sh' ':!scripts/comprehensive-security-audit.sh' ':!scripts/war-room-security-gates.sh' ':!backend/run-security-tests.sh' 2>/dev/null; then
         echo -e " ${RED}DETECTED${NC}"
         CRITICAL_FAILURES=$((CRITICAL_FAILURES + 1))
     else
@@ -303,8 +303,8 @@ else
     echo ""
     echo "Next steps:"
     echo "1. Fix all critical failures above"
-    echo "2. Run: ./quick-security-check.sh (fast verification)"
-    echo "3. Re-run: ./comprehensive-security-audit.sh"
-    echo "4. When clean: ./war-room-security-gates.sh (final sign-off)"
+    echo "2. Run: ./scripts/quick-security-check.sh (fast verification)"
+    echo "3. Re-run: ./scripts/comprehensive-security-audit.sh"
+    echo "4. When clean: ./scripts/war-room-security-gates.sh (final sign-off)"
     exit 1
 fi
