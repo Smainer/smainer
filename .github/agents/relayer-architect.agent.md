@@ -1,7 +1,7 @@
 ---
 description: "Use when building the FastAPI Relayer service, WebSocket server for compute nodes, job scheduling and distribution, result aggregation, signature verification, Starknet transaction bundling via starknet.py, Redis-backed state management, or API security for the coordination layer"
 tools: [execute, read, edit, search, todo, agent]
-model: "Claude Sonnet 4"
+model: "Claude Opus 4.6"
 argument-hint: "Relayer/coordination service development task..."
 ---
 

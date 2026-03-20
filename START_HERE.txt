@@ -6,6 +6,13 @@
 ║                                                                            ║
 ╚════════════════════════════════════════════════════════════════════════════╝
 
+LIVE TEST OPERATIONS ENTRYPOINT:
+   -> LIVE_TEST_OPERATIONS_INDEX.md
+   -> OPERATIONS_TRUTH_MAP.md
+
+If you are debugging Telegram, provider connectivity, or launch readiness,
+start with those files before running cleanup workflows.
+
 📋 WHAT YOU HAVE
 
 A complete, production-ready cleanup strategy with:

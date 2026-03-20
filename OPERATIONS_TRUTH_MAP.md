@@ -6,6 +6,27 @@ Mode: concise, target-oriented, no fluff.
 
 ---
 
+## 0) Current Runtime Truth (Live Test)
+
+Date: 2026-03-20
+
+| Layer | Runtime | Purpose | Must Be Running |
+|---|---|---|---|
+| Relayer API + Scheduler | DigitalOcean | Task intake, routing, callbacks, node pool | Yes |
+| Redis | DigitalOcean | Relayer + bot state | Yes |
+| Telegram Bot | DigitalOcean | User interface (/start, prompts, wallet link) | Yes |
+| Provider Node (first) | Runpod | GPU task execution | Yes |
+| Miniapp | Vercel | Wallet connect/open app flow from Telegram | Yes |
+| Frontend | Vercel | Public web interface and docs | Optional for Telegram-only test |
+| Contracts | Starknet | Settlement + proof/payment paths | Yes for paid flow |
+
+Non-negotiable for Telegram live test:
+1. Bot links resolve to valid Miniapp URLs (no 404).
+2. Runpod provider appears online in relayer node list.
+3. One prompt completes end-to-end (Telegram -> Relayer -> Provider -> callback).
+
+---
+
 ## 1) System Map (Who Talks To What)
 
 ```mermaid
@@ -41,12 +62,12 @@ flowchart LR
 | Component | Expected Runtime | Current Intent / Notes |
 |---|---|---|
 | Relayer | DigitalOcean | Primary coordination backend (API, scheduling, node pool). |
-| Provider Daemon | Provider machine(s) | First provider can run on DO or local machine. |
+| Provider Daemon | Runpod (first node), then provider machines | Runpod is primary first GPU node for live Telegram test. |
 | Windows Desktop App | This PC (Windows host, may use WSL/Ubuntu tooling) | Onboarding + node management UI for provider. |
 | Contracts | Starknet Mainnet | Wallet + escrow + payouts + registration logic. |
 | Website | Vercel | Public product site + dashboard + provider onboarding pages. |
-| Telegram Bot | DigitalOcean (expected) | Status uncertain, must verify service + command response. |
-| Telegram Miniapp | Vercel (expected) | Should be deployed and linked in BotFather menu button. |
+| Telegram Bot | DigitalOcean | Runs polling + callback server. |
+| Telegram Miniapp | Vercel | URL must match BotFather menu + connect keyboard button. |
 | Backend (definition) | Relayer + Redis + callbacks | "Backend" is primarily relayer stack; not same as website frontend. |
 
 ---
@@ -224,6 +245,19 @@ Sequence:
 
 Rule:
 - If any step fails, open blocker ticket immediately and stop claiming readiness.
+
+Terminal monitors during live testing:
+1. DigitalOcean relayer: `sudo journalctl -u smainer-relayer -f`
+2. DigitalOcean bot: `sudo journalctl -u smainer-telegram-bot -f`
+3. DigitalOcean redis quick check: `redis-cli -h 127.0.0.1 -p 6379 ping`
+4. Runpod provider: `tail -f /var/log/smainer-provider.log`
+5. Runpod provider websocket/auth smoke: `bash backend/provider/runpod-websocket-fix.sh`
+
+Evidence to save per run:
+1. Task ID from bot submission
+2. Matching provider execution log line
+3. Final callback delivery log line
+4. Result message timestamp in Telegram
 
 ---
 
