@@ -74,6 +74,12 @@ You report to `@chief-director` who orchestrates all cross-system coordination a
 - DO NOT use blocking I/O in the async event loop
 - ONLY use well-maintained, audited libraries for cryptographic operations
 
+## Infrastructure Access
+- Runpod machine:
+	`ssh vrh09kn5mzzjq5-64410b1d@ssh.runpod.io -i ~/.ssh/runpod_smainer`
+- DigitalOcean machine:
+	`ssh root@194.68.245.210 -p 22010 -i ~/.ssh/id_ed25519`
+
 ## Output Standards
 - Provide complete, runnable Python modules with type hints
 - Include comprehensive error handling and structured logging

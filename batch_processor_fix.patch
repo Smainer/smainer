@@ -1,0 +1,35 @@
+--- aggregator.py.orig
++++ aggregator.py
+@@ -292,13 +292,18 @@
+ 
+     async def _batch_processor(self) -> None:
+         """Background task to process batches."""
+         logger.info("Started batch processor")
+         
+         while True:
+             try:
+                 # Wait for batches to be available
+                 batch_id = await self.redis.blpop(BATCH_QUEUE, timeout=10)
+                 
+                 if batch_id:
+                     # batch_id is a tuple (queue_name, batch_id)
+                     batch_id = batch_id[1]
+                     logger.info(f"Processing batch {batch_id}")
+                     # Batch processing will be handled by the chain client
++                else:
++                    # Timeout occurred, no batches available - this is expected
++                    logger.debug("Batch processor timeout (no batches available)")
+                     
+             except asyncio.CancelledError:
+                 logger.info("Batch processor cancelled")
+                 break
++            except aioredis.TimeoutError:
++                # Redis timeout is expected when no batches are queued
++                logger.debug("Batch processor Redis timeout (no batches queued)")
++            except aioredis.ConnectionError as e:
++                logger.error(f"Redis connection error in batch processor: {e}")
++                await asyncio.sleep(5)  # Wait before retrying
+             except Exception as e:
+-                logger.error(f"Error in batch processor: {e}")
++                logger.error(f"Unexpected error in batch processor: {e}")
+                 await asyncio.sleep(5)  # Wait before retrying

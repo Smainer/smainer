@@ -6,7 +6,7 @@
 
 set -euo pipefail
 
-AGGREGATOR_FILE="backend/relayer/src/relayer/core/aggregator.py"
+AGGREGATOR_FILE="/home/smainer/Smainer/backend/relayer/src/relayer/core/aggregator.py"
 
 echo "==== Applying Redis Timeout Fix to Batch Processor ===="
 
