@@ -32,21 +32,21 @@ The relayer source code is public. Coordination logic is auditable. Economic rul
 | Decentralization code | None. Zero multi-relayer, consensus, or transparency code exists. |
 | Decentralization contracts | None. RelayerRegistry, TaskCoordination, ProviderStaking, DisputeResolution — all unimplemented. |
 
-**Honest assessment:** The system works as a centralized prototype. All decentralization is forward-looking. The timelines below reflect actual engineering scope, not aspirational targets.
+**Honest assessment:** The system works as a centralized prototype. All decentralization is forward-looking.
 
 ---
 
 ## 3. Architecture Phases
 
-### Phase 0: Transparent Single Relayer (Weeks 1-4)
+### Phase 0: Transparent Single Relayer
 
 Add verifiability to the existing single-relayer architecture. No infrastructure changes.
 
 ```
 ┌─────────────────┐    ┌───────────────────────────┐    ┌──────────────┐
-│   Starknet      │    │  Single Relayer            │    │  Provider    │
-│   Contract      │◄──►│  + Transparency Logging    │◄──►│  Daemon(s)   │
-│                 │    │  + Assignment Commitments   │    │              │
+│   Starknet      │    │  Single Relayer           │    │  Provider    │
+│   Contract      │◄──►│  + Transparency Logging   │◄──►│  Daemon(s)   │
+│                 │    │  + Assignment Commitments │    │              │
 └─────────────────┘    └───────────────────────────┘    └──────────────┘
                                 │
                        ┌────────▼────────┐
@@ -66,23 +66,23 @@ Add verifiability to the existing single-relayer architecture. No infrastructure
 
 **Cost:** Zero. No new infrastructure. ~0.01ms overhead per assignment.
 
-### Phase 1: Active-Standby Multi-Relayer (Weeks 5-12)
+### Phase 1: Active-Standby Multi-Relayer
 
 Eliminate single-point-of-failure with a second relayer instance sharing Redis state.
 
 ```
 ┌──────────────┐    ┌──────────────────────┐    ┌──────────────┐
-│  Relayer A    │───►│  Redis Sentinel      │◄───│  Relayer B    │
-│  (leader)     │    │  (3 nodes: 1 primary │    │  (standby)    │
-└──────┬────────┘    │   + 2 replicas)      │    └──────┬────────┘
-       │             └──────────────────────┘           │
+│  Relayer A   │───►│  Redis Sentinel      │◄───│  Relayer B   │
+│  (leader)    │    │  (3 nodes: 1 primary │    │  (standby)   │
+└──────┬───────┘    │   + 2 replicas)      │    └──────┬───────┘
+       │            └──────────────────────┘           │
        │◄──── WebSocket ────►│◄──── WebSocket ─────────┘
-       │      (providers)     │      (providers)
-       │                      │
-┌──────▼──────────────────────▼──────┐
-│          Load Balancer             │
-│  (sticky sessions for WebSocket)   │
-└────────────────────────────────────┘
+       │      (providers)    │      (providers)
+       │                     │
+┌──────▼─────────────────────▼──────┐
+│          Load Balancer            │
+│  (sticky sessions for WebSocket)  │
+└───────────────────────────────────┘
 ```
 
 **How it works:**
@@ -96,17 +96,17 @@ Eliminate single-point-of-failure with a second relayer instance sharing Redis s
 
 **Infrastructure cost:** ~$228/month (Redis cluster $72, 2 relayer nodes $96, LB $20, PostgreSQL $40)
 
-### Phase 2: Staked Multi-Relayer with On-Chain Registry (Months 4-8)
+### Phase 2: Staked Multi-Relayer with On-Chain Registry
 
 Multiple independent relayer operators, coordinated by smart contract.
 
 ```
 ┌─────────────────┐    ┌──────────────────────────┐    ┌──────────────┐
-│   Starknet      │    │  Relayer Operator Pool    │    │  Provider    │
-│   Governance    │    │  (3-7 staked operators)   │    │  Network     │
-│   + Relayer     │◄──►│  Leader-follower pattern  │◄──►│  (staked,    │
-│     Registry    │    │  Shared Redis state       │    │   multi-     │
-│   + Provider    │    │                           │    │   connect)   │
+│   Starknet      │    │  Relayer Operator Pool   │    │  Provider    │
+│   Governance    │    │  (3-7 staked operators)  │    │  Network     │
+│   + Relayer     │◄──►│  Leader-follower pattern │◄──►│  (staked,    │
+│     Registry    │    │  Shared Redis state      │    │   multi-     │
+│   + Provider    │    │                          │    │   connect)   │
 │     Staking     │    └──────────────────────────┘    └──────────────┘
 └─────────────────┘              │
                         ┌────────▼────────┐
@@ -124,7 +124,7 @@ Multiple independent relayer operators, coordinated by smart contract.
 - Provider multi-connect with automatic failover
 - Transparency dashboard in frontend
 
-### Phase 3: Full Decentralization (Month 9+)
+### Phase 3: Full Decentralization
 
 This phase is deliberately underspecified. It depends on lessons from Phase 2.
 
@@ -246,12 +246,12 @@ Original plan proposed 10,000 STRK for relayers. Too high for early network.
 
 ### Contract Build Priority
 
-| Order | Contract | Dependencies | Timeline |
-|---|---|---|---|
-| 1st | **RelayerRegistry** | None — works alongside current contract | 2-3 weeks |
-| 2nd | **ProviderStaking** | Interfaces with RelayerRegistry for slasher auth | 3-4 weeks |
-| 3rd | **TaskCoordination** | Requires both above for validation | 2-3 weeks |
-| 4th | **DisputeResolution** | Requires all three — complex governance | 4-6 weeks |
+| Order | Contract | Dependencies |
+|---|---|---|
+| 1st | **RelayerRegistry** | None — works alongside current contract |
+| 2nd | **ProviderStaking** | Interfaces with RelayerRegistry for slasher auth |
+| 3rd | **TaskCoordination** | Requires both above for validation |
+| 4th | **DisputeResolution** | Requires all three — complex governance |
 
 ### Upgrade Strategy
 
