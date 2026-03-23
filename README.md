@@ -61,33 +61,37 @@ A Web3 compute marketplace built on Starknet where **Providers** share hardware 
 
 ## Protocol Economics
 
-### Fee Structure (15% Total)
+### Fee Structure (17% Total)
 
 On task completion, the smart contract automatically splits payment:
 
 | Recipient | Share | BPS | Description |
 |-----------|-------|-----|-------------|
-| **Provider** | 85% | 8500 | Base compute payout |
-| **Provider** (gas subsidy) | 3% | 300 | Rebated to cover Starknet gas costs |
-| **Smainer Treasury** | 12% | 1200 | Platform maintenance & infrastructure |
+| **Provider** | 83% | 8300 | Base compute payout |
+| **Provider** (gas subsidy) | 5% | 500 | Rebated to cover Starknet gas costs |
+| **Relayer Operators** | 4% | 400 | Distributed to staked relayer operators |
+| **Smainer Treasury** | 8% | 800 | Platform maintenance & development |
 
-- **Provider total**: 88% of task amount (85% payout + 3% gas subsidy)
-- **Treasury total**: 12% of task amount
+- **Provider total**: 88% of task amount (83% payout + 5% gas subsidy) — unchanged
+- **Relayer pool**: 4% funds decentralized coordination operators
+- **Treasury**: 8% for protocol development
 - All math uses basis points (`BPS_DENOMINATOR = 10000`) for precision
 - Fee split is enforced on-chain in `submit_proof_and_claim` — no off-chain calculation
+- See [`docs/DECENTRALIZATION_PLAN.md`](docs/DECENTRALIZATION_PLAN.md) for the full economic model
 
 ### Gas Subsidies
 
-The 3% gas subsidy is automatically added to the provider's payout so providers don't have to pay out-of-pocket to submit proofs. This lowers the barrier to onboarding new compute nodes.
+The 5% gas subsidy is automatically added to the provider's payout so providers don't have to pay out-of-pocket to submit proofs. This lowers the barrier to onboarding new compute nodes.
 
 ### Transparent Pricing (Frontend)
 
 When users submit tasks, the cost estimator shows a full breakdown:
 ```
   Compute Cost:                       X STRK
-  Smainer Network Fee (15%):          Y STRK
-    |-- Treasury (12%):               ...
-    |-- Gas Subsidy to Provider (3%): ...
+  Smainer Network Fee (17%):          Y STRK
+    |-- Treasury (8%):                ...
+    |-- Relayer Operators (4%):       ...
+    |-- Gas Subsidy to Provider (5%): ...
   ──────────────────────────────────────────
   Total:                              Z STRK
 ```
@@ -130,15 +134,16 @@ cd telegram && pip install -e ".[dev]"
 
 ## Documentation
 
+All docs live in [`docs/`](docs/). Key references:
+
 | Document | Description |
 |----------|-------------|
-| [`DEEP_DIVE.md`](DEEP_DIVE.md) | Detailed architecture and implementation status |
-| [`TESTNET_DEPLOYMENT_INSTRUCTIONS.md`](TESTNET_DEPLOYMENT_INSTRUCTIONS.md) | Testnet deployment runbook |
-| [`FIRST_NODE_PRIVACY_AI_TEST_GUIDE.md`](FIRST_NODE_PRIVACY_AI_TEST_GUIDE.md) | First provider node setup and validation |
-| [`LAUNCH_GUIDE.md`](LAUNCH_GUIDE.md) | End-to-end launch flow, including Telegram integration |
-| [`LAUNCH_ACTION_CHECKLIST.md`](LAUNCH_ACTION_CHECKLIST.md) | Operational launch checklist |
-| [`SUCCESS_METRICS.md`](SUCCESS_METRICS.md) | Live test success targets |
-| [`TIERED_REWARDS_IMPLEMENTATION_GUIDE.md`](TIERED_REWARDS_IMPLEMENTATION_GUIDE.md) | Tier/reward implementation notes |
+| [`docs/SYSTEM_ARCHITECTURE.md`](docs/SYSTEM_ARCHITECTURE.md) | Component topology, data flows, event-driven design |
+| [`docs/DEEP_DIVE.md`](docs/DEEP_DIVE.md) | Technical deep-dive and protocol economics |
+| [`docs/DECENTRALIZATION_PLAN.md`](docs/DECENTRALIZATION_PLAN.md) | Relayer decentralization roadmap, revenue model, contracts |
+| [`docs/operations/DEPLOYMENT_PLAYBOOK.md`](docs/operations/DEPLOYMENT_PLAYBOOK.md) | End-to-end deployment guide |
+| [`docs/operations/LAUNCH_GUIDE.md`](docs/operations/LAUNCH_GUIDE.md) | Launch flow including Telegram integration |
+| [`docs/README.md`](docs/README.md) | Full documentation index |
 
 ---
 

@@ -1,287 +1,39 @@
-╔════════════════════════════════════════════════════════════════════════════╗
-║                                                                            ║
-║         SMAINER REPOSITORY CLEANUP: COMPLETE STRATEGY & EXECUTION         ║
-║                                                                            ║
-║                           ✅ READY TO EXECUTE                             ║
-║                                                                            ║
-╚════════════════════════════════════════════════════════════════════════════╝
-
-LIVE TEST OPERATIONS ENTRYPOINT:
-   -> LIVE_TEST_OPERATIONS_INDEX.md
-   -> OPERATIONS_TRUTH_MAP.md
-
-If you are debugging Telegram, provider connectivity, or launch readiness,
-start with those files before running cleanup workflows.
-
-📋 WHAT YOU HAVE
-
-A complete, production-ready cleanup strategy with:
-  ✅ 7 comprehensive guidance documents (3,344+ lines)
-  ✅ Automated execution script (fully tested, safe)
-  ✅ Code owner review system (with decision matrix)
-  ✅ Rollback procedures (documented for all scenarios)
-  ✅ Security validations (automatic on every phase)
-
-🎯 THE PROBLEM YOU'RE SOLVING
-
-Current state:
-  ❌ 4 submodules on backup branches (CRITICAL)
-  ❌ 30+ untracked files scattered around
-  ❌ 4.9MB artifacts in repo (should be .gitignore'd)
-  ❌ Mixed commit scopes (no clear ownership)
-
-Target state:
-  ✅ 6 intentional commits grouped by concern
-  ✅ All submodules on origin/main
-  ✅ Organized and documented
-  ✅ Clear code owner per group
-  ✅ Ready for production deployment
-
-🚀 THREE-STEP QUICK START
-
-1. Read (10 min):
-   $ cat CLEANUP_QUICK_START.md
-
-2. Test (10 min):
-   $ bash repo-cleanup-execute.sh --dry-run
-
-3. Execute (30 min):
-   $ bash repo-cleanup-execute.sh
-
-Then: Code owner reviews (60-120 min parallel) → Merge → Done ✅
-
-═══════════════════════════════════════════════════════════════════════════════
-
-📚 DOCUMENT MAP
-
-Start with these files in this order:
-
-1. START_HERE.txt (you are reading it)
-   ↓
-2. CLEANUP_QUICK_START.md (10 min overview)
-   ↓
-3. repo-cleanup-execute.sh --dry-run (test, no changes)
-   ↓
-4. REPO_CLEANUP_STRATEGY.md (full specifications, 45 min)
-   ↓
-5. repo-cleanup-execute.sh (real execution, 30 min)
-   ↓
-6. CODE_OWNER_REVIEW_MATRIX.md (share with reviewers)
-   ↓
-7. CLEANUP_EXECUTION_CHECKLIST.md (verify each phase)
-
-═══════════════════════════════════════════════════════════════════════════════
-
-📖 DOCUMENT PURPOSES
-
-File                              Size    Purpose
-──────────────────────────────────────────────────────────────────────────────
-DELIVERABLES_SUMMARY.md           12K     Executive overview (this content)
-CLEANUP_QUICK_START.md            11K     10-minute orientation for team
-REPO_CLEANUP_STRATEGY.md          31K     Complete detailed specifications
-CODE_OWNER_REVIEW_MATRIX.md       17K     Reviewer checklist & decision guide
-CLEANUP_EXECUTION_CHECKLIST.md    13K     Step-by-step verification guide
-repo-cleanup-execute.sh (script)  18K     Automated execution script
-README_CLEANUP.md                 12K     Navigation & relationships
-
-Total: 102K of production-ready guidance
-
-═══════════════════════════════════════════════════════════════════════════════
-
-🎯 THE 6-GROUP STRATEGY
-
-Your cleanup creates 6 intentional commits, each with a code owner:
-
-1. Infrastructure & Config       → Approved by: @security-expert
-   (3 files: .env, instructions)    Decision: BLOCKING
-
-2. Scripts & Permissions         → Approved by: @systems-engineer
-   (6 scripts organized)            Decision: BLOCKING
-
-3. Launch & Deployment Docs      → Approved by: @product-manager
-   (5 docs: procedures, architecture) Decision: BLOCKING
-
-4. Stack Automation              → Approved by: @devops-lead
-   (5 scripts: launch, stop, verify) Decision: BLOCKING
-
-5. Security Validation           → Approved by: @security-expert
-   (4 scripts: gates, health checks) Decision: CONDITIONAL
-
-6. Release Documentation         → Approved by: @chief-director
-   (4 docs: checklists, executive)   Decision: GATE ✅/❌
-
-═══════════════════════════════════════════════════════════════════════════════
-
-⏱️ TIMELINE ESTIMATE
-
-Execution (you):          30 minutes
-Reviews (parallel):       60-120 minutes (mostly waiting)
-Merge (you):             10 minutes
-─────────────────────────────────────
-TOTAL:                   2-3 hours ✅
-
-═══════════════════════════════════════════════════════════════════════════════
-
-🔐 SAFETY FEATURES
-
-✅ Automatic secret scanning on every phase
-✅ Bash syntax validation before committing
-✅ Safety tag created before starting (rollback point)
-✅ All changes LOCAL until you push
-✅ Dry-run mode available (test without changes)
-✅ Rollback procedure for every phase
-✅ Single-command full reset available
-
-═══════════════════════════════════════════════════════════════════════════════
-
-✨ HOW TO START RIGHT NOW
-
-Option 1: Quick orientation (10 minutes)
-  1. Read: CLEANUP_QUICK_START.md
-  2. Run:  bash repo-cleanup-execute.sh --dry-run
-  3. Then: Proceed with real execution
-
-Option 2: Deep dive (1 hour)
-  1. Read: DELIVERABLES_SUMMARY.md (this gives full context)
-  2. Read: REPO_CLEANUP_STRATEGY.md (complete specs)
-  3. Study: CODE_OWNER_REVIEW_MATRIX.md (prepare reviewers)
-  4. Execute: repo-cleanup-execute.sh
-
-Option 3: Full package (everything)
-  1. Read all 7 documents in order (check README_CLEANUP.md)
-  2. Understand all phases deeply
-  3. Execute with maximum confidence
-
-═══════════════════════════════════════════════════════════════════════════════
-
-🛠️ IMMEDIATE ACTIONS
-
-[ ] 1. Read CLEANUP_QUICK_START.md (10 min)
-[ ] 2. Run dry-run test: bash repo-cleanup-execute.sh --dry-run
-[ ] 3. Read REPO_CLEANUP_STRATEGY.md if you want full context (45 min)
-[ ] 4. Execute real cleanup: bash repo-cleanup-execute.sh
-[ ] 5. Notify code owners - send them CODE_OWNER_REVIEW_MATRIX.md
-[ ] 6. Collect approvals for each of the 6 groups
-[ ] 7. Merge to main when ready
-[ ] 8. Verify: git log --oneline -10 shows all 6 commits
-
-═══════════════════════════════════════════════════════════════════════════════
-
-💡 KEY INSIGHTS
-
-1. Everything is REVERSIBLE
-   - Safety tag created at start
-   - Single command rollback: git reset --hard safety/pre-cleanup-*
-
-2. Reviews happen PARALLEL, not sequential
-   - 6 code owners review at same time
-   - Total review time: ~60 minutes (not 180 minutes)
-
-3. Each group has ONE decision authority
-   - No confusion about who approves what
-   - Clear escalation if reviewer unavailable
-
-4. Security is AUTOMATED
-   - Script scans for secrets on every phase
-   - Blocks if credentials found
-   - You don't have to remember to check
-
-5. Everything is DOCUMENTED
-   - 3,344 lines of guidance
-   - Real commands you can copy/paste
-   - Decision trees for "what if" scenarios
-
-═══════════════════════════════════════════════════════════════════════════════
-
-❓ COMMON QUESTIONS
-
-Q: "What if I make a mistake?"
-A: Read CLEANUP_EXECUTION_CHECKLIST.md → "Decision Tree" for your issue
-
-Q: "How do I rollback?"
-A: git reset --hard safety/pre-cleanup-<timestamp>
-   (See REPO_CLEANUP_STRATEGY.md for detailed procedures)
-
-Q: "What gets committed?"
-A: 6 focused commit groups (see THE 6-GROUP STRATEGY above)
-   Review REPO_CLEANUP_STRATEGY.md for exact messages
-
-Q: "What does NOT get committed?"
-A: Artifacts (4.6MB logs), generated configs, secrets
-   All protected by .gitignore (auto scanned)
-
-Q: "How long will reviews take?"
-A: ~60 minutes total (parallel, not sequential)
-   Each reviewer gets 15-40 min per their group
-
-Q: "What if a reviewer is unavailable?"
-A: Escalation contacts in CODE_OWNER_REVIEW_MATRIX.md
-   Can use backup reviewers
-
-═══════════════════════════════════════════════════════════════════════════════
-
-🎯 SUCCESS INDICATORS
-
-After cleanup, you'll have:
-
-✅ 6 commits merged to main
-✅ 4 submodules on origin/main (not backup branches)
-✅ All code owners approved their scope
-✅ Secret scan: 0 issues
-✅ Scripts tested and executable
-✅ Deployment procedures documented
-✅ Rollback plan clear and tested
-✅ Team synchronized and confident
-
-═══════════════════════════════════════════════════════════════════════════════
-
-📞 NEED HELP?
-
-Problem → Look in this document:
-
-  "How do I get started?"              → CLEANUP_QUICK_START.md
-  "What's the full strategy?"          → REPO_CLEANUP_STRATEGY.md
-  "How do I review a group?"           → CODE_OWNER_REVIEW_MATRIX.md
-  "Step-by-step execution?"            → CLEANUP_EXECUTION_CHECKLIST.md
-  "How do I rollback?"                 → REPO_CLEANUP_STRATEGY.md
-  "Something unexpected happened"      → CLEANUP_EXECUTION_CHECKLIST.md
-  "Overall context & guidance"         → DELIVERABLES_SUMMARY.md
-  "Document relationships"             → README_CLEANUP.md
-
-═══════════════════════════════════════════════════════════════════════════════
-
-🚀 NOW WHAT?
-
-You have THREE choices:
-
-CHOICE 1: Start immediately (next 5 minutes)
-  $ cd /home/smainer/Smainer
-  $ cat CLEANUP_QUICK_START.md
-
-CHOICE 2: Get context first (next 15 minutes)
-  $ cd /home/smainer/Smainer
-  $ cat DELIVERABLES_SUMMARY.md
-  $ bash repo-cleanup-execute.sh --dry-run
-
-CHOICE 3: Full preparation (next hour)
-  $ cd /home/smainer/Smainer
-  $ cat CLEANUP_QUICK_START.md
-  $ cat REPO_CLEANUP_STRATEGY.md
-  $ cat CODE_OWNER_REVIEW_MATRIX.md
-  $ bash repo-cleanup-execute.sh --dry-run
-
-All three paths lead to the same place: a clean, organized repository ✅
-
-═══════════════════════════════════════════════════════════════════════════════
-
-                    RECOMMENDED: Start with CHOICE 1
-                         You're ready. Go! ✅
-
-═══════════════════════════════════════════════════════════════════════════════
-
-Version: 1.0
-Created: 2026-03-16
-Status: ✅ READY TO EXECUTE
-
-Questions? Check the documents above.
-Ready? cd /home/smainer/Smainer && bash repo-cleanup-execute.sh
+SMAINER — START HERE
+
+Smainer is a decentralized compute marketplace on Starknet.
+Users submit tasks, providers execute them, payments settle on-chain in STRK.
+
+REPOSITORY STRUCTURE
+
+  contracts/     Cairo smart contracts (escrow, fees, task lifecycle)
+  backend/
+    relayer/     FastAPI coordination service (WebSocket, Redis, scheduling)
+    provider/    Python daemon for GPU providers (sandbox, signing, metrics)
+    ai-compute-node/  Ollama AI inference integration
+  frontend/      Next.js dashboard (wallet connect, task submit, provider stats)
+  telegram/
+    telegram-bot/   Telegram bot (pay-per-prompt AI, STRK payments)
+    miniapp/        Telegram Mini App (wallet connect UI)
+  desktop/       Windows desktop node app (Tauri, GPU detection, onboarding)
+  docs/          All documentation (architecture, operations, security, economics)
+  deployment/    Docker, systemd, infrastructure configs
+  monitoring/    Health checks, metrics collection
+  scripts/       Operational scripts
+
+KEY DOCUMENTS (read in order)
+
+  docs/SYSTEM_ARCHITECTURE.md         System topology and component interactions
+  docs/DEEP_DIVE.md                   Technical deep-dive and protocol economics
+  docs/DECENTRALIZATION_PLAN.md       Relayer decentralization roadmap (consolidated)
+  docs/operations/DEPLOYMENT_PLAYBOOK.md   How to deploy everything
+  docs/operations/OPERATIONS_TRUTH_MAP.md  What runs where, how to verify
+
+CURRENT STATUS (March 2026)
+
+  Relayer:    Running on DigitalOcean (single instance)
+  Redis:      Running (single instance, same server)
+  Provider:   1 GPU node on Runpod (WebSocket connected)
+  Contract:   Live on Starknet Sepolia testnet
+  Telegram:   Bot + MiniApp operational
+  Frontend:   Deployed on Vercel (DNS pending)
+  Desktop:    In development (Tauri)
