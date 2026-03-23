@@ -13,7 +13,6 @@ build/
 target/
 
 # Environment files (keep templates)
-.env*
 !.env.example
 !.env.*.template
 
@@ -25,8 +24,8 @@ target/
 
 # IDE
 .idea/
-.vscode/
 
 # Generated operational outputs
 artifacts/
 logs/
+config.bat
