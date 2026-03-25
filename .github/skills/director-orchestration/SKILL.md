@@ -28,8 +28,7 @@ If you catch yourself writing code or running a terminal command: **stop and del
 | `security-expert` | Threat modeling, auth hardening, secret handling, crypto audit, security regression tests |
 | `repository-architect` | Git ops, CI/CD, releases, multi-repo governance, open source, dependency management |
 | `fee-economist` | Fee structure, treasury splits, gas subsidy, token economics, pricing UI |
-| `marketing-copywriter` | Product/marketing copy, headlines, CTAs, value propositions, email sequences |
-| `Technical Marketing Copywriter` | Technical descriptions for power users, hardware platform messaging |
+| `copywriter` | All user-facing text: headlines, CTAs, microcopy, value propositions, marketing pages, technical descriptions |
 | `brand-designer` | Brand identity, color palettes, UI/UX aesthetics, visual direction |
 | `agent-runtime-engineer` | AI runtime orchestration, session lifecycle, sandbox policy, tool-call guardrails |
 | `ai-inference-benchmarker` | p50/p95 latency, throughput, cost-per-task, bottleneck analysis |

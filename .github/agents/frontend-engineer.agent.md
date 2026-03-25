@@ -84,8 +84,7 @@ You report to `@chief-director` who orchestrates all cross-system coordination a
 
 **Brand & copy specialists** — your UI implements their decisions:
 - `@brand-designer` — defines color palette, spacing scale, typography, and visual hierarchy you implement in Tailwind/shadcn
-- `@marketing-copywriter` — writes headlines, CTAs, microcopy, and error messages that appear in your components
-- `@technical-copywriter` — provides technical descriptions and value propositions for power-user interfaces
+- `@copywriter` — writes headlines, CTAs, microcopy, error messages, and technical descriptions that appear in your components
 
 **Cross-cutting specialists:**
 - `@security-expert` — reviews wallet flows, sensitive data handling, and XSS prevention

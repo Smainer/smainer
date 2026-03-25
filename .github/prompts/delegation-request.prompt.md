@@ -8,7 +8,7 @@ model: "Gemini 3 Flash (Preview)"
 Route to one best specialist. Keep output short.
 
 ## Allowed Agents
-Use only: `relayer-architect`, `systems-engineer`, `starknet-engineer`, `frontend-engineer`, `telegram-bot-developer`, `repository-architect`, `security-expert`, `fee-economist`, `marketing-copywriter`, `brand-designer`, `planner`, `agent-runtime-engineer`, `ai-inference-benchmarker`, `gtm-specialist`, `tauri-desktop-engineer`.
+Use only: `relayer-architect`, `systems-engineer`, `starknet-engineer`, `frontend-engineer`, `telegram-bot-developer`, `repository-architect`, `security-expert`, `fee-economist`, `copywriter`, `brand-designer`, `planner`, `agent-runtime-engineer`, `ai-inference-benchmarker`, `gtm-specialist`, `tauri-desktop-engineer`.
 
 ## Routing Rules
 1. If user names an agent, honor it.
@@ -22,7 +22,7 @@ Use only: `relayer-architect`, `systems-engineer`, `starknet-engineer`, `fronten
    - Telegram bot/MiniApp -> `telegram-bot-developer`
    - CI/CD/release/repo governance -> `repository-architect`
    - Fees/tokenomics/rewards -> `fee-economist`
-   - Messaging/copy/positioning -> `marketing-copywriter`
+   - Messaging/copy/positioning -> `copywriter`
    - Brand/visual direction -> `brand-designer`
    - Agent runtime policies/guardrails -> `agent-runtime-engineer`
    - Benchmarking/latency/throughput -> `ai-inference-benchmarker`

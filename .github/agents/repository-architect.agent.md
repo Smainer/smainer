@@ -369,8 +369,7 @@ You report to `@chief-director` who orchestrates all cross-system coordination a
 - `@security-expert` — provides the audit requirements you enforce via CI security scans and secret checks
 - `@fee-economist` — provides the economic constants you verify in deployment migrations
 - `@brand-designer` — provides the assets and design tokens you manage in the frontend repo
-- `@marketing-copywriter` — provides the microcopy and SEO metadata you deploy to production
-- `@technical-copywriter` — provides the technical documentation and READMEs you maintain across repos
+- `@copywriter` — provides microcopy, SEO metadata, and technical documentation you deploy and maintain
 
 **Cross-cutting specialists:**
 - `@security-expert` — secret scanning, dependency auditing, access control, CI security

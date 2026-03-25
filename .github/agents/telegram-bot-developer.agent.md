@@ -148,7 +148,7 @@ You are self-sufficient but not isolated. When you hit a boundary outside your d
 | Smart contract integration, escrow logic | `@starknet-engineer` | Align on contract interfaces, fee splits |
 | Provider daemon compatibility | `@systems-engineer` | Ensure task payloads match execution format |
 | Brand guidelines, visual direction | `@brand-designer` | Get sign-off on major UI changes |
-| Copy, messaging, CTA text | `@marketing-copywriter` | Get polished user-facing text |
+| Copy, messaging, CTA text | `@copywriter` | Get polished user-facing text |
 | Security review of wallet/callback flows | `@security-expert` | Review before shipping auth changes |
 | Frontend shared patterns | `@frontend-engineer` | Coordinate on shared components between MiniApp and web dashboard |
 | Task breakdown for big features | `@planner` | Decompose multi-day work into trackable tasks |

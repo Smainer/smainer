@@ -53,7 +53,7 @@ Map each task to the correct specialist:
 | Telegram bot, miniapp, payments | `@telegram-bot-developer` |
 | Security, auth, callback integrity | `@security-expert` |
 | Brand, design, visual audit | `@brand-designer` |
-| Marketing copy, landing page text | `@marketing-copywriter` |
+| Copy, messaging, user-facing text | `@copywriter` |
 | Fee structure, token economics | `@fee-economist` |
 | GitHub issues, CI, deployment | `@repository-architect` |
 
@@ -110,8 +110,7 @@ You report to `@chief-director` who provides goals, deadlines, and constraints. 
 | Desktop app, Windows installer | `@tauri-desktop-engineer` |
 | Security, auth, callback integrity | `@security-expert` |
 | Brand, design, visual audit | `@brand-designer` |
-| Marketing copy, landing page text | `@marketing-copywriter` |
-| Technical copy for power users | `@technical-copywriter` |
+| Copy, messaging, user-facing text | `@copywriter` |
 | Fee structure, token economics | `@fee-economist` |
 | GitHub issues, CI, deployment | `@repository-architect` |
 | Launch planning, GTM campaigns | `@gtm-specialist` |

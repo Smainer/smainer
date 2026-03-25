@@ -45,14 +45,14 @@ Given the subject, select which agents have a relevant perspective. Use this map
 | Security, auth, keys, threats, audit | `security-expert` |
 | Git, CI/CD, releases, repo structure | `repository-architect` |
 | Fees, pricing, economics, treasury | `fee-economist` |
-| Copy, messaging, marketing, CTAs | `marketing-copywriter` |
+| Copy, messaging, marketing, CTAs | `copywriter` |
 | Brand, visual, design, aesthetics | `brand-designer` |
 | AI runtime, session lifecycle, guardrails | `agent-runtime-engineer` |
 | Latency, throughput, benchmarks, perf | `ai-inference-benchmarker` |
 | Launch plan, GTM, timeline, campaign | `gtm-specialist` |
 | Sprint plan, backlog, task breakdown | `planner` |
 | Desktop app, Tauri, Windows, node onboarding | `tauri-desktop-engineer` |
-| Technical copy for power users | `Technical Marketing Copywriter` |
+| Technical copy for power users | `copywriter` |
 
 **Rules:**
 - Only invite agents whose domain is directly relevant to the subject. Do not pad the meeting.

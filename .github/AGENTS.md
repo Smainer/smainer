@@ -29,8 +29,8 @@ Application security reviews, threat modeling, auth hardening, callback/webhook 
 **[@brand-designer](./agents/brand-designer.agent.md)**  
 Brand identity, color palettes, UI/UX aesthetics, marketing funnel optimization, professional minimalist interfaces, AI-generated design critique
 
-**[@marketing-copywriter](./agents/marketing-copywriter.agent.md)**  
-Marketing copy, headlines, CTAs, value propositions, technical descriptions, onboarding flows, conversion optimization for power users
+**[@copywriter](./agents/copywriter.agent.md)**  
+All user-facing text: headlines, CTAs, microcopy, error messages, value propositions, marketing pages, onboarding flows, CLI output, bot responses
 
 **[@fee-economist](./agents/fee-economist.agent.md)**  
 Protocol fee structure, treasury splits, gas subsidy logic, token economics modeling, transparent pricing UI design
@@ -59,7 +59,7 @@ Tier-aware inference benchmarking, latency/throughput reporting, STRK cost consi
 2. **[@planner]** - Decompose goal into sprint tasks, sequence by dependency, assign owners
 3. **[@frontend-engineer]** OR **[@starknet-engineer]** - Build core functionality  
 3. **[@brand-designer]** - Design review and visual optimization
-4. **[@marketing-copywriter]** - User-facing copy and messaging
+4. **[@copywriter]** - User-facing copy and messaging
 5. **[@repository-architect]** - Security audit, deployment coordination, and release management
 
 ### Telegram Bot Development  
@@ -85,7 +85,7 @@ Tier-aware inference benchmarking, latency/throughput reporting, STRK cost consi
 
 **Product & Marketing:**
 - `@brand-designer` Redesign color palette
-- `@marketing-copywriter` Write landing page copy
+- `@copywriter` Write landing page copy
 - `@fee-economist` Model pricing strategy
 
 **Operations:**

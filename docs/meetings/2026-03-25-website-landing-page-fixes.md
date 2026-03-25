@@ -2,7 +2,7 @@
 
 **Date:** 2026-03-25
 **Facilitator:** Chief Director
-**Attendees:** frontend-engineer, brand-designer, marketing-copywriter, fee-economist
+**Attendees:** frontend-engineer, brand-designer, copywriter, fee-economist
 **Goal:** Produce concrete fixes + final copy for 7 reported landing page issues, ready to implement.
 
 ---
@@ -20,7 +20,7 @@
 5. Pay-per-Task → New `GlassSection` between hero and value props
 
 **Risks:** Breaking mobile layouts during responsive fixes; typography changes cascading; copy changes without brand approval creating inconsistent voice.
-**Dependencies:** Final copy from marketing-copywriter, mobile layout approval from brand-designer.
+**Dependencies:** Final copy from copywriter, mobile layout approval from brand-designer.
 
 ---
 

@@ -58,8 +58,7 @@ You report to `@chief-director` who orchestrates all cross-system coordination a
 - `@relayer-architect` — the scheduler enforces tier-aware pricing your models define; coordinate on reward distribution logic
 
 **Copy & messaging:**
-- `@marketing-copywriter` — writes fee justification copy and transparent pricing messaging
-- `@technical-copywriter` — documents fee structure for power users with exact STRK rates
+- `@copywriter` — writes fee justification copy, transparent pricing messaging, and fee documentation for power users
 
 **Cross-cutting specialists:**
 - `@security-expert` — audits fee calculation for rounding errors, overflow, and dust handling
