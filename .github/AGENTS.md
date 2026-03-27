@@ -1,123 +1,124 @@
 # Smainer Development Agents
 
-Specialized agents for building the Smainer decentralized compute marketplace. Each agent focuses on specific domains with optimized tool access and expert knowledge.
+Specialized agents for building the Smainer decentralized compute marketplace.
 
-## Team Structure
+> **Architecture Reference:** See [PIPELINE_TOPOLOGY.md](./PIPELINE_TOPOLOGY.md) for the full call graph, envelope schemas, code ownership map, and meeting protocol specs.
 
-### 🚀 Core Development
+---
 
-**[@frontend-engineer](./agents/frontend-engineer.agent.md)**  
-Next.js frontend, starknet-react wallet integration, Argent X/Braavos connections, dashboard UI, compute task forms, shadcn/ui components, Tailwind styling
+## TIER 0 — GATEWAY
 
-**[@starknet-engineer](./agents/starknet-engineer.agent.md)**  
-Cairo smart contracts, DeFi protocols, decentralized compute networks, escrow systems, ERC-20 integration, Scarb projects, security auditing  
+**[@chief-director](./agents/chief-director.agent.md)**
+Accepts input from user only. Routes to `planner` for multi-step work or directly to a single specialist for a targeted task. Never implements. Runs meetings via the [chief-director-agent-sync](./prompts/chief-director-agent-sync.prompt.md) prompt.
 
-**[@relayer-architect](./agents/relayer-architect.agent.md)**  
-FastAPI coordination service, WebSocket compute nodes, job scheduling, result aggregation, signature verification, Starknet bundling, Redis state
+---
 
-**[@systems-engineer](./agents/systems-engineer.agent.md)**  
-Python daemons, distributed compute workers, WebSocket/REST clients, Docker sandboxing, cryptographic signing, resource monitoring
+## TIER 1 — PLANNING
 
-**[@telegram-bot-developer](./agents/telegram-bot-developer.agent.md)**  
-Telegram bots, WebApp integration, wallet connectivity, crypto payment flows, encrypted messaging, miniapps, security architecture
+**[@planner](./agents/planner.agent.md)**
+Accepts tasks from `chief-director`. Produces a Task Manifest (sequenced tasks with owners, critical path, parallel tracks). Delegates execution tasks to Tier 2. Does not write or edit code.
 
-**[@security-expert](./agents/security-expert.agent.md)**  
-Application security reviews, threat modeling, auth hardening, callback/webhook integrity, secret handling, and security regression testing
+---
 
-### 🎨 Product & Brand
+## TIER 2 — EXECUTION
 
-**[@brand-designer](./agents/brand-designer.agent.md)**  
-Brand identity, color palettes, UI/UX aesthetics, marketing funnel optimization, professional minimalist interfaces, AI-generated design critique
+Each specialist owns a specific code surface. They accept Task Briefs from `planner` or `chief-director` and return Delivery Reports.
 
-**[@marketing-copywriter](./agents/marketing-copywriter.agent.md)**  
-Marketing copy, headlines, CTAs, value propositions, technical descriptions, onboarding flows, conversion optimization for power users
+| Agent | Code Ownership | Domain |
+|---|---|---|
+| [@relayer-architect](./agents/relayer-architect.agent.md) | `backend/relayer/` | FastAPI, WebSocket, Redis, job scheduling |
+| [@systems-engineer](./agents/systems-engineer.agent.md) | `backend/provider/` | Python daemons, Docker sandboxing, systemd |
+| [@starknet-engineer](./agents/starknet-engineer.agent.md) | `contracts/` | Cairo contracts, escrow, ERC-20, Scarb |
+| [@frontend-engineer](./agents/frontend-engineer.agent.md) | `frontend/src/` | Next.js, starknet-react, wallet integration |
+| [@tauri-desktop-engineer](./agents/tauri-desktop-engineer.agent.md) | `desktop/` | Tauri app, IPC, Windows Credential Manager |
+| [@telegram-bot-developer](./agents/telegram-bot-developer.agent.md) | `telegram/smainer-bot/`, `telegram/miniapp/src/` | Telegram bot, MiniApp, Vercel serverless |
+| [@fee-economist](./agents/fee-economist.agent.md) | Fee constants in `contracts/src/` + `backend/relayer/config.py` | Fee structure, treasury splits, gas subsidy |
+| [@brand-designer](./agents/brand-designer.agent.md) | `frontend/src/styles/`, design tokens | Visual identity, color system, UI aesthetics |
+| [@marketing-copywriter](./agents/marketing-copywriter.agent.md) | `docs/`, landing page copy in `frontend/src/app/` | Conversion copy, CTAs, onboarding |
+| [@technical-copywriter](./agents/technical-copywriter.agent.md) | Technical docs in `docs/`, `README.md` | Power-user docs, API references |
+| [@gtm-specialist](./agents/gtm-specialist.agent.md) | Launch docs in `.github/` and `docs/` | Go-to-market, launch checklists |
+| [@agent-runtime-engineer](./agents/agent-runtime-engineer.agent.md) | `.github/agents/`, `.github/skills/`, `.github/instructions/` | Agent pipeline architecture, runtime policies |
+| [@ai-inference-benchmarker](./agents/ai-inference-benchmarker.agent.md) | Read-only (metrics) | Inference benchmarks, latency gates |
 
-**[@fee-economist](./agents/fee-economist.agent.md)**  
-Protocol fee structure, treasury splits, gas subsidy logic, token economics modeling, transparent pricing UI design
+---
 
-### ⚙️ Operations  
+## TIER 3 — VALIDATION
 
-**[@repository-architect](./agents/repository-architect.agent.md)**  
-Comprehensive repository management, open source governance, Git coordination, deployment orchestration, community management, release engineering, infrastructure setup
+Tier 3 agents produce Validation Reports only. They set hard constraints; implementers accept or escalate.
 
-**[@chief-director](./agents/chief-director.agent.md)**  
-System-wide status reporting, cross-agent coordination, launch prerequisites, go-to-market strategy, development roadmap guidance
+**[@security-expert](./agents/security-expert.agent.md)**
+Reviews Delivery Reports before release. Hard constraints: auth schemes, secret handling, replay protection, callback integrity. Returns `approved | approved_with_conditions | blocked`.
 
-**[@planner](./agents/planner.agent.md)**  
-Sprint planning, backlog prioritization, task decomposition, dependency mapping, and distribution of work to specialist agents — the bridge between strategy and execution
+**[@repository-architect](./agents/repository-architect.agent.md)**
+Dual-mode: Tier 2 for implementation tasks (repo setup, CI, deployment scripts). Tier 3 for release gates (validates branching, deployment state, governance). Owns all 6 repo structures.
 
-**[@agent-runtime-engineer](./agents/agent-runtime-engineer.agent.md)**  
-Autonomous AI runtime orchestration across relayer/provider/telegram flows, including session lifecycle, sandbox guardrails, and execution policies
+---
 
-**[@ai-inference-benchmarker](./agents/ai-inference-benchmarker.agent.md)**  
-Tier-aware inference benchmarking, latency/throughput reporting, STRK cost consistency checks, and launch performance gate recommendations
+## Allowed Call Graph
 
-## Specialized Workflows
+```
+User
+ └── chief-director (TIER 0)
+      ├── planner (TIER 1)
+      │    └── [any Tier 2 specialist]
+      ├── [any Tier 2 specialist] (direct, single-domain tasks)
+      └── [Tier 3 for validation or release gate]
 
-### Feature Development Pipeline
-1. **[@chief-director]** - Define goal and coordinate team
-2. **[@planner]** - Decompose goal into sprint tasks, sequence by dependency, assign owners
-3. **[@frontend-engineer]** OR **[@starknet-engineer]** - Build core functionality  
-3. **[@brand-designer]** - Design review and visual optimization
-4. **[@marketing-copywriter]** - User-facing copy and messaging
-5. **[@repository-architect]** - Security audit, deployment coordination, and release management
+Tier 2 specialists
+ └── may request Tier 3 validation via Delivery Report flag
+     (never call Tier 3 directly as a subagent)
+```
 
-### Telegram Bot Development  
-1. **[@telegram-bot-developer]** - Bot architecture and security design
-2. **[@starknet-engineer]** - Blockchain integration patterns
-3. **[@systems-engineer]** - Infrastructure and scaling considerations
-4. **[@repository-architect]** - Deployment pipeline setup and release coordination
+**Forbidden patterns:**
+- Tier 2 agents calling other Tier 2 agents as subagents
+- Planner calling Tier 3 for validation (route through chief-director)
+- Any agent bypassing the Task Manifest envelope when delegating multi-step work
 
-### Security & Privacy Features
-1. **[@security-expert]** - Threat modeling, security review, and abuse-case test planning
-1. **[@telegram-bot-developer]** - Privacy architecture design  
-2. **[@systems-engineer]** - Secure execution environment
-3. **[@starknet-engineer]** - On-chain security verification
-4. **[@fee-economist]** - Economic security models
+---
+
+## Meeting Relationship Map
+
+Meetings are convened by `chief-director` only. Eight canonical alignment pairs:
+
+| Rule-Setter | Implementer | Shared Concern |
+|---|---|---|
+| security-expert | relayer-architect | Auth scheme, callback integrity |
+| security-expert | systems-engineer | Sandbox policy, secret handling |
+| security-expert | telegram-bot-developer | Webhook validation, token storage |
+| starknet-engineer | relayer-architect | On-chain event shapes, bundler interface |
+| starknet-engineer | frontend-engineer | Wallet call encoding, ABI surface |
+| fee-economist | starknet-engineer | Fee constant values, split math |
+| fee-economist | relayer-architect | Gas subsidy logic, batch fee calc |
+| relayer-architect | systems-engineer | WebSocket event protocol, task payload schema |
+
+---
 
 ## Quick Commands
 
-**Development Tasks:**
+**Start any complex task:**
+- `@chief-director` [describe goal] — routes automatically
+
+**Direct specialist access (single-domain):**
 - `@frontend-engineer` Build wallet connection UI
-- `@starknet-engineer` Create escrow smart contract  
+- `@starknet-engineer` Create escrow smart contract
 - `@relayer-architect` Design task distribution system
 - `@telegram-bot-developer` Implement payment flow
-
-**Product & Marketing:**
 - `@brand-designer` Redesign color palette
 - `@marketing-copywriter` Write landing page copy
 - `@fee-economist` Model pricing strategy
-
-**Operations:**
 - `@security-expert` Review auth, callbacks, and secret handling
 - `@repository-architect` Coordinate deployment across components
-- `@repository-architect` Audit security and dependency status 
-- `@repository-architect` Manage release and version coordination
-- `@chief-director` Status report and next milestones
 - `@planner` Break down [feature] into sprint tasks with owners and dependencies
 - `@agent-runtime-engineer` Define runtime policies and agent execution guardrails
 - `@ai-inference-benchmarker` Produce tiered performance baseline and bottleneck report
 
-## Cross-Agent Communication
-
-Agents can invoke each other as subagents:
-
-```markdown
-@frontend-engineer Please build the staking interface. 
-Coordinate with @brand-designer for visual design and @starknet-engineer for contract integration.
-```
-
-**Best Practices:**
-- Start with **[@chief-director]** for complex multi-component features
-- Use **[@security-expert]** before launch reviews or when adding external callbacks, auth, or wallet flows
-- Use **[@brand-designer]** early in UI development for consistent aesthetics
-- Involve **[@telegram-bot-developer]** for any privacy-sensitive features
-- Coordinate **[@fee-economist]** when building payment/reward systems
+---
 
 ## Context Files
 
-Agents automatically load relevant context:
-- **[crypto-security.instructions.md](./instructions/crypto-security.instructions.md)** - Security patterns for crypto development
+Agents automatically load relevant context from:
+- [crypto-security.instructions.md](./instructions/crypto-security.instructions.md) — Security patterns for crypto development
+- [PIPELINE_TOPOLOGY.md](./PIPELINE_TOPOLOGY.md) — Full 4-tier architecture, envelope schemas, code ownership
 - **[web3-integration.instructions.md](./instructions/web3-integration.instructions.md)** - Wallet connection and DeFi patterns
 
 ## Quick Prompts

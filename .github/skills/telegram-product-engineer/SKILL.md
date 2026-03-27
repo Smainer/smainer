@@ -184,3 +184,14 @@ Before shipping any Telegram change:
 - [ ] MiniApp loads under 3 seconds on 4G
 - [ ] No secrets in logs or response messages
 - [ ] Callback server accessible from Relayer
+
+## Input Contract
+- **Trigger**: Called when building, designing, debugging, or innovating on the Smainer Telegram bot or MiniApp
+- **Required context**: The specific component (bot handler, MiniApp screen, wallet flow, payment flow) + task description
+- **Optional**: Existing file paths, Vercel deployment logs, Telegram WebApp SDK version
+
+## Output Contract
+- One of:
+  1. **Code deliverable**: Production-ready Python (bot) or React/TypeScript (MiniApp) with inline rationale for UX decisions
+  2. **Deployment action**: Commands executed on Vercel, DO, or Runpod with pre/post verification steps
+  3. **UX proposal**: Flow diagram or component specification with Steve Jobs filter applied (each screen justified)

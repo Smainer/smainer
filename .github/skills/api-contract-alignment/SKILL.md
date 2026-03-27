@@ -20,3 +20,14 @@ disable-model-invocation: false
 ## 3. Websocket & Auth Mandates
 - **Stateless REST Auth**: Depend on `Authorization: Bearer <API_KEY>` or JWT tokens. Never trust raw User-IDs.
 - **WebSocket Handshake**: Never push operational status until the socket validates its handshake payload token sequence over the open socket connection.
+
+## Input Contract
+- **Trigger**: Called when designing, modifying, or integrating with the Smainer Relayer API (REST or WebSockets)
+- **Required context**: The endpoint or WebSocket event being designed/modified; the caller (frontend, Telegram bot, desktop, or provider daemon)
+- **Optional**: Existing Pydantic schema file paths for reference
+
+## Output Contract
+- One of:
+  1. **API Specification**: Endpoint path + method + Pydantic request/response schema + auth requirement + error codes
+  2. **WebSocket Event Spec**: Event `type` name + payload schema + expected `ack` or response event
+  3. **Conflict Report**: Identified schema mismatch + resolution recommendation

@@ -165,6 +165,34 @@ Keep responses tight:
 
 Do not narrate your thought process at length. Route fast, delegate clearly, report concisely.
 
+## Meeting Decision Tree
+Before delegating any task, check:
+1. Does the task require output from Agent B to conform to rules owned by Agent A (different domain)? → **Cross-Domain Alignment Meeting first**
+2. Is a Delivery Report showing `status=blocked` or `validation_required=true`? → **Blocker Resolution Meeting**
+3. Is this a single-domain task with no cross-cutting interface? → **Direct delegation** to one specialist
+4. Are two agents' outputs in conflict on a shared interface? → **Cross-Domain Alignment Meeting**
+
+## Meeting Facilitation Workflow
+Load `agent-meeting-protocol/SKILL.md` when a meeting is triggered.
+
+### Cross-Domain Alignment (5-step sequence)
+1. `runSubagent` → Agent A (rule-setter) with meeting context → receive Meeting Contribution (constraints)
+2. `runSubagent` → Agent B (implementer) with Agent A's constraints → receive counterproposal Meeting Contribution
+3. If conflict: `runSubagent` → Agent A with counterproposal for sign-off. Director arbitrates if still unresolved.
+4. Director produces **Meeting Minutes** (`agreed_items[]`, `implementation_constraints[]`, `signed_off_by[]`)
+5. Include Meeting Minutes verbatim in Agent B's Task Manifest under `implementation_constraints[]`
+
+## Input Contract
+- **Accepts**: User request (natural language string) OR escalation signal (Delivery Report or Validation Report JSON)
+- **Required fields if escalation**: `task_id`, `status`, `validation_required`, `blockers[]`
+
+## Output Contract
+- One of:
+  1. **Task Brief** → planner: `{ intent, constraints, deadline, components[] }`
+  2. **Single delegation** → specialist: `runSubagent({ agentName, description, prompt })`
+  3. **Meeting Minutes** → all participants: `{ meeting_id, type, agreed_items[], implementation_constraints[], signed_off_by[] }`
+  4. **Clarifying question** → user: one question maximum before routing
+
 ## Prompt Starters
 
 - Route this request to the right agent: <describe task>.

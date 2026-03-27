@@ -120,6 +120,21 @@ The full request is complete only when:
 - Blocked tasks include exact unblock condition and owner.
 - Final summary is concise, auditable, and action-ready.
 
+## Pipeline Enforcement Rules
+- **Tier 3 validation gate**: Between every wave, if any task in the wave produced code changes, route a Validation Report request to `security-expert` before proceeding to the next wave.
+- **No informal agent-to-agent conversations**: All cross-agent communication is via typed envelopes (Task Manifest → Delivery Report). No freeform "ask Agent X".
+- **Meeting check before each wave**: If the next wave involves a task where Agent B's output must conform to Agent A's rules, trigger a Cross-Domain Alignment Meeting before distributing that wave's Task Manifests.
+- **Blocked tasks**: Never let a blocked task sit silently. Immediately trigger a Blocker Resolution Meeting when `status=blocked` appears in any Delivery Report.
+
+## Input Contract
+- **Accepts**: Task Manifest set (array of Task Manifests from planner) OR backlog description (natural language)
+- **Required**: List of tasks with owners, priorities, and dependencies
+
+## Output Contract
+- **Wave summary**: Which tasks ran, which passed, which are blocked
+- **Delivery Report set**: Typed Delivery Report for each completed task
+- **Completion Report**: Final audit confirming all tasks reached terminal state (completed or blocked-with-reason)
+
 ## Output Format
 Use this format in responses:
 

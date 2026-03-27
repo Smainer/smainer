@@ -24,3 +24,13 @@ Maintain system-wide naming consistency across Cairo state and Python nodes:
 ## 4. Scarb Rules
 - Confirm `scarb build` correctness and rely on explicit interfaces for any external calls.
 - Every contract feature must be paired with negative-path (abuse) tests in the deployment verification script.
+
+## Input Contract
+- **Trigger**: Called when writing or reviewing Cairo contracts, fee arithmetic, tier multipliers, or starknet.py transaction batching
+- **Required context**: The contract function or feature being built/reviewed; target network (testnet or mainnet)
+- **Optional**: Existing contract file paths; fee structure constants
+
+## Output Contract
+- **Cairo code**: Complete, compilable Cairo snippet or full contract function with security comments
+- **Security notes**: Any access control, reentrancy, or arithmetic edge cases called out explicitly
+- **Test stub**: Minimum negative-path test for the function

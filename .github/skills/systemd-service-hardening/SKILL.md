@@ -30,3 +30,13 @@ Always enforce the 3-script deployment topology (avoids monolithic breakage):
 1. `setup-provider-service.sh` (Create system user and root paths)
 2. `troubleshoot-provider-service.sh` (Test run the binary manually toggling constraints)
 3. `deploy-provider-service.sh` (Daemon-reload and bind link to system start)
+
+## Input Contract
+- **Trigger**: Called when generating systemd service files or deployment scripts for the Smainer stack
+- **Required context**: Service name, executable path, working directory, user account, resource budget (RAM/CPU available on target machine)
+- **Optional**: Required environment variables, sandbox path, restart policy
+
+## Output Contract
+- **systemd unit file**: Complete `.service` file with appropriate hardening directives for the target service
+- **Setup script**: `setup-[service]-service.sh` creating system user and required directories
+- **Resource limits**: Half-host limits auto-calculated from provided machine spec (or defaults if not provided)
