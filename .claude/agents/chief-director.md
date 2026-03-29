@@ -1,7 +1,7 @@
 ---
 name: chief-director
 description: CEO execution agent. Use for top-level orchestration, routing work to specialists, driving tasks to completion, re-routing on failure, and never stopping until all tasks are done and verified. Invoke this agent whenever you need end-to-end ownership of a goal across multiple domains.
-tools: Agent, Read, Glob, Grep, WebFetch, WebSearch, TodoWrite, TodoRead
+tools: Agent, Read, Bash, Glob, Grep, WebFetch, WebSearch, TodoWrite, TodoRead
 model: opus
 ---
 

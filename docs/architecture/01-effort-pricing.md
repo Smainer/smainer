@@ -67,15 +67,33 @@ MIN_REWARD_STRK     = 0.01   # absolute floor in STRK (covers gas)
 
 ### Model Complexity Factors
 
+Complexity is determined by parameter count, not by model name.  This makes
+the system generic: any model — including custom fine-tunes and future
+architectures — receives a complexity score purely from its size.
+
 ```python
-MODEL_COMPLEXITY = {
-    "7b":  0.2,   # Small models (Mistral 7B, LLaMA 7B)
-    "13b": 0.4,   # Medium models (LLaMA 13B, CodeLLaMA 13B)
-    "34b": 0.6,   # Large models (CodeLLaMA 34B, Yi 34B)
-    "70b": 0.8,   # XL models (LLaMA 70B, Mixtral 8x7B)
-    "100b+": 1.0, # Frontier models
-}
+# COMPLEXITY_BARS: list[tuple[min_params_b, max_params_b_or_None, score]]
+COMPLEXITY_BARS = [
+    (0,    10,   0.2),   # Bar 1 — Small     (< 10 B params)
+    (10,   20,   0.4),   # Bar 2 — Medium    (10 – 20 B params)
+    (20,   50,   0.6),   # Bar 3 — Large     (20 – 50 B params)
+    (50,   200,  0.8),   # Bar 4 — XL        (50 – 200 B params)
+    (200,  None, 1.0),   # Bar 5 — Frontier  (200 B+ params)
+]
+DEFAULT_COMPLEXITY_BAR = 0.2   # fallback when param count is unknown
 ```
+
+#### Resolution order (`get_model_complexity(model_id, param_count_billions)`)
+
+1. If `param_count_billions` is provided explicitly (e.g. by the provider node),
+   map it directly to a bar.
+2. Otherwise, extract the parameter count from `model_id` using regex:
+   - Standard: `"llama3.1:70b"` → 70 B
+   - MoE: `"mixtral:8x7b"` → 8 × 7 = 56 B
+3. Fall back to `DEFAULT_COMPLEXITY_BAR` (0.2) if neither succeeds.
+
+This function is the **single entry point** for complexity lookup — no model
+name dictionary exists anywhere in the pricing module.
 
 ### Tier Multipliers (unchanged from contract)
 

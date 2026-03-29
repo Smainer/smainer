@@ -34,6 +34,8 @@ A complete redesign of Smainer's payment system from flat per-tier pricing to dy
 | 06 | [MiniApp Cost Estimation](06-miniapp-cost-estimation.md) | `miniapp/src/` | frontend-engineer |
 | 07 | [Integration Wiring](07-integration-wiring.md) | Cross-cutting | relayer-architect |
 | 08 | [ZK Effort Verification](08-zk-effort-verification.md) | Future (V2/V3) | starknet-engineer |
+| 09 | [Security Review](09-security-review.md) | Cross-cutting | security-expert |
+| 10 | [Trust Assumption](10-trust-assumption.md) | `contracts/src/smainer_staking.cairo` + `relayer/verifier/` | starknet-engineer + relayer-architect |
 
 ## Implementation Order
 
@@ -138,6 +140,11 @@ backend/relayer/src/relayer/
 │   ├── models.py
 │   ├── settler.py
 │   └── refund.py
+├── verifier/                   # NEW (V2)
+│   ├── __init__.py
+│   ├── spot_check.py
+│   ├── rerun.py
+│   └── slash_orchestrator.py
 ├── core/                       # MODIFIED
 │   ├── scheduler.py            # + verification + cost estimation
 │   └── aggregator.py           # + settlement manager
@@ -159,6 +166,7 @@ backend/provider/src/provider/
 
 contracts/src/
 ├── smainer.cairo               # MODIFIED (+ get_task, settle_with_effort)
+├── smainer_staking.cairo       # NEW (V2 — provider staking, slashing, appeals)
 ├── interfaces.cairo            # MODIFIED (+ new function signatures)
 └── pricing.cairo               # NEW (on-chain effort validation helpers)
 
