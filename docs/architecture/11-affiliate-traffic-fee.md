@@ -8,13 +8,13 @@
 
 ## 1. Overview
 
-The affiliate traffic fee system is Smainer's primary distribution growth mechanism. Any developer, community operator, or power user can deploy their own branded frontend or Telegram bot, set a single environment variable pointing to their Starknet wallet address, and earn 5% of every task fee generated through their deployment — permanently, with no registration, no approval process, and no cap.
+The affiliate traffic fee system is Smainer's primary distribution growth mechanism. Any developer, community operator, or power user can deploy their own branded frontend or Telegram bot, set a single environment variable pointing to their Starknet wallet address, and earn 6% of every task fee generated through their deployment — permanently, with no registration, no approval process, and no cap.
 
-One-sentence summary: Clone, set one env var, deploy, earn 5% of every task fee.
+One-sentence summary: Clone, set one env var, deploy, earn 6% of every task fee.
 
-The economic proposition is straightforward. The treasury's existing 12% fee share is divided when an affiliate is present: 7% to treasury, 5% to the affiliate. The provider's 88% share is untouched in both paths. Total platform take remains 12% regardless of affiliate presence. This design means affiliate operators are paid entirely from treasury margin — there is no cost to users, no reduction in provider earnings, and no cross-subsidy between non-referred and referred traffic.
+The economic proposition is straightforward. The treasury's existing 12% fee share is divided when an affiliate is present: 6% to treasury, 6% to the affiliate. The provider's 88% share is untouched in both paths. Total platform take remains 12% regardless of affiliate presence. This design means affiliate operators are paid entirely from treasury margin — there is no cost to users, no reduction in provider earnings, and no cross-subsidy between non-referred and referred traffic.
 
-The system is intentionally permissionless. Affiliate addresses are not registered on-chain. Any valid Starknet address set in the deployment environment variable receives its share at settlement time. The 5% rate is low enough that the risk of any abuse scenario is bounded (see Section 8), and the simplicity of a single env var lowers the barrier to building Smainer-powered products to zero.
+The system is intentionally permissionless. Affiliate addresses are not registered on-chain. Any valid Starknet address set in the deployment environment variable receives its share at settlement time. The 6% rate is low enough that the risk of any abuse scenario is bounded (see Section 8), and the simplicity of a single env var lowers the barrier to building Smainer-powered products to zero.
 
 ---
 
@@ -25,8 +25,8 @@ The system is intentionally permissionless. Affiliate addresses are not register
 | Recipient | Without Affiliate | With Affiliate |
 |---|---|---|
 | Provider | 88% (8800 BPS) | 88% (8800 BPS) |
-| Affiliate | — | 5% (500 BPS) |
-| Treasury | 12% (1200 BPS) | 7% (700 BPS) |
+| Affiliate | — | 6% (600 BPS) |
+| Treasury | 12% (1200 BPS) | 6% (600 BPS) |
 | **Total** | **100% (10000 BPS)** | **100% (10000 BPS)** |
 
 ### BPS Constants
@@ -43,17 +43,17 @@ pub const PROVIDER_BPS: u128 = 8800;
 pub const BPS_DENOMINATOR: u128 = 10000;
 
 // Affiliate fee split constants (basis points, sum = 10000)
-// When an affiliate is present: 88% provider, 5% affiliate, 7% treasury
-pub const AFFILIATE_FEE_BPS: u128 = 500;                   // 5% affiliate
-pub const TREASURY_FEE_BPS_WITH_AFFILIATE: u128 = 700;     // 7% treasury when affiliate present
+// When an affiliate is present: 88% provider, 6% affiliate, 6% treasury
+pub const AFFILIATE_FEE_BPS: u128 = 600;                   // 6% affiliate
+pub const TREASURY_FEE_BPS_WITH_AFFILIATE: u128 = 600;     // 6% treasury when affiliate present
 ```
 
 **Cairo (contracts/src/smainer.cairo):**
 
 ```cairo
 // Affiliate fee constant (basis points)
-// When an affiliate is present: 5% to affiliate, 7% to treasury, 88% to provider
-pub const AFFILIATE_FEE_BPS: u256 = 500;
+// When an affiliate is present: 6% to affiliate, 6% to treasury, 88% to provider
+pub const AFFILIATE_FEE_BPS: u256 = 600;
 ```
 
 **Python (backend/relayer/src/relayer/pricing/constants.py):**
@@ -61,14 +61,14 @@ pub const AFFILIATE_FEE_BPS: u256 = 500;
 ```python
 BPS_DENOMINATOR: int = 10_000
 
-TREASURY_FEE_BPS: int = 700
-"""7% of actual task cost routed to the Smainer treasury (affiliate path)."""
+TREASURY_FEE_BPS: int = 600
+"""6% of actual task cost routed to the Smainer treasury (affiliate path)."""
 
 TREASURY_FEE_NO_AFFILIATE_BPS: int = 1_200
 """12% of actual task cost routed to the Smainer treasury (no-affiliate path)."""
 
-AFFILIATE_FEE_BPS: int = 500
-"""5% of actual task cost paid to the affiliate frontend deployer."""
+AFFILIATE_FEE_BPS: int = 600
+"""6% of actual task cost paid to the affiliate frontend deployer."""
 
 GAS_SUBSIDY_BPS: int = 300
 """3% of actual task cost rebated to the provider as a gas subsidy."""
@@ -88,7 +88,7 @@ Two invariants must hold at all times. Both are enforced independently by the Ca
 
 ```
 # Affiliate path
-TREASURY_FEE_BPS(700) + GAS_SUBSIDY_BPS(300) + PROVIDER_BASE_BPS(8500) + AFFILIATE_FEE_BPS(500) == 10000
+TREASURY_FEE_BPS(600) + GAS_SUBSIDY_BPS(300) + PROVIDER_BASE_BPS(8500) + AFFILIATE_FEE_BPS(600) == 10000
 
 # No-affiliate path
 TREASURY_FEE_NO_AFFILIATE_BPS(1200) + GAS_SUBSIDY_BPS(300) + PROVIDER_BASE_BPS(8500) == 10000
@@ -122,17 +122,17 @@ refund_amount + actual_cost == escrowed_amount
 
 ### Why Provider Share Is Untouched
 
-The provider's 88% is computed first from `PROVIDER_BPS = 8800` and is identical in both code paths. The affiliate introduction carved 5% from the treasury's original 12%, not from the provider. This was a deliberate design decision: providers make hardware and infrastructure investments on the basis of expected earnings. Retroactively reducing provider share to fund affiliate payouts would violate that expectation and undermine node operator incentives.
+The provider's 88% is computed first from `PROVIDER_BPS = 8800` and is identical in both code paths. The affiliate introduction carved 6% from the treasury's original 12%, not from the provider. This was a deliberate design decision: providers make hardware and infrastructure investments on the basis of expected earnings. Retroactively reducing provider share to fund affiliate payouts would violate that expectation and undermine node operator incentives.
 
-### Why Treasury Absorbs the 5% Reduction
+### Why Treasury Absorbs the 6% Reduction
 
-Treasury operates as a protocol reserve with no fixed obligations. The 7% treasury share with an affiliate present is still sufficient to cover infrastructure costs at any realistic volume (see Section 9). The 5% affiliate carve-out is therefore a controllable cost of distribution, not a solvency risk.
+Treasury operates as a protocol reserve with no fixed obligations. The 6% treasury share with an affiliate present is still sufficient to cover infrastructure costs at any realistic volume (see Section 9). The 6% affiliate carve-out is therefore a controllable cost of distribution, not a solvency risk.
 
 ### Dust and Rounding
 
 Integer division in both Cairo and Python floors all BPS calculations. The subtraction-last formula in both implementations ensures that rounding dust accumulates in the residual component rather than being lost:
 
-- In the Cairo `calculate_fee_split_with_affiliate()` function, `treasury_amount` is computed as `actual_cost - provider_amount - affiliate_amount` rather than `actual_cost * 700 / 10000`. This guarantees `provider + affiliate + treasury == actual_cost` exactly.
+- In the Cairo `calculate_fee_split_with_affiliate()` function, `treasury_amount` is computed as `actual_cost - provider_amount - affiliate_amount` rather than `actual_cost * 600 / 10000`. This guarantees `provider + affiliate + treasury == actual_cost` exactly.
 - In the Python `RefundCalculator.compute_refund()`, `provider_base` absorbs the residue of all floor divisions: `provider_base = actual - treasury_fee - affiliate_fee - gas_subsidy`.
 
 ---
@@ -176,7 +176,7 @@ SETTLEMENT — RELAYER SIDE
        if affiliate_address.lower() == provider_address.lower():
            affiliate_address = None  # blocked
  14. RefundCalculator.compute_refund() selects fee path:
-       has_affiliate → treasury 7% + affiliate 5% + provider 88%
+       has_affiliate → treasury 6% + affiliate 6% + provider 88%
        no affiliate  → treasury 12% + provider 88%
  15. SettlementManager routes to one of two contract calls:
        has_affiliate → _settle_with_effort_and_affiliate()
@@ -191,7 +191,7 @@ SETTLEMENT — ON-CHAIN
        used_signatures[(r,s)] = true
  18. calculate_fee_split_with_affiliate(actual_cost, has_affiliate) executes:
        provider_amount = actual_cost * 8800 / 10000  (88%)
-       affiliate_amount = actual_cost * 500 / 10000  (5%)   [or 0]
+       affiliate_amount = actual_cost * 600 / 10000  (6%)   [or 0]
        treasury_amount = actual_cost - provider - affiliate  (absorbs dust)
  19. Atomic ERC-20 transfers (all succeed or the transaction reverts):
        Transfer → provider    (provider_payout)
@@ -337,7 +337,7 @@ The affiliate-aware settlement function is defined in `contracts/src/interfaces.
 
 ```cairo
 // Effort-based settlement with affiliate support.
-// When affiliate is non-zero: provider 88%, affiliate 5%, treasury 7%.
+// When affiliate is non-zero: provider 88%, affiliate 6%, treasury 6%.
 // When affiliate is zero: identical split to settle_with_effort (provider 88%, treasury 12%).
 // Provider signs the same hash as settle_with_effort — affiliate is NOT included in the
 // signed message. Only callable by the authorized relayer.
@@ -366,8 +366,8 @@ The pre-existing `settle_with_effort()` function is unchanged and remains the se
 ///
 /// When has_affiliate is true (affiliate address is non-zero):
 ///   - provider_amount = actual_cost * 8800 / 10000  (88%)
-///   - affiliate_amount = actual_cost * 500 / 10000  (5%)
-///   - treasury_amount = actual_cost - provider - affiliate  (7%, absorbs dust)
+///   - affiliate_amount = actual_cost * 600 / 10000  (6%)
+///   - treasury_amount = actual_cost - provider - affiliate  (6%, absorbs dust)
 ///
 /// When has_affiliate is false:
 ///   - provider_amount = actual_cost * 8800 / 10000  (88%)
@@ -413,7 +413,7 @@ Emitted by every `settle_with_effort_and_affiliate()` call. All three principal 
 
 ```cairo
 /// Emitted by settle_with_effort_and_affiliate when a task is settled with an affiliate.
-/// When affiliate is non-zero: provider 88%, affiliate 5%, treasury 7%.
+/// When affiliate is non-zero: provider 88%, affiliate 6%, treasury 6%.
 /// When affiliate is zero: provider 88%, affiliate_fee = 0, treasury 12%.
 /// provider_payout + affiliate_fee + treasury_fee + refund_amount == task.amount (full escrow).
 #[derive(Drop, starknet::Event)]
@@ -481,7 +481,7 @@ class TaskSubmission(BaseModel):
         min_length=3,
         max_length=66,
         pattern=r"^0x[0-9a-fA-F]{1,64}$",
-        description="Starknet address of the affiliate frontend deployer. Earns 5% of task cost.",
+        description="Starknet address of the affiliate frontend deployer. Earns 6% of task cost.",
     )
 ```
 
@@ -607,7 +607,7 @@ The constants module raises `ValueError` at import time if any path's BPS compon
 
 ```python
 # SEC-013: Use explicit raise so this check survives Python -O.
-# Affiliate path: TREASURY(7%) + AFFILIATE(5%) + GAS(3%) + PROVIDER(85%) = 100%
+# Affiliate path: TREASURY(6%) + AFFILIATE(6%) + GAS(3%) + PROVIDER(85%) = 100%
 if TREASURY_FEE_BPS + GAS_SUBSIDY_BPS + PROVIDER_BASE_BPS + AFFILIATE_FEE_BPS != BPS_DENOMINATOR:
     raise ValueError(
         "Fee BPS components (affiliate path) do not sum to 10 000.  "
@@ -676,7 +676,7 @@ The env var is documented in `frontend/.env.example`:
 ```
 # Affiliate Program
 # Your Starknet wallet address (0x-prefixed hex).
-# Deployers who set this earn 5% of the Smainer treasury fee on every task.
+# Deployers who set this earn 6% of the Smainer treasury fee on every task.
 # Leave unset to deploy without affiliate earnings.
 # NEXT_PUBLIC_AFFILIATE_WALLET=0x
 ```
@@ -692,11 +692,11 @@ The line is commented out in the example. Deployers uncomment it and fill in the
 | Threat | Attack Vector | Mitigation | Residual Risk |
 |---|---|---|---|
 | Affiliate address spoofing | Attacker injects their own affiliate address into a task submission | Permissionless by design — any address can be an affiliate. Worst case: the attacker benefits from their own traffic, same as any legitimate affiliate. No user is harmed. | Low |
-| Self-referral | Provider submits tasks through their own affiliate deployment to collect 5% | Blocked at relayer layer: `affiliate.lower() == provider.lower()` sets affiliate to None | Relayer compromise could bypass; see trust boundary below |
-| Wash trading | Actor creates tasks as both user and provider, routes them through affiliate to capture 5% back | Self-liquidating: attacker pays full task cost as user, earns 88% as provider and 5% as affiliate = 93% return per cycle. Each cycle destroys 7% to treasury. Not profitable — 7 cycles reduces capital to 63% | Economically bounded |
+| Self-referral | Provider submits tasks through their own affiliate deployment to collect 6% | Blocked at relayer layer: `affiliate.lower() == provider.lower()` sets affiliate to None | Relayer compromise could bypass; see trust boundary below |
+| Wash trading | Actor creates tasks as both user and provider, routes them through affiliate to capture 6% back | Self-liquidating: attacker pays full task cost as user, earns 88% as provider and 6% as affiliate = 94% return per cycle. Each cycle destroys 6% to treasury. Not profitable — multiple cycles reduces capital significantly | Economically bounded |
 | Reentrancy | Attacker contract re-enters `settle_with_effort_and_affiliate()` during a transfer | CEI pattern enforced: `task.status = TASK_SETTLED` and `used_signatures[(r,s)] = true` are written before any `erc20.transfer()` calls. Second call hits `'Invalid task status'` or `'Signature already used'` assertion | None — CEI is structurally sound |
 | MITM affiliate injection | Network attacker intercepts API call and substitutes affiliate address | HTTPS transport encryption. Relayer binds affiliate at creation (immutable Redis write). Post-creation modification is not possible. | None with HTTPS |
-| Zero-address affiliate | Affiliate address is `0x0`, triggering unexpected transfer | `has_affiliate = !affiliate.is_zero()` — zero address affiliate skips the affiliate transfer entirely. Treasury receives its normal 7% share (but this is a no-affiliate call path so treasury gets 12%). | None |
+| Zero-address affiliate | Affiliate address is `0x0`, triggering unexpected transfer | `has_affiliate = !affiliate.is_zero()` — zero address affiliate skips the affiliate transfer entirely. Treasury receives its normal 6% share (but this is a no-affiliate call path so treasury gets 12%). | None |
 | Treasury address manipulation | Relayer submits wrong treasury | Treasury is stored on-chain, set by contract owner. Relayer cannot override it. | None |
 
 ### Trust Boundaries
@@ -709,11 +709,11 @@ The relayer is the trust anchor for the affiliate system. It makes three securit
 
 ### Why Permissionless Is Acceptable
 
-On-chain affiliate registration would require a transaction per affiliate, a registry storage slot, and governance over registration/revocation. For a 5% fee on a subset of traffic, this overhead is not justified. The permissionless model means:
+On-chain affiliate registration would require a transaction per affiliate, a registry storage slot, and governance over registration/revocation. For a 6% fee on a subset of traffic, this overhead is not justified. The permissionless model means:
 
 - Any Starknet address receives its affiliate share automatically at settlement
 - No Smainer team involvement is required to onboard an affiliate
-- A malicious affiliate receives at most 5% of the task cost they referred, which is the same rate any legitimate affiliate earns
+- A malicious affiliate receives at most 6% of the task cost they referred, which is the same rate any legitimate affiliate earns
 - There is no mechanism to steal user funds or provider earnings through affiliate manipulation alone
 
 ---
