@@ -720,14 +720,14 @@ On-chain affiliate registration would require a transaction per affiliate, a reg
 
 ## 9. Economic Analysis
 
-### Treasury Sustainability at 7%
+### Treasury Sustainability at 6%
 
-With no affiliate traffic, the treasury collects 12% of every settled task. With full affiliate coverage (all traffic referred through affiliates), the treasury floor is 7%. At a network volume of `V` STRK per month in settled task costs:
+With no affiliate traffic, the treasury collects 12% of every settled task. With full affiliate coverage (all traffic referred through affiliates), the treasury floor is 6%. At a network volume of `V` STRK per month in settled task costs:
 
 - No-affiliate: treasury = `0.12V`
-- Full-affiliate: treasury = `0.07V`
+- Full-affiliate: treasury = `0.06V`
 
-The 5% differential represents the maximum growth cost. Infrastructure costs are fixed in absolute terms, not percentage terms. A growing network increases both the absolute treasury take and the affiliate payouts, so treasury sustainability improves with volume regardless of affiliate coverage fraction.
+The 6% differential represents the maximum growth cost. Infrastructure costs are fixed in absolute terms, not percentage terms. A growing network increases both the absolute treasury take and the affiliate payouts, so treasury sustainability improves with volume regardless of affiliate coverage fraction.
 
 ### No-Affiliate Traffic Safety Valve
 
@@ -741,21 +741,21 @@ An actor who operates as both user and provider can route tasks through their ow
 Task cost: 1.0 STRK
 User pays: 1.0 STRK (escrowed)
 Provider earns: 0.88 STRK
-Affiliate earns: 0.05 STRK
-Treasury takes: 0.07 STRK
+Affiliate earns: 0.06 STRK
+Treasury takes: 0.06 STRK
 
-Net position after one cycle: 0.88 + 0.05 - 1.0 = -0.07 STRK
+Net position after one cycle: 0.88 + 0.06 - 1.0 = -0.06 STRK
 ```
 
-Each cycle destroys 0.07 STRK (7%) to the treasury. After 10 cycles the actor has destroyed 70% of their starting capital. This is not a viable attack — it is a donation to the protocol treasury.
+Each cycle destroys 0.06 STRK (6%) to the treasury. After 10 cycles the actor has destroyed 60% of their starting capital. This is not a viable attack — it is a donation to the protocol treasury.
 
-### Self-Referral as a 5% Rebate
+### Self-Referral as a 6% Rebate
 
-Without the self-referral block, a provider could deploy their own affiliate frontend, submit all their own tasks through it, and receive a 5% rebate on every task they execute. This would reduce effective treasury take from 12% to 7% on provider-self-served traffic. The relayer blocks this at the settlement layer as described in Section 6. Even if the block were circumvented, the economic impact would be a 5% improvement in provider economics at treasury expense — not a threat to user funds or network integrity.
+Without the self-referral block, a provider could deploy their own affiliate frontend, submit all their own tasks through it, and receive a 6% rebate on every task they execute. This would reduce effective treasury take from 12% to 6% on provider-self-served traffic. The relayer blocks this at the settlement layer as described in Section 6. Even if the block were circumvented, the economic impact would be a 6% improvement in provider economics at treasury expense — not a threat to user funds or network integrity.
 
 ### No Cap or Vesting
 
-Affiliate earnings are paid immediately at settlement, proportional to task cost, with no cap and no vesting schedule. This simplicity is intentional: adding complexity (caps, lockups, vesting) would require storage, indexing, and governance without providing a meaningful security improvement given the 5% rate.
+Affiliate earnings are paid immediately at settlement, proportional to task cost, with no cap and no vesting schedule. This simplicity is intentional: adding complexity (caps, lockups, vesting) would require storage, indexing, and governance without providing a meaningful security improvement given the 6% rate.
 
 ---
 
@@ -786,8 +786,8 @@ Tasks cannot be created after the relayer update but settled before the contract
 After the contract upgrade and relayer deployment, monitor the first 10 affiliate settlements:
 
 1. Confirm `EffortSettlementV2` events are emitted (not `EffortSettlement`)
-2. Verify `affiliate_fee` field in emitted events matches expected 5% of `actual_cost`
-3. Verify `treasury_fee` field matches expected 7% of `actual_cost`
+2. Verify `affiliate_fee` field in emitted events matches expected 6% of `actual_cost`
+3. Verify `treasury_fee` field matches expected 6% of `actual_cost`
 4. Verify ERC-20 transfer to affiliate address occurred in the settlement transaction
 5. Cross-check Redis `affiliate_fee` field written by settler matches on-chain event
 
@@ -797,10 +797,10 @@ After the contract upgrade and relayer deployment, monitor the first 10 affiliat
 
 | Repo | Path | Change |
 |---|---|---|
-| contracts | `src/pricing.cairo` | Added `AFFILIATE_FEE_BPS = 500`, `TREASURY_FEE_BPS_WITH_AFFILIATE = 700`, `calculate_fee_split_with_affiliate()` |
-| contracts | `src/smainer.cairo` | Added `AFFILIATE_FEE_BPS = 500` constant, `EffortSettlementV2` event, `settle_with_effort_and_affiliate()` implementation |
+| contracts | `src/pricing.cairo` | Added `AFFILIATE_FEE_BPS = 600`, `TREASURY_FEE_BPS_WITH_AFFILIATE = 600`, `calculate_fee_split_with_affiliate()` |
+| contracts | `src/smainer.cairo` | Added `AFFILIATE_FEE_BPS = 600` constant, `EffortSettlementV2` event, `settle_with_effort_and_affiliate()` implementation |
 | contracts | `src/interfaces.cairo` | Added `settle_with_effort_and_affiliate()` to `ISmainer` trait |
-| backend | `relayer/src/relayer/pricing/constants.py` | Added `TREASURY_FEE_BPS = 700`, `TREASURY_FEE_NO_AFFILIATE_BPS = 1200`, `AFFILIATE_FEE_BPS = 500`, both BPS invariant guards |
+| backend | `relayer/src/relayer/pricing/constants.py` | Added `TREASURY_FEE_BPS = 600`, `TREASURY_FEE_NO_AFFILIATE_BPS = 1200`, `AFFILIATE_FEE_BPS = 600`, both BPS invariant guards |
 | backend | `relayer/src/relayer/settlement/refund.py` | Dual-path `compute_refund()` with `affiliate_address` parameter |
 | backend | `relayer/src/relayer/settlement/settler.py` | Redis affiliate read, self-referral block, `_settle_with_effort_and_affiliate()` helper |
 | backend | `relayer/src/relayer/models/schemas.py` | `affiliate_address` optional field on `TaskSubmission` and `TaskResponse` |
@@ -832,19 +832,19 @@ Escrowed amount:   1.300000000000000000 STRK
 
 Fee split on actual_cost = 1.000000000000000000:
   provider_amount  = 1.0 * 8800 / 10000 = 0.880000000000000000 STRK  (88%)
-  affiliate_amount = 1.0 * 500  / 10000 = 0.050000000000000000 STRK  (5%)
-  treasury_amount  = 1.0 - 0.88 - 0.05  = 0.070000000000000000 STRK  (7%)
+  affiliate_amount = 1.0 * 600  / 10000 = 0.060000000000000000 STRK  (6%)
+  treasury_amount  = 1.0 - 0.88 - 0.06  = 0.060000000000000000 STRK  (6%)
 
 Refund to creator:
   refund = escrowed - actual_cost = 1.3 - 1.0 = 0.300000000000000000 STRK
 
 Verification (full escrow accounted for):
-  0.88 + 0.05 + 0.07 + 0.30 = 1.30 STRK = escrowed amount  [INVARIANT HOLDS]
+  0.88 + 0.06 + 0.06 + 0.30 = 1.30 STRK = escrowed amount  [INVARIANT HOLDS]
 
 On-chain transfers (settle_with_effort_and_affiliate):
   1. Transfer 0.880000000000000000 STRK → provider
-  2. Transfer 0.050000000000000000 STRK → affiliate (0xDEAD...)
-  3. Transfer 0.070000000000000000 STRK → treasury
+  2. Transfer 0.060000000000000000 STRK → affiliate (0xDEAD...)
+  3. Transfer 0.060000000000000000 STRK → treasury
   4. Transfer 0.300000000000000000 STRK → creator (refund)
 
 Event emitted: EffortSettlementV2 {
@@ -854,8 +854,8 @@ Event emitted: EffortSettlementV2 {
   actual_cost:     1000000000000000000
   effort_score:    21000
   provider_payout: 880000000000000000
-  affiliate_fee:   50000000000000000
-  treasury_fee:    70000000000000000
+  affiliate_fee:   60000000000000000
+  treasury_fee:    60000000000000000
   refund_amount:   300000000000000000
 }
 ```
@@ -899,11 +899,11 @@ When `actual_cost` is not evenly divisible by 10000, the subtraction-last formul
 
 ```
 provider_amount  = 1000000000000000001 * 8800 / 10000 = 880000000000000000  (floor)
-affiliate_amount = 1000000000000000001 * 500  / 10000 = 50000000000000000   (floor)
-treasury_amount  = 1000000000000000001 - 880000000000000000 - 50000000000000000
-                 = 70000000000000001   (absorbs the 1 wei of dust)
+affiliate_amount = 1000000000000000001 * 600  / 10000 = 60000000000000000   (floor)
+treasury_amount  = 1000000000000000001 - 880000000000000000 - 60000000000000000
+                 = 60000000000000001   (absorbs the 1 wei of dust)
 
-Sum check: 880000000000000000 + 50000000000000000 + 70000000000000001
+Sum check: 880000000000000000 + 60000000000000000 + 60000000000000001
          = 1000000000000000001  [EXACT — no wei lost]
 ```
 
