@@ -161,6 +161,20 @@ treasury_fee    = actual_cost * 12%
 refund          = escrowed_amount - actual_cost
 ```
 
+### Per-Task Economics (v3 transactions — gas paid in STRK)
+
+```
+User pays:          0.10 STRK per task (BASIC tier)
+├── Provider:       0.088 STRK (88%)
+├── Treasury:       0.012 STRK (12%)
+└── Gas subsidy:    included in the 3% rebate to provider
+
+Relayer gas cost:   ~0.002 STRK per settlement (v3 tx)
+Treasury net:       0.012 - 0.002 = ~0.01 STRK per task
+```
+
+All on-chain transactions use Starknet v3 (`execute_v3`), which pays gas in STRK — no ETH required for normal operations. The relayer's STRK balance funds settlement gas. Admin-only calls (upgrade, pause) from the Owner wallet also support v3 STRK gas.
+
 ### Minimum Reward Floor
 
 Every settled task pays at least **0.01 STRK** (`10_000_000_000_000_000` wei). This ensures that providers always earn a viable minimum, even for trivially small tasks. The floor is enforced both off-chain (in the cost calculator) and on-chain (in the smart contract).

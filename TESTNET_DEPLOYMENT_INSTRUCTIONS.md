@@ -18,7 +18,7 @@ We're a committed group of developers building amazing apps that drive real netw
 ## Repository Setup
 
 ```bash
-cd /home/smainer/Smainer
+cd <repo-root>
 python3 -m venv .venv
 source .venv/bin/activate
 ```
@@ -60,7 +60,7 @@ CORS_ORIGINS=http://localhost:3000
 Run:
 
 ```bash
-cd /home/smainer/Smainer/backend/relayer
+cd <repo-root>/backend/relayer
 source ../../.venv/bin/activate
 pip install -e .
 pytest tests/ -v
@@ -86,7 +86,7 @@ ENABLE_CUSTOM_TASKS=false
 Run:
 
 ```bash
-cd /home/smainer/Smainer/backend/provider
+cd <repo-root>/backend/provider
 source ../../.venv/bin/activate
 pip install -e .
 pytest tests/ -v
@@ -109,7 +109,7 @@ NEXT_PUBLIC_RELAYER_WS_URL=ws://localhost:8000/ws
 Run:
 
 ```bash
-cd /home/smainer/Smainer/frontend
+cd <repo-root>/frontend
 npm install
 npm test
 npx next lint

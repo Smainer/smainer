@@ -309,11 +309,11 @@ flowchart TD
 ### Hour 0-24: Daemon Testing
 ```bash
 # IMMEDIATE: Start relayer in first terminal
-cd /home/smainer/Smainer/backend/relayer && source /home/smainer/Smainer/.venv/bin/activate && pip install -e . && uvicorn relayer.main:app --host 0.0.0.0 --port 8000
+cd <repo-root>/backend/relayer && source <repo-root>/.venv/bin/activate && pip install -e . && uvicorn relayer.main:app --host 0.0.0.0 --port 8000
 # Note: If port 8000 is occupied, use --port 8001 and update RELAYER_API_URL accordingly
 
 # Start provider daemon in second terminal
-cd /home/smainer/Smainer/backend/provider && source /home/smainer/Smainer/.venv/bin/activate && RELAYER_WS_URL=ws://localhost:8000 provider-daemon
+cd <repo-root>/backend/provider && source <repo-root>/.venv/bin/activate && RELAYER_WS_URL=ws://localhost:8000 provider-daemon
 ```
 **Expected**: WebSocket connection, capability registration, mock task execution  
 **Blocker**: Relayer must be running with Redis backend accessible
@@ -323,7 +323,7 @@ cd /home/smainer/Smainer/backend/provider && source /home/smainer/Smainer/.venv/
 # Deploy telegram bot in polling mode
 export TELEGRAM_BOT_TOKEN="your-bot-token"
 export RELAYER_API_URL="https://api.smainer.io"
-cd /home/smainer/Smainer/telegram/telegram-bot && source /home/smainer/Smainer/.venv/bin/activate && pip install -e . && smainer-telegram-bot
+cd <repo-root>/telegram/telegram-bot && source <repo-root>/.venv/bin/activate && pip install -e . && smainer-telegram-bot
 ```
 **Expected**: Bot responds to /status, /balance commands  
 **Blocker**: Production bot token provisioning, API endpoint configuration. Note: Polling mode does NOT need Telegram webhook URL. Relayer->bot callback endpoint is still needed for automatic final inference result messages.
