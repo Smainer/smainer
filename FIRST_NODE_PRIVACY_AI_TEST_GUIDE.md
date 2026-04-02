@@ -15,7 +15,7 @@ redis-cli ping
 ## Repository Setup
 
 ```bash
-cd /home/smainer/Smainer
+cd <repo-root>
 python3.11 -m venv .venv
 source .venv/bin/activate
 ```
@@ -26,7 +26,7 @@ source .venv/bin/activate
 cd backend/relayer && pip install -e .
 cd ../provider && pip install -e .
 cd ../../frontend && npm install
-cd /home/smainer/Smainer
+cd <repo-root>
 ```
 
 ## Environment Files
@@ -80,7 +80,7 @@ redis-server
 ### Terminal 2: Relayer
 
 ```bash
-cd /home/smainer/Smainer/backend/relayer
+cd <repo-root>/backend/relayer
 source ../../.venv/bin/activate
 uvicorn relayer.main:app --host 0.0.0.0 --port 8000 --reload
 # If port 8000 is occupied, use: uvicorn relayer.main:app --host 0.0.0.0 --port 8001 --reload
@@ -89,7 +89,7 @@ uvicorn relayer.main:app --host 0.0.0.0 --port 8000 --reload
 ### Terminal 3: Provider
 
 ```bash
-cd /home/smainer/Smainer/backend/provider
+cd <repo-root>/backend/provider
 source ../../.venv/bin/activate
 bash launch_provider.sh
 ```
@@ -97,7 +97,7 @@ bash launch_provider.sh
 ### Terminal 4: Frontend
 
 ```bash
-cd /home/smainer/Smainer/frontend
+cd <repo-root>/frontend
 npm run dev
 ```
 

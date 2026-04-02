@@ -135,7 +135,6 @@ cd telegram && pip install -e ".[dev]"
 | [`DEEP_DIVE.md`](DEEP_DIVE.md) | Detailed architecture and implementation status |
 | [`TESTNET_DEPLOYMENT_INSTRUCTIONS.md`](TESTNET_DEPLOYMENT_INSTRUCTIONS.md) | Testnet deployment runbook |
 | [`FIRST_NODE_PRIVACY_AI_TEST_GUIDE.md`](FIRST_NODE_PRIVACY_AI_TEST_GUIDE.md) | First provider node setup and validation |
-| [`LAUNCH_GUIDE.md`](LAUNCH_GUIDE.md) | End-to-end launch flow, including Telegram integration |
 | [`LAUNCH_ACTION_CHECKLIST.md`](LAUNCH_ACTION_CHECKLIST.md) | Operational launch checklist |
 | [`SUCCESS_METRICS.md`](SUCCESS_METRICS.md) | Live test success targets |
 | [`TIERED_REWARDS_IMPLEMENTATION_GUIDE.md`](TIERED_REWARDS_IMPLEMENTATION_GUIDE.md) | Tier/reward implementation notes |
