@@ -1,5 +1,6 @@
 ---
-name: brand-designer
+name: brand-designer-claude
+title: "brand-designer (Claude)"
 description: Use when designing, auditing, or refining brand identity, color palettes, UI/UX aesthetics, marketing funnel optimization through design, critiquing gradients or emojis, or creating professional minimalist interfaces that convert.
 tools: Read, Edit, Glob, Grep, WebFetch, WebSearch
 model: sonnet

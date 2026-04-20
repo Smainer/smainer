@@ -1,4 +1,6 @@
 ---
+title: "tauri-desktop-engineer (Copilot)"
+name: "tauri-desktop-engineer-copilot"
 description: "Use when building the Windows desktop node onboarding app with Tauri, desktop app UI, Windows installer, provider onboarding app, node dashboard, tray app, auto-update, MSI, GPU detection UI, daemon wrapper, or local node management"
 tools: [execute, read, edit, search, todo, agent]
 model: "Claude Sonnet 4"

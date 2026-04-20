@@ -1,4 +1,6 @@
 ---
+title: "brand-designer (Copilot)"
+name: "brand-designer-copilot"
 description: "Use when designing, auditing, or refining brand identity, color palettes, UI/UX aesthetics, marketing funnel optimization through design, distinguishing from AI-generated designs, critiquing gradients or emojis, or creating professional minimalist interfaces that convert"
 tools: [read, edit, search]
 model: "Claude Sonnet 4"

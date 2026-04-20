@@ -1,5 +1,6 @@
 ---
-name: systems-engineer
+name: systems-engineer-claude
+title: "systems-engineer (Claude)"
 description: Use when building Python daemons, system services, distributed compute workers, WebSocket/REST API clients, subprocess/Docker sandboxing, cryptographic signing with starknet.py, resource monitoring, or security hardening for off-chain infrastructure.
 tools: Read, Write, Edit, Glob, Grep, Bash, Agent, WebFetch, WebSearch, TodoWrite, TodoRead
 model: sonnet

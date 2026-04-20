@@ -1,5 +1,6 @@
 ---
-name: planner
+name: planner-claude
+title: "planner (Claude)"
 description: Use when breaking down a product goal into actionable tasks, writing sprint plans, creating GitHub issues, prioritizing a backlog, mapping dependencies between components, or distributing work to specialist agents. Call this agent whenever you need to turn ambiguous direction into a concrete, executable task list.
 tools: Read, Glob, Grep, WebFetch, WebSearch, TodoWrite, TodoRead
 model: sonnet

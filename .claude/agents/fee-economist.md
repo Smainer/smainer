@@ -1,5 +1,6 @@
 ---
-name: fee-economist
+name: fee-economist-claude
+title: "fee-economist (Claude)"
 description: Use when designing, auditing, or tuning the Smainer protocol fee structure, treasury splits, gas subsidy logic, token economics modeling, or transparent pricing UI for demanders and providers.
 tools: Read, Write, Edit, Glob, Grep, Agent, WebFetch, WebSearch, TodoWrite, TodoRead
 model: sonnet

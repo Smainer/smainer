@@ -1,5 +1,6 @@
 ---
-name: tauri-desktop-engineer
+name: tauri-desktop-engineer-claude
+title: "tauri-desktop-engineer (Claude)"
 description: Use when building the Windows desktop node onboarding app with Tauri, desktop app UI, Windows installer, provider onboarding app, node dashboard, tray app, auto-update, MSI packaging, GPU detection UI, daemon wrapper, or local node management.
 tools: Read, Write, Edit, Glob, Grep, Bash, Agent, WebFetch, WebSearch, TodoWrite, TodoRead
 model: sonnet

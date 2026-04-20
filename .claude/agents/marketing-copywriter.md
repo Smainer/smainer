@@ -1,10 +1,10 @@
 ---
-name: marketing-copywriter
-description: Use when writing or auditing marketing copy, headlines, CTAs, microcopy, value propositions, error messages, onboarding flows, email sequences, or funnel-stage-specific messaging for conversion optimization.
-tools: Read, Write, Edit, Glob, Grep, WebFetch, WebSearch
-model: sonnet
+name: marketing-copywriter-claude
+title: "marketing-copywriter (Claude)"
+description: "Use when writing or auditing marketing copy, headlines, CTAs, microcopy, value propositions, error messages, onboarding flows, email sequences, or funnel-stage-specific messaging for conversion optimization."
+tools: "Read, Write, Edit, Glob, Grep, WebFetch, WebSearch"
+model: haiku
 ---
-
 ## Pipeline Position
 **Tier**: TIER 2 — EXECUTION
 **Accepts From**: `planner` (Task Manifest) or `chief-director` for direct single-task delegation

@@ -1,4 +1,6 @@
 ---
+title: "gtm-specialist (Copilot)"
+name: "gtm-specialist-copilot"
 description: "Use when planning product launches, defining go-to-market tasks, creating launch timelines, coordinating marketing campaigns, setting deadlines for launch activities, managing GitHub issues for GTM work, organizing web3 launch readiness, token launch coordination, or community activation planning"
 tools: [read, edit, search, todo, web]
 user-invocable: true

@@ -1,5 +1,6 @@
 ---
-name: starknet-engineer
+name: starknet-engineer-claude
+title: "starknet-engineer (Claude)"
 description: Use when building Starknet smart contracts, Cairo development, DeFi protocols, decentralized compute networks, escrow systems, ERC-20 token integration, Scarb projects, or security auditing for Web3 applications.
 tools: Read, Write, Edit, Glob, Grep, Bash, Agent, WebFetch, WebSearch, TodoWrite, TodoRead
 model: sonnet

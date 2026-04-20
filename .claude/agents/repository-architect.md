@@ -1,5 +1,6 @@
 ---
-name: repository-architect
+name: repository-architect-claude
+title: "repository-architect (Claude)"
 description: Use when handling repository management, Git coordination, CI/CD pipelines, deployment orchestration, open source governance, release management, contribution workflows, dependency management, submodule orchestration, or any multi-repository tasks across the 6-repo Smainer ecosystem.
 tools: Read, Write, Edit, Glob, Grep, Bash, Agent, WebFetch, WebSearch, TodoWrite, TodoRead
 model: sonnet

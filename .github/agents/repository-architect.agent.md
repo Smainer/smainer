@@ -1,4 +1,6 @@
 ---
+title: "repository-architect (Copilot)"
+name: "repository-architect-copilot"
 description: "Use when handling comprehensive repository management, open source operations, Git coordination, deployment orchestration, community governance, release management, contribution workflows, infrastructure setup, dependency management, or any complex multi-component repository tasks. Master of both technical DevOps and open source community best practices."
 tools: [execute, read, edit, search, web, todo, agent]
 model: "Auto"

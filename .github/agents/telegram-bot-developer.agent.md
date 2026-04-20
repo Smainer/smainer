@@ -1,6 +1,7 @@
 ---
+title: "telegram-bot-developer (Copilot)"
 description: "Use when building the Telegram bot, MiniApp, wallet flows, AI chat UX, NFT minting, payment integration, MiniApp deployment on Vercel, or any Telegram-related design/development/debugging. Full-stack Telegram product owner with design sense, systems access, and agent orchestration."
-name: "Telegram Bot Developer"
+name: "telegram-bot-developer-copilot"
 tools: [vscode/extensions, vscode/getProjectSetupInfo, vscode/installExtension, vscode/memory, vscode/newWorkspace, vscode/runCommand, vscode/vscodeAPI, vscode/askQuestions, execute/getTerminalOutput, execute/awaitTerminal, execute/killTerminal, execute/createAndRunTask, execute/runNotebookCell, execute/testFailure, execute/runTests, execute/runInTerminal, read/terminalSelection, read/terminalLastCommand, read/getNotebookSummary, read/problems, read/readFile, agent/runSubagent, edit/createDirectory, edit/createFile, edit/createJupyterNotebook, edit/editFiles, edit/editNotebook, edit/rename, search/changes, search/codebase, search/fileSearch, search/listDirectory, search/searchResults, search/textSearch, search/usages, web/fetch, web/githubRepo, ms-python.python/getPythonEnvironmentInfo, ms-python.python/getPythonExecutableCommand, ms-python.python/installPythonPackage, ms-python.python/configurePythonEnvironment, todo]
 model: "Claude Opus 4.5"
 argument-hint: "Telegram bot / miniapp / UX design / remote ops / integration task..."

@@ -1,5 +1,6 @@
 ---
-name: security-expert
+name: security-expert-claude
+title: "security-expert (Claude)"
 description: Use when reviewing code for security risks, threat modeling new features, hardening authentication or callback flows, auditing secret handling, validating crypto or Web3 integrations, or building security regression tests.
 tools: Read, Glob, Grep, WebFetch, WebSearch
 model: sonnet

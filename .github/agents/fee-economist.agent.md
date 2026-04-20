@@ -1,4 +1,6 @@
 ---
+title: "fee-economist (Copilot)"
+name: "fee-economist-copilot"
 description: "Use when designing, auditing, or tuning the Smainer protocol fee structure, treasury splits, gas subsidy logic, token economics modeling, or transparent pricing UI for demanders and providers"
 tools: [read, edit, search, todo, agent]
 model: "Claude Sonnet 4"

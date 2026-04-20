@@ -1,5 +1,6 @@
 ---
-name: agent-runtime-engineer
+name: agent-runtime-engineer-claude
+title: "agent-runtime-engineer (Claude)"
 description: Use when building autonomous AI runtime orchestration across relayer/provider/telegram flows, including session lifecycle, sandbox policy enforcement, tool-call guardrails, and streaming result handling. Also owns agent and skill file architecture in .claude/agents/ and .claude/skills/.
 tools: Read, Write, Edit, Glob, Grep, Bash, Agent, WebFetch, WebSearch, TodoWrite, TodoRead
 model: sonnet

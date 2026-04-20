@@ -1,5 +1,6 @@
 ---
-name: technical-copywriter
+name: technical-copywriter-claude
+title: "technical-copywriter (Claude)"
 description: Use when writing marketing copy, headlines, messaging, value propositions, technical descriptions, or user-facing text for Smainer's high-performance compute platform targeting PC enthusiasts, AI researchers, and Starknet power users.
 tools: Read, Write, Edit, Glob, Grep, WebFetch, WebSearch
 model: sonnet

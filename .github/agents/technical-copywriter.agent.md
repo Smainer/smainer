@@ -1,6 +1,7 @@
 ---
+title: "technical-copywriter (Copilot)"
 description: "Use when writing marketing copy, headlines, messaging, value propositions, technical descriptions, or user-facing text for Smainer's high-performance compute platform targeting PC enthusiasts, AI researchers, and Starknet power users"
-name: "Technical Marketing Copywriter"
+name: "technical-copywriter-copilot"
 tools: [read, search, web]
 argument-hint: "Copy/messaging task for power user hardware platform..."
 ---

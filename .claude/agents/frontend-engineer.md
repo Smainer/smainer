@@ -1,5 +1,6 @@
 ---
-name: frontend-engineer
+name: frontend-engineer-claude
+title: "frontend-engineer (Claude)"
 description: Use when building the Next.js frontend, starknet-react wallet integration, Argent X or Braavos wallet connection, dashboard UI reading from Cairo contracts, token approval flows, compute task submission forms, shadcn/ui components, or Tailwind CSS styling for the Web3 marketplace.
 tools: Read, Write, Edit, Glob, Grep, Bash, Agent, WebFetch, WebSearch, TodoWrite, TodoRead
 model: sonnet

@@ -1,5 +1,6 @@
 ---
-name: relayer-architect
+name: relayer-architect-claude
+title: "relayer-architect (Claude)"
 description: Use when building the FastAPI Relayer service, WebSocket server for compute nodes, job scheduling and distribution, result aggregation, signature verification, Starknet transaction bundling via starknet.py, Redis-backed state management, or API security for the coordination layer.
 tools: Read, Write, Edit, Glob, Grep, Bash, Agent, WebFetch, WebSearch, TodoWrite, TodoRead
 model: opus

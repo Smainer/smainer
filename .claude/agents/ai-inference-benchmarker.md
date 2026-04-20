@@ -1,5 +1,6 @@
 ---
-name: ai-inference-benchmarker
+name: ai-inference-benchmarker-claude
+title: "ai-inference-benchmarker (Claude)"
 description: Use when benchmarking AI inference performance across Smainer tiers, including p50/p95 latency, throughput, cost-per-task in STRK, success rates, and bottleneck analysis for live-test readiness.
 tools: Read, Write, Edit, Glob, Grep, Bash, Agent, WebFetch, WebSearch, TodoWrite, TodoRead
 model: sonnet
