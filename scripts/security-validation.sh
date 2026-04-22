@@ -58,14 +58,19 @@ check_exposed_secrets() {
         error "Telegram bot token exposed in non-environment files"
     fi
     
-    # Check for private keys in source code
-    if grep -r "0x[a-fA-F0-9]\{64\}" . --include="*.py" --include="*.js" --include="*.ts" --exclude-dir=.git 2>/dev/null; then
-        warn "Potential private key found in source code"
+    # Check for private keys in source code AND documentation
+    if grep -r "0x[a-fA-F0-9]\{64\}" . --include="*.py" --include="*.js" --include="*.ts" --include="*.md" --include="*.rst" --exclude-dir=.git 2>/dev/null; then
+        error "Private key found in source code or documentation - NEVER commit private keys!"
     fi
     
     # Check for API keys in source
     if grep -r "sk-[A-Za-z0-9]\{32,\}" . --exclude-dir=.git --exclude="*.env*" 2>/dev/null; then
         error "API key exposed in source files"
+    fi
+    
+    # Check for hardcoded Starknet account addresses that might indicate exposed keys
+    if grep -r "STARKNET_PRIVATE_KEY=0x[a-fA-F0-9]" . --include="*.md" --include="*.rst" --include="*.txt" --exclude-dir=.git 2>/dev/null; then
+        error "Hardcoded Starknet private key found in documentation"
     fi
 }
 
