@@ -1,0 +1,125 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    name: Lint & Type Check
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Lint with ruff
+        run: |
+          ruff check src/ tests/ --output-format=github
+
+      - name: Type check with mypy
+        run: |
+          mypy src/ tests/
+
+      - name: Format check (black)
+        run: |
+          black --check src/ tests/
+
+  test:
+    runs-on: ubuntu-latest
+    name: Unit Tests
+    needs: lint
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Run pytest
+        run: |
+          pytest tests/ -v --tb=short --cov=src/smainer_training --cov-report=term-missing
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+
+  check-imports:
+    runs-on: ubuntu-latest
+    name: Forbidden Imports (HC-1)
+    # This job runs independently; let lint/test run in parallel
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for smainer_backend imports (HC-1)
+        run: |
+          # Scan for direct imports of smainer-backend (forbidden)
+          if grep -r "import smainer_backend\|from smainer_backend" src/ tests/ 2>/dev/null; then
+            echo "❌ ERROR: Direct imports of smainer_backend detected!"
+            echo "   Use subprocess/IPC instead to keep AGPL isolation boundary."
+            exit 1
+          else
+            echo "✓ Forbidden import check passed (no smainer_backend imports)"
+          fi
+
+  license-scan:
+    runs-on: ubuntu-latest
+    name: License Scan (HC-10)
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Scan with pip-licenses (HC-10)
+        run: |
+          pip install pip-licenses
+
+          echo "Scanning for AGPL packages..."
+          AGPL_FOUND=0
+          
+          # Run pip-licenses and check for AGPL
+          if pip-licenses --format=json | grep -i "agpl"; then
+            echo "❌ ERROR: AGPL package(s) detected in environment!"
+            echo "   AGPL engines MUST run in subprocess isolation, not in smainer-backend."
+            AGPL_FOUND=1
+          fi
+
+          if [ $AGPL_FOUND -eq 1 ]; then
+            exit 1
+          else
+            echo "✓ License scan passed (no AGPL packages)"
+          fi

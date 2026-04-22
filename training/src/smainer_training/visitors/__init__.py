@@ -1,0 +1,1 @@
+"""Visitor pattern implementations for JobSpec cross-cutting concerns."""

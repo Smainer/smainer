@@ -1,0 +1,67 @@
+name: Forbidden Imports Check (HC-1)
+
+# Standalone check for HC-1 constraint
+# Ensures smainer-training never directly imports smainer_backend
+# (which would violate license isolation boundary)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**/*.py"
+      - "tests/**/*.py"
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/**/*.py"
+      - "tests/**/*.py"
+
+jobs:
+  forbidden-imports:
+    runs-on: ubuntu-latest
+    name: HC-1 Enforcement
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for smainer_backend imports
+        run: |
+          echo "Enforcing HC-1: No direct imports of smainer_backend"
+          echo "================================================================"
+          
+          FOUND_VIOLATIONS=0
+          
+          # Check src/
+          echo "Scanning src/..."
+          if grep -r "import smainer_backend\|from smainer_backend" src/ 2>/dev/null; then
+            echo ""
+            echo "❌ VIOLATION FOUND in src/"
+            FOUND_VIOLATIONS=1
+          fi
+          
+          # Check tests/
+          echo "Scanning tests/..."
+          if grep -r "import smainer_backend\|from smainer_backend" tests/ 2>/dev/null; then
+            echo ""
+            echo "❌ VIOLATION FOUND in tests/"
+            FOUND_VIOLATIONS=1
+          fi
+          
+          echo "================================================================"
+          
+          if [ $FOUND_VIOLATIONS -eq 0 ]; then
+            echo "✓ PASS: No forbidden imports detected"
+            echo ""
+            echo "Rationale: smainer-training runs as subprocess/IPC isolated"
+            echo "from smainer-backend. This prevents AGPL code leaking into"
+            echo "Apache-2.0 backend deployments. Use IPC or subprocess instead."
+            exit 0
+          else
+            echo "❌ FAIL: HC-1 constraint violated"
+            echo ""
+            echo "Solution: Remove smainer_backend imports. Instead:"
+            echo "  1. Accept config/job via stdin (JSON)"
+            echo "  2. Communicate results via stdout or IPC"
+            echo "  3. No direct module imports across boundary"
+            exit 1
+          fi

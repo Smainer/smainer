@@ -1,0 +1,1 @@
+"""Validation pipeline with Chain of Responsibility pattern."""

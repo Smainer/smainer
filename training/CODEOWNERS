@@ -1,0 +1,33 @@
+# CODEOWNERS for smainer-training
+
+# Default reviewers: maintainers for general changes
+* @relayer-architect
+
+# Core training engine interface and architecture
+# HC-2: security-expert + relayer-architect must review
+src/smainer_training/core/ @security-expert @relayer-architect
+src/smainer_training/engines/ @security-expert @relayer-architect
+src/smainer_training/factory.py @security-expert @relayer-architect
+
+# API-facing modules (HC-7)
+# HC-7: CODEOWNERS requires security-expert review for API-related files
+src/smainer_training/api/ @security-expert @relayer-architect
+src/smainer_training/service/ @security-expert @relayer-architect
+src/smainer_training/ipc/ @security-expert @relayer-architect
+
+# CI/CD workflows
+.github/workflows/ @relayer-architect
+.github/ @relayer-architect
+
+# Vendor management
+vendors/ @relayer-architect
+
+# License and security docs
+CODEOWNERS @security-expert @relayer-architect
+LICENSE @security-expert @relayer-architect
+SECURITY.md @security-expert @relayer-architect
+README.md @relayer-architect
+CONTRIBUTING.md @relayer-architect
+
+# Build configuration
+pyproject.toml @relayer-architect

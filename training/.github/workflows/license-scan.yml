@@ -1,0 +1,74 @@
+name: License Scan (HC-10)
+
+# Standalone check for HC-10 constraint
+# Ensures no AGPL packages land in smainer-training or smainer-backend Python envs
+# AGPL engines (TransformerLab, Axolotl, Unsloth) are reachable ONLY via subprocess+IPC
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "pyproject.toml"
+      - "requirements*.txt"
+  pull_request:
+    branches: [main]
+    paths:
+      - "pyproject.toml"
+      - "requirements*.txt"
+
+jobs:
+  license-scan:
+    runs-on: ubuntu-latest
+    name: HC-10 AGPL Rejection
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+          pip install pip-licenses
+
+      - name: Scan installed packages for AGPL licenses
+        run: |
+          echo "HC-10: License Audit for AGPL Rejection"
+          echo "========================================"
+          echo ""
+          echo "Fetching installed package licenses..."
+
+          # Generate license report
+          pip-licenses --format=json > /tmp/licenses.json
+
+          # Check for AGPL
+          echo "Scanning for AGPL packages..."
+          python3 -c "import json,sys; packages=json.load(open('/tmp/licenses.json')); agpl=[p for p in packages if 'AGPL' in (p.get('License') or '').upper()]; [print(f\"  - {p.get('Name')}: {p.get('License')}\") for p in agpl]; sys.exit(1 if agpl else 0)"
+
+          RESULT=$?
+
+          if [ $RESULT -eq 1 ]; then
+            echo ""
+            echo "FAIL: AGPL packages detected in environment"
+            echo ""
+            echo "See package list above."
+            echo ""
+            echo "Resolution:"
+            echo "  1. AGPL engines MUST run as separate subprocess/IPC isolated service"
+            echo "  2. Move AGPL dependencies to optional extras: [project.optional-dependencies]"
+            echo "  3. Document AGPL boundary in README.md"
+            echo "  4. Update pyproject.toml to NOT pull AGPL at install time"
+            exit 1
+          else
+            echo "PASS: No AGPL packages in environment"
+            echo ""
+            echo "Summary: AGPL engines (TransformerLab, Axolotl, Unsloth)"
+            echo "are available only via subprocess/IPC isolation, keeping"
+            echo "Apache-2.0 services clean."
+            exit 0
+          fi
