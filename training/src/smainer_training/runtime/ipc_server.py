@@ -28,25 +28,28 @@ class UnixHTTPServer(HTTPServer):
         self.training_service = training_service
         self.bearer_token = bearer_token  # Store bearer token for handler access
         
-        # Initialize without calling parent constructor first
-        self.socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        # Remove existing socket file before initialization
+        try:
+            os.unlink(socket_path)
+        except FileNotFoundError:
+            pass
+        
+        # Initialize base server attributes manually to avoid network initialization
         self.RequestHandlerClass = handler_class
         self.socket_type = socket.SOCK_STREAM
         self.allow_reuse_address = False
+        self.server_address = socket_path
         
-        # Remove existing socket file
-        import os
-        try:
-            os.unlink(self.socket_path)
-        except FileNotFoundError:
-            pass
-            
-        # Bind and listen
-        self.socket.bind(self.socket_path)
+        # Initialize threading attributes from BaseServer
+        self._BaseServer__is_shut_down = threading.Event()
+        self._BaseServer__shutdown_request = False
+        self.daemon_threads = False
+        self.block_on_close = True
+        
+        # Create and configure Unix domain socket
+        self.socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        self.socket.bind(socket_path)
         self.socket.listen(5)
-        
-        # Set socket to server_address for compatibility
-        self.server_address = self.socket_path
 
 
 class TrainingRequestHandler(BaseHTTPRequestHandler):
@@ -56,6 +59,17 @@ class TrainingRequestHandler(BaseHTTPRequestHandler):
         # Get bearer token from environment or server config
         self._bearer_token: Optional[str] = None
         super().__init__(*args, **kwargs)
+    
+    def address_string(self) -> str:
+        """Override address_string to handle Unix socket clients."""
+        # Unix domain sockets don't have meaningful client addresses
+        return "unix-socket"
+        
+    def log_message(self, format: str, *args) -> None:
+        """Override log_message to handle Unix socket logging."""
+        # Use a simplified log format for Unix sockets
+        import sys
+        sys.stderr.write(f"[{self.log_date_time_string()}] {format % args}\n")
     
     @property
     def bearer_token(self) -> str:

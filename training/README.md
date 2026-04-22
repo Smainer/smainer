@@ -21,41 +21,86 @@ Training jobs are unpredictable (can OOM, hang, crash). By running as a separate
 
 `smainer-training` exposes a unified `TrainingEngine` contract, validation pipeline, and engine selection flow. Wave 2-5 adapters are implemented in `src/smainer_training/engines`.
 
-### End-to-End Training Flow Diagram
+### UML Structural Diagram Set
+
+Canonical terms used across all diagrams in this section:
+- Actor/service caller: Provider Daemon
+- Boundary endpoint: UnixSocketIPCServer
+- Orchestration facade: TrainingService
+- Selection path: ValidationChain -> TrainingEngineFactory -> EngineRegistry -> TrainingEngine adapter
+- Isolation path: SubprocessIsolationStrategy -> worker process
+
+#### UML Package Diagram
 
 ```mermaid
-flowchart TD
-  A[Provider Daemon / Relayer] -->|POST /jobs + Bearer token| B[UnixSocketIPCServer]
-  B --> C[TrainingService.submit_job]
-  C --> D[Parse JobSpec]
-  D --> E[ValidationChain\nLicense -> Resource -> SecretScrub -> Quota]
-  E --> F[TrainingEngineFactory.select]
-  F --> G[EngineRegistry.all]
-  G --> H{Compatible engine?}
-  H -->|Yes| I[Adapter.submit]
-  H -->|No| X[EngineUnavailable / LicenseViolation]
-  I --> J{AGPL engine?}
-  J -->|Yes| K[SubprocessIsolationStrategy.launch]
-  J -->|No| L[Adapter subprocess/in-process path]
-  K --> M[Isolated worker process]
-  L --> M
-  M --> N[ProgressEvent stream + JobStatus polling]
-  M --> O[Artifact production]
-  N --> B
-  O --> B
-  B --> P[GET /jobs/{id}, /jobs/{id}/events]
+classDiagram
+  namespace smainer_training.core {
+    class JobSpec
+    class TrainingEngine
+    class JobHandle
+    class JobStatus
+    class HostCapabilities
+    class Artifact
+    class ProgressEvent
+  }
+
+  namespace smainer_training.service {
+    class TrainingService
+  }
+
+  namespace smainer_training.factory {
+    class TrainingEngineFactory
+  }
+
+  namespace smainer_training.registry {
+    class EngineRegistry
+  }
+
+  namespace smainer_training.pipeline {
+    class ValidationChain
+    class LicenseLink
+    class ResourceLink
+    class SecretScrubLink
+    class QuotaLink
+  }
+
+  namespace smainer_training.runtime {
+    class UnixSocketIPCServer
+    class SubprocessIsolationStrategy
+    class ContainerStrategy
+  }
+
+  namespace smainer_training.engines {
+    class AxolotlAdapter
+    class UnslothAdapter
+    class LlamaFactoryAdapter
+    class TransformerLabAdapter
+  }
+
+  smainer_training.service.TrainingService --> smainer_training.factory.TrainingEngineFactory
+  smainer_training.service.TrainingService --> smainer_training.registry.EngineRegistry
+  smainer_training.service.TrainingService --> smainer_training.pipeline.ValidationChain
+  smainer_training.runtime.UnixSocketIPCServer --> smainer_training.service.TrainingService
+  smainer_training.factory.TrainingEngineFactory --> smainer_training.registry.EngineRegistry
+  smainer_training.registry.EngineRegistry --> smainer_training.engines.AxolotlAdapter
+  smainer_training.registry.EngineRegistry --> smainer_training.engines.UnslothAdapter
+  smainer_training.registry.EngineRegistry --> smainer_training.engines.LlamaFactoryAdapter
+  smainer_training.registry.EngineRegistry --> smainer_training.engines.TransformerLabAdapter
+  smainer_training.engines.AxolotlAdapter --> smainer_training.core.TrainingEngine
+  smainer_training.engines.UnslothAdapter --> smainer_training.runtime.SubprocessIsolationStrategy
+  smainer_training.engines.TransformerLabAdapter --> smainer_training.runtime.SubprocessIsolationStrategy
 ```
 
-### UML Component Diagram
+#### UML Component Diagram
 
 ```mermaid
 flowchart LR
-  subgraph ClientBoundary[Provider / Relayer Boundary]
-    REL[Provider Daemon]
+  subgraph CallerBoundary[Caller Boundary]
+    PD[Provider Daemon]
   end
 
-  subgraph TrainingServiceBoundary[smainer-training Service]
-    IPC[UnixSocketIPCServer + TrainingRequestHandler]
+  subgraph TrainingBoundary[smainer-training Service Boundary]
+    IPC[UnixSocketIPCServer]
     SVC[TrainingService]
     VAL[ValidationChain]
     FAC[TrainingEngineFactory]
@@ -64,19 +109,19 @@ flowchart LR
     AR[ArtifactRepository]
   end
 
-  subgraph EngineBoundary[Engine Adapters]
+  subgraph AdapterBoundary[Engine Adapter Boundary]
     AX[AxolotlAdapter]
     UN[UnslothAdapter]
     LF[LlamaFactoryAdapter]
     TL[TransformerLabAdapter]
   end
 
-  subgraph RuntimeBoundary[Runtime Isolation]
+  subgraph IsolationBoundary[Isolation Runtime]
     ISO[SubprocessIsolationStrategy]
-    WRK[Subprocess Workers]
+    WRK[Worker Process]
   end
 
-  REL --> IPC
+  PD -->|POST /jobs + Bearer auth| IPC
   IPC --> SVC
   SVC --> VAL
   SVC --> FAC
@@ -90,6 +135,7 @@ flowchart LR
   UN --> ISO
   TL --> ISO
   ISO --> WRK
+  WRK -->|events + artifacts| SVC
 ```
 
 Component diagram guidance:
@@ -98,42 +144,7 @@ Component diagram guidance:
 - Interfaces are used by components to communicate across clear boundaries.
 - In modern microservices usage, component diagrams clarify service boundaries, API contracts, and communication paths.
 
-### UML Deployment Diagram
-
-```mermaid
-flowchart TB
-  subgraph HostA[Provider Host]
-    PD[Provider Daemon]
-    SOCK[/run/smainer-training.sock]
-  end
-
-  subgraph HostB[Training Host / Container]
-    DAEMON[smainer_training __main__ daemon]
-    IPC2[UnixSocketIPCServer]
-    CORE[TrainingService + Factory + Registry + ValidationChain]
-    ADP[Engine Adapters]
-    ISO2[SubprocessIsolationStrategy]
-    W1[Unsloth Worker Process]
-    W2[TransformerLab Worker Process]
-    W3[Axolotl/LlamaFactory Process]
-    ART[Artifact Output Storage]
-  end
-
-  PD --> SOCK
-  SOCK --> IPC2
-  IPC2 --> DAEMON
-  DAEMON --> CORE
-  CORE --> ADP
-  ADP --> ISO2
-  ISO2 --> W1
-  ISO2 --> W2
-  ADP --> W3
-  W1 --> ART
-  W2 --> ART
-  W3 --> ART
-```
-
-### UML Class Diagram
+#### UML Class Diagram
 
 ```mermaid
 classDiagram
@@ -148,16 +159,6 @@ classDiagram
     +cancel(handle) None
     +produce_artifact(handle) Artifact
   }
-
-  class AxolotlAdapter
-  class UnslothAdapter
-  class LlamaFactoryAdapter
-  class TransformerLabAdapter
-
-  TrainingEngine <|-- AxolotlAdapter
-  TrainingEngine <|-- UnslothAdapter
-  TrainingEngine <|-- LlamaFactoryAdapter
-  TrainingEngine <|-- TransformerLabAdapter
 
   class TrainingService {
     +submit_job(spec_dict) str
@@ -189,6 +190,15 @@ classDiagram
   class JobStatus
   class SubprocessIsolationStrategy
   class UnixSocketIPCServer
+  class AxolotlAdapter
+  class UnslothAdapter
+  class LlamaFactoryAdapter
+  class TransformerLabAdapter
+
+  TrainingEngine <|-- AxolotlAdapter
+  TrainingEngine <|-- UnslothAdapter
+  TrainingEngine <|-- LlamaFactoryAdapter
+  TrainingEngine <|-- TransformerLabAdapter
 
   TrainingService --> TrainingEngineFactory
   TrainingService --> EngineRegistry
@@ -204,63 +214,133 @@ classDiagram
   UnixSocketIPCServer --> TrainingService
 ```
 
-### UML Package Diagram
+#### UML Deployment Diagram
 
 ```mermaid
-classDiagram
-  namespace smainer_training.core {
-    class JobSpec
-    class TrainingEngine
-    class Artifact
-    class HostCapabilities
-    class ProgressEvent
-  }
+flowchart TB
+  subgraph ProviderHost[Provider Host]
+    PD[Provider Daemon]
+    SOCK[/run/smainer-training.sock]
+  end
 
-  namespace smainer_training.engines {
-    class AxolotlAdapter
-    class UnslothAdapter
-    class LlamaFactoryAdapter
-    class TransformerLabAdapter
-  }
+  subgraph TrainingHost[Training Host or Container]
+    DAEMON[smainer_training daemon (__main__)]
+    IPC2[UnixSocketIPCServer]
+    CORE[TrainingService + ValidationChain + TrainingEngineFactory + EngineRegistry]
+    ADP[Engine Adapters]
+    ISO2[SubprocessIsolationStrategy]
+    WAGPL[AGPL Worker Process]
+    WPERM[Permissive Worker Process]
+    ART[Artifact Output Storage]
+  end
 
-  namespace smainer_training.registry {
-    class EngineRegistry
-  }
+  PD --> SOCK
+  SOCK --> IPC2
+  IPC2 --> DAEMON
+  DAEMON --> CORE
+  CORE --> ADP
+  ADP --> ISO2
+  ISO2 --> WAGPL
+  ADP --> WPERM
+  WAGPL --> ART
+  WPERM --> ART
+```
 
-  namespace smainer_training.factory {
-    class TrainingEngineFactory
-  }
+### UML Behavioral Diagram Set
 
-  namespace smainer_training.pipeline {
-    class ValidationChain
-    class LicenseLink
-    class ResourceLink
-    class SecretScrubLink
-    class QuotaLink
-  }
+#### UML Use Case Diagram
 
-  namespace smainer_training.service {
-    class TrainingService
-  }
+```mermaid
+flowchart LR
+  ACTOR[Provider Daemon]
+  UC1([Submit Training Job])
+  UC2([Get Job Status])
+  UC3([Stream Progress Events])
+  UC4([Cancel Job])
+  UC5([Select Compatible Engine])
+  UC6([Run AGPL Adapter via Subprocess])
 
-  namespace smainer_training.runtime {
-    class UnixSocketIPCServer
-    class ContainerStrategy
-    class SubprocessIsolationStrategy
-  }
+  ACTOR --> UC1
+  ACTOR --> UC2
+  ACTOR --> UC3
+  ACTOR --> UC4
+  UC1 --> UC5
+  UC5 --> UC6
+```
 
-  smainer_training.service.TrainingService --> smainer_training.factory.TrainingEngineFactory
-  smainer_training.service.TrainingService --> smainer_training.registry.EngineRegistry
-  smainer_training.service.TrainingService --> smainer_training.pipeline.ValidationChain
-  smainer_training.factory.TrainingEngineFactory --> smainer_training.registry.EngineRegistry
-  smainer_training.registry.EngineRegistry --> smainer_training.engines.AxolotlAdapter
-  smainer_training.registry.EngineRegistry --> smainer_training.engines.UnslothAdapter
-  smainer_training.registry.EngineRegistry --> smainer_training.engines.LlamaFactoryAdapter
-  smainer_training.registry.EngineRegistry --> smainer_training.engines.TransformerLabAdapter
-  smainer_training.engines.AxolotlAdapter --> smainer_training.core.TrainingEngine
-  smainer_training.engines.UnslothAdapter --> smainer_training.runtime.SubprocessIsolationStrategy
-  smainer_training.engines.TransformerLabAdapter --> smainer_training.runtime.SubprocessIsolationStrategy
-  smainer_training.runtime.UnixSocketIPCServer --> smainer_training.service.TrainingService
+#### UML Activity Diagram
+
+```mermaid
+flowchart TD
+  A([Start: POST /jobs]) --> B[Parse JobSpec]
+  B --> C[ValidationChain.run]
+  C --> D{Validation OK?}
+  D -->|No| E[Return ValidationFailed]
+  D -->|Yes| F[TrainingEngineFactory.select]
+  F --> G{Compatible + License Allowed?}
+  G -->|No| H[Return EngineUnavailable or LicenseViolation]
+  G -->|Yes| I[Adapter.submit]
+  I --> J{Adapter requires subprocess isolation?}
+  J -->|Yes| K[SubprocessIsolationStrategy.launch]
+  J -->|No| L[Run adapter path]
+  K --> M[Track JobHandle]
+  L --> M
+  M --> N[Return 201 + job_id]
+  N --> O([End])
+  E --> O
+  H --> O
+```
+
+#### UML Sequence Diagram
+
+```mermaid
+sequenceDiagram
+  participant PD as Provider Daemon
+  participant IPC as UnixSocketIPCServer
+  participant SVC as TrainingService
+  participant VAL as ValidationChain
+  participant FAC as TrainingEngineFactory
+  participant REG as EngineRegistry
+  participant ENG as TrainingEngine Adapter
+  participant ISO as SubprocessIsolationStrategy
+
+  PD->>IPC: POST /jobs (Bearer token, JobSpec)
+  IPC->>SVC: submit_job(spec_dict)
+  SVC->>VAL: run(spec)
+  alt validation failed
+    VAL-->>SVC: errors
+    SVC-->>IPC: ValidationFailed
+    IPC-->>PD: 4xx/5xx error
+  else validation passed
+    VAL-->>SVC: ok
+    SVC->>FAC: select(spec, host_caps)
+    FAC->>REG: all()
+    REG-->>FAC: adapters
+    FAC-->>SVC: selected adapter
+    SVC->>ENG: submit(spec)
+    alt AGPL adapter
+      ENG->>ISO: launch(spec)
+      ISO-->>ENG: JobHandle
+    end
+    ENG-->>SVC: JobHandle
+    SVC-->>IPC: job_id
+    IPC-->>PD: 201 Created
+  end
+```
+
+#### UML State Machine Diagram
+
+```mermaid
+stateDiagram-v2
+  [*] --> queued: job submitted
+  queued --> running: adapter starts execution
+  running --> completed: training + artifact success
+  running --> failed: runtime error
+  queued --> cancelled: cancel requested
+  running --> cancelled: cancel requested
+  failed --> [*]
+  cancelled --> [*]
+  completed --> [*]
 ```
 
 ### TrainingEngine Interface

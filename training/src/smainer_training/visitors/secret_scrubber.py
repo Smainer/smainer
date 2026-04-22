@@ -35,7 +35,7 @@ class SecretScrubberVisitor(JobSpecVisitor[Any]):
     # Patterns for detecting secrets (case-insensitive)
     SECRET_PATTERNS = {
         "hf_token": re.compile(r"hf_[a-zA-Z0-9]{20,}", re.IGNORECASE),
-        "aws_signature": re.compile(r"X-Amz-Signature=[a-f0-9]{16,}", re.IGNORECASE),
+        "aws_signature": re.compile(r"X-Amz-Signature=[a-f0-9]{64}", re.IGNORECASE),
         "aws_credential": re.compile(r"X-Amz-Credential=[^&\s]+", re.IGNORECASE), 
         "bearer_token": re.compile(r"Bearer\s+[a-zA-Z0-9._-]+", re.IGNORECASE),
         "api_key": re.compile(r"api[_-]?key[=:]\s*['\"]?[a-zA-Z0-9._-]{16,}['\"]?", re.IGNORECASE),

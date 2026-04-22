@@ -18,7 +18,7 @@ from smainer_training.events.event_bus import EventBus
 from smainer_training.factory.engine_factory import TrainingEngineFactory
 from smainer_training.pipeline.validation_chain import ValidationChain
 from smainer_training.registry.engine_registry import get_registry
-from smainer_training.runtime.container_strategy import ContainerStrategy
+from smainer_training.runtime.container_strategy import PerJobDockerStrategy
 from smainer_training.runtime.ipc_server import UnixSocketIPCServer
 from smainer_training.service.training_service import TrainingService
 
@@ -140,7 +140,7 @@ def create_training_service(host_caps: HostCapabilities) -> TrainingService:
     event_bus = EventBus()
     validation_chain = ValidationChain()
     artifact_repo = InMemoryArtifactRepository()
-    container_strategy = ContainerStrategy()
+    container_strategy = PerJobDockerStrategy()
     
     return TrainingService(
         registry=registry,

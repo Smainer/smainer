@@ -19,8 +19,12 @@ src/smainer_training/
 │   └── engine_factory.py           # TrainingEngineFactory.select(job_spec, host_caps)
 ├── registry/                       # Singleton adapter registry
 │   └── engine_registry.py          # Global registry of installed adapters
-├── engines/                        # Concrete engine adapters (Wave 3+)
-│   └── __init__.py                 # Placeholder — adapters not yet implemented
+├── engines/                        # Concrete engine adapters (Waves 2-5)
+│   ├── axolotl_adapter.py          # Wave 2 adapter
+│   ├── unsloth_adapter.py          # Wave 3 adapter
+│   ├── llama_factory_adapter.py    # Wave 4 adapter
+│   ├── transformerlab_adapter.py   # Wave 5 adapter
+│   └── __init__.py                 # Adapter exports
 ├── service/                        # Facade
 │   └── training_service.py         # Single entry point (submit_job, cancel_job, stream_progress)
 ├── visitors/                       # Visitor pattern — pre-flight checks
@@ -70,14 +74,14 @@ src/smainer_training/
 - `hmac.compare_digest()` for constant-time token comparison
 - `TRAINING_SERVICE_ENVIRONMENT=production` startup gate required in production
 
-## Planned Engine Adapters (Wave 3+)
+## Engine Adapters (Implemented)
 
 | Engine | License | Status |
 |--------|---------|--------|
-| Axolotl | Apache-2.0 | Planned Wave 3 |
-| Unsloth | Apache-2.0 (core) | Planned Wave 3 |
-| LLaMA-Factory | Apache-2.0 | Planned Wave 4 |
-| TransformerLab | AGPL-3.0 | Planned Wave 5 (requires AGPL subprocess gate) |
+| Axolotl | Apache-2.0 | Implemented (Wave 2) |
+| Unsloth | AGPL-3.0 | Implemented (Wave 3, subprocess isolation) |
+| LLaMA-Factory | Apache-2.0 | Implemented (Wave 4) |
+| TransformerLab | AGPL-3.0 | Implemented (Wave 5, subprocess isolation) |
 
 ## Adding an Engine Adapter
 
@@ -86,19 +90,38 @@ src/smainer_training/
 from smainer_training.core.engine import TrainingEngine
 
 class MyEngineAdapter(TrainingEngine):
-    def can_handle(self, job_spec: JobSpec, host_caps: HostCapabilities) -> bool:
-        return job_spec.framework == "my-framework"
-    
-    async def train(self, job_spec: JobSpec) -> Artifact:
-        # Implementation here
-        pass
+    @property
+    def name(self) -> str:
+        return "my-engine"
+
+    @property
+    def supported_methods(self) -> set[str]:
+        return {"lora"}
+
+    def can_run(self, spec, host_caps) -> bool:
+        return True
+
+    def submit(self, spec):
+        ...
+
+    def poll(self, handle):
+        ...
+
+    def stream_events(self, handle):
+        ...
+
+    def cancel(self, handle) -> None:
+        ...
+
+    def produce_artifact(self, handle):
+        ...
 ```
 
 2. **Register adapter**:
 ```python
 from smainer_training import get_registry
 
-get_registry().register("my-engine", MyEngineAdapter)
+get_registry().register(MyEngineAdapter)
 ```
 
 ## Documentation
