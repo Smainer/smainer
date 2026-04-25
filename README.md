@@ -39,8 +39,8 @@ A Web3 compute marketplace built on Starknet where **Providers** share hardware 
 
 ```
 ┌─────────────────┐      ┌──────────────────┐      ┌─────────────────┐
-│   Frontend      │◄────►│    Relayer        │◄────►│  Provider Node  │
-│   (Next.js)     │ REST │  (FastAPI + WS)   │  WS  │  (Python Daemon)│
+│   Frontend      │◄────►│    Relayer       │◄────►│  Provider Node  │
+│   (Next.js)     │ REST │  (FastAPI + WS)  │  WS  │  (Python Daemon)│
 └────────┬────────┘      └────────┬─────────┘      └─────────────────┘
          │                        │
          │  starknet-react        │  starknet.py
