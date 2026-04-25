@@ -1,0 +1,53 @@
+---
+name: Submodule Sync and Deploy
+
+"on":
+  push:
+    branches:
+      - main
+    paths:
+      - 'telegram'
+      - 'telegram/**'
+      - '.gitmodules'
+
+permissions:
+  contents: write
+
+jobs:
+  sync-submodule:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout monorepo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update telegram submodule
+        run: |
+          git submodule sync -- telegram
+          git submodule update --remote telegram
+
+      - name: Check for changes
+        id: changes
+        run: |
+          if git diff --quiet -- telegram .gitmodules; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit and push submodule update
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          git config user.name "Smainer Bot"
+          git config user.email "bot@smainer.io"
+          git add telegram .gitmodules
+          git commit -m "chore: sync telegram submodule to latest"
+          git push
+
+      - name: Verify deployment trigger
+        run: |
+          echo "Submodule sync complete. Vercel should auto-deploy from smainer-telegram main."

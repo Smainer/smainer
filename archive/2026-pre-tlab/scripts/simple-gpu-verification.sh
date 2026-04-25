@@ -6,7 +6,8 @@
 set -euo pipefail
 
 # Configuration
-API_KEY="lduph40yLQQQI1ql64cajqdYKBsok1k9"
+API_KEY="${API_KEY:-}"
+if [[ -z "$API_KEY" ]]; then echo "ERROR: API_KEY not set"; exit 1; fi
 API_BASE="http://localhost:8000/api/v1"
 
 # Colors for output
