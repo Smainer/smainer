@@ -79,11 +79,11 @@ jobs:
         run: |
           # Scan for direct imports of smainer-backend (forbidden)
           if grep -r "import smainer_backend\|from smainer_backend" src/ tests/ 2>/dev/null; then
-            echo "❌ ERROR: Direct imports of smainer_backend detected!"
+            echo " ERROR: Direct imports of smainer_backend detected!"
             echo "   Use subprocess/IPC instead to keep AGPL isolation boundary."
             exit 1
           else
-            echo "✓ Forbidden import check passed (no smainer_backend imports)"
+            echo " Forbidden import check passed (no smainer_backend imports)"
           fi
 
   license-scan:
@@ -113,7 +113,7 @@ jobs:
           
           # Run pip-licenses and check for AGPL
           if pip-licenses --format=json | grep -i "agpl"; then
-            echo "❌ ERROR: AGPL package(s) detected in environment!"
+            echo " ERROR: AGPL package(s) detected in environment!"
             echo "   AGPL engines MUST run in subprocess isolation, not in smainer-backend."
             AGPL_FOUND=1
           fi
@@ -121,5 +121,5 @@ jobs:
           if [ $AGPL_FOUND -eq 1 ]; then
             exit 1
           else
-            echo "✓ License scan passed (no AGPL packages)"
+            echo " License scan passed (no AGPL packages)"
           fi

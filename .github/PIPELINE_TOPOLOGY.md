@@ -71,13 +71,13 @@ Any tier → ai-inference-benchmarker (TIER 4) [read-only, any time]
 ## Forbidden Call Patterns
 
 ```
-❌ Tier 2 → Tier 2   (no peer-to-peer between specialists)
-❌ Tier 2 → Tier 0   (specialists cannot escalate to chief-director directly)
-❌ Tier 2 → Tier 1   (specialists cannot call planner)
-❌ Tier 1 → Tier 0   (planner cannot call chief-director back)
-❌ Tier 0 → Tier 2   (chief-director must route multi-task work through planner)
-❌ Tier 3 implementing anything (audit only — no code, no file edits)
-❌ Any Tier 0/1 writing code or editing files
+ Tier 2 → Tier 2   (no peer-to-peer between specialists)
+ Tier 2 → Tier 0   (specialists cannot escalate to chief-director directly)
+ Tier 2 → Tier 1   (specialists cannot call planner)
+ Tier 1 → Tier 0   (planner cannot call chief-director back)
+ Tier 0 → Tier 2   (chief-director must route multi-task work through planner)
+ Tier 3 implementing anything (audit only — no code, no file edits)
+ Any Tier 0/1 writing code or editing files
 ```
 
 ---

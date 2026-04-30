@@ -11,10 +11,10 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-log_info() { echo -e "${BLUE}ℹ️  $1${NC}"; }
-log_success() { echo -e "${GREEN}✅ $1${NC}"; }
-log_warning() { echo -e "${YELLOW}⚠️  $1${NC}"; }
-log_error() { echo -e "${RED}❌ $1${NC}"; }
+log_info() { echo -e "${BLUE}ℹ  $1${NC}"; }
+log_success() { echo -e "${GREEN} $1${NC}"; }
+log_warning() { echo -e "${YELLOW}  $1${NC}"; }
+log_error() { echo -e "${RED} $1${NC}"; }
 
 # Project paths
 PROJECT_ROOT="/home/smainer/Smainer"
@@ -311,7 +311,7 @@ security_check() {
 # Main command dispatcher
 main() {
     echo ""
-    log_info "🔧 Smainer Stack Environment Setup"
+    log_info " Smainer Stack Environment Setup"
     echo "========================================="
     echo ""
     
@@ -381,10 +381,10 @@ main() {
             if validate_environment "$env_file"; then
                 log_success "Setup complete!"
                 echo ""
-                echo "🚀 Ready to launch Smainer stack:"
+                echo " Ready to launch Smainer stack:"
                 echo "   source $env_file && scripts/launch-smainer-stack.sh"
                 echo ""
-                echo "📋 Other useful commands:"
+                echo " Other useful commands:"
                 echo "   scripts/verify-smainer-stack.sh    # Verify running services"
                 echo "   scripts/stop-smainer-stack.sh      # Stop all services"
             else

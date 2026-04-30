@@ -27,15 +27,15 @@ log() {
 }
 
 success() {
-    echo -e "${GREEN}✓${NC} $*"
+    echo -e "${GREEN}${NC} $*"
 }
 
 warning() {
-    echo -e "${YELLOW}⚠${NC} $*"
+    echo -e "${YELLOW}${NC} $*"
 }
 
 error() {
-    echo -e "${RED}✗${NC} $*"
+    echo -e "${RED}${NC} $*"
 }
 
 # Load environment variables
@@ -347,24 +347,24 @@ main() {
     echo "VERIFICATION SUMMARY"
     echo "=============================================="
     echo ""
-    success "✅ GPU hardware spec detection: IMPLEMENTED"
+    success " GPU hardware spec detection: IMPLEMENTED"
     echo "   - HardwareSpec includes gpu_info, gpu_vram_gb, node_tier"
     echo "   - NodeTier enum: BASIC, PRO (24GB+), PREMIUM (32GB+)"
     echo ""
     
-    success "✅ GPU metrics in heartbeats: IMPLEMENTED" 
+    success " GPU metrics in heartbeats: IMPLEMENTED" 
     echo "   - VRAM usage, temperature, utilization tracking"
     echo "   - Thermal throttling detection"
     echo "   - Available VRAM calculation"
     echo ""
     
-    success "✅ GPU-aware node selection: IMPLEMENTED"
+    success " GPU-aware node selection: IMPLEMENTED"
     echo "   - find_tier_compatible_nodes() method"
     echo "   - GPU requirement filtering (gpu_required, min_vram_gb)"
     echo "   - Real-time VRAM availability checks"
     echo ""
     
-    success "✅ API endpoint GPU data: IMPLEMENTED"
+    success " API endpoint GPU data: IMPLEMENTED"
     echo "   - /nodes endpoint returns hardware specs"
     echo "   - /nodes/{id} endpoint for individual node details"
     echo ""
@@ -374,7 +374,7 @@ main() {
     gpu_count=$(echo "$current_nodes" | jq -r '.nodes[]? | select(.hardware_spec.gpu_info != null) | .node_id' 2>/dev/null | wc -l || echo "0")
     
     if [[ "$gpu_count" -gt 0 ]]; then
-        success "🎯 LIVE GPU NODES DETECTED: $gpu_count node(s)"
+        success " LIVE GPU NODES DETECTED: $gpu_count node(s)"
         echo ""
         echo "GPU nodes currently registered:"
         echo "$current_nodes" | jq -r '.nodes[]? | select(.hardware_spec.gpu_info != null) | "  - \(.node_id): \(.hardware_spec.gpu_info) (\(.hardware_spec.gpu_vram_gb)GB VRAM)"' 2>/dev/null || true
@@ -389,7 +389,7 @@ main() {
     echo ""
     echo "=============================================="
     echo "CONCLUSION: GPU node detection after provider" 
-    echo "heartbeat cycle is FULLY IMPLEMENTED ✅"
+    echo "heartbeat cycle is FULLY IMPLEMENTED "
     echo "=============================================="
 }
 

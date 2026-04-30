@@ -187,20 +187,20 @@ leading-relaxed = 1.625 (long-form content)
 ## Forbidden Patterns
 
 ### NEVER Use
-- ❌ Gradients inside cards, badges, or buttons: `bg-gradient-to-r`
+-  Gradients inside cards, badges, or buttons: `bg-gradient-to-r`
   - Exception: ONE hero/CTA gradient per page using `from-indigo-500 to-cyan-500`
-- ❌ Drop shadows: `shadow-lg`, `shadow-xl`
-- ❌ Emojis in UI text or headings
-- ❌ Arbitrary spacing: `p-[13px]`, `mt-[22px]`
-- ❌ Arbitrary colors: `text-[#FF5733]`
-- ❌ Multiple font families in single view
-- ❌ Excessive animation: `animate-bounce`, `animate-spin` (loading only)
+-  Drop shadows: `shadow-lg`, `shadow-xl`
+-  Emojis in UI text or headings
+-  Arbitrary spacing: `p-[13px]`, `mt-[22px]`
+-  Arbitrary colors: `text-[#FF5733]`
+-  Multiple font families in single view
+-  Excessive animation: `animate-bounce`, `animate-spin` (loading only)
 
 ### Use Sparingly
-- ⚠️ `shadow-sm` — Only for subtle card elevation
-- ⚠️ `text-xs` — Only for metadata, timestamps, tiny labels
-- ⚠️ `font-bold` — Reserve for major headings only
-- ⚠️ Colored backgrounds — Prefer white/slate with colored accents
+-  `shadow-sm` — Only for subtle card elevation
+-  `text-xs` — Only for metadata, timestamps, tiny labels
+-  `font-bold` — Reserve for major headings only
+-  Colored backgrounds — Prefer white/slate with colored accents
 
 ## Dark Mode Standards
 

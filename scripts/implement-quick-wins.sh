@@ -3,12 +3,12 @@
 # Execute these changes immediately to close critical security gaps
 set -e
 
-echo "🚀 SMAINER SECURITY QUICK WINS - DEPLOY TODAY"
+echo " SMAINER SECURITY QUICK WINS - DEPLOY TODAY"
 echo "============================================="
 echo "Implementing critical security fixes..."
 
 # 1. Fix API Key Handling - Constant Time Comparison
-echo "1. 🔐 Fixing API Key Security..."
+echo "1.  Fixing API Key Security..."
 
 cat > /home/smainer/Smainer/backend/relayer/src/relayer/api/secure_auth.py << 'EOF'
 """Secure authentication with constant-time comparison."""
@@ -81,10 +81,10 @@ def generate_secure_api_key() -> str:
     return f"sk-{secrets.token_urlsafe(32)}"
 EOF
 
-echo "   ✅ Secure API authentication implemented"
+echo "    Secure API authentication implemented"
 
 # 2. Implement Log Scrubbing
-echo "2. 📝 Implementing Log Scrubbing..."
+echo "2.  Implementing Log Scrubbing..."
 
 cat > /home/smainer/Smainer/backend/relayer/src/relayer/logging/secure_logger.py << 'EOF'
 """Secure logging with sensitive data scrubbing."""
@@ -157,10 +157,10 @@ def setup_secure_logging():
     return logger
 EOF
 
-echo "   ✅ Secure logging with scrubbing implemented"
+echo "    Secure logging with scrubbing implemented"
 
 # 3. Add Rate Limiting to Routes
-echo "3. 🚦 Adding Rate Limiting to API Routes..."
+echo "3.  Adding Rate Limiting to API Routes..."
 
 cat >> /home/smainer/Smainer/backend/relayer/src/relayer/api/routes.py << 'EOF'
 
@@ -176,10 +176,10 @@ async def get_rate_limiter(redis: RedisDB) -> EndpointRateLimit:
 # Find the @router.post("/tasks", ...) route and add the rate limit decorator
 EOF
 
-echo "   ✅ Rate limiting added to critical endpoints"
+echo "    Rate limiting added to critical endpoints"
 
 # 4. Secure Default Environment Variables
-echo "4. 🔧 Securing Default Environment Variables..."
+echo "4.  Securing Default Environment Variables..."
 
 # Create secure environment template
 cat > /home/smainer/Smainer/.env.template << 'EOF'
@@ -216,7 +216,7 @@ TELEGRAM_WEBHOOK_SECRET=
 EOF
 
 # Update .gitignore to ensure env files are not committed
-echo "   🔒 Securing environment configuration..."
+echo "    Securing environment configuration..."
 if ! grep -q "\.env$" /home/smainer/Smainer/.gitignore 2>/dev/null; then
     cat >> /home/smainer/Smainer/.gitignore << 'EOF'
 
@@ -231,7 +231,7 @@ EOF
 fi
 
 # 5. Fix Webhook Security in Telegram Integration
-echo "5. 🤖 Fixing Telegram Webhook Security..."
+echo "5.  Fixing Telegram Webhook Security..."
 
 # Update the webhook verification to use constant-time comparison
 cat > /tmp/telegram_webhook_fix.patch << 'EOF'
@@ -261,10 +261,10 @@ function verifyWebhookSecret(req: NextRequest): boolean {
 }
 EOF
 
-echo "   ✅ Telegram webhook security patch created"
+echo "    Telegram webhook security patch created"
 
 # 6. Add Security Headers
-echo "6. 🛡️  Adding Security Headers..."
+echo "6.   Adding Security Headers..."
 
 cat > /home/smainer/Smainer/frontend/security-headers.js << 'EOF'
 // Security headers for Next.js
@@ -298,13 +298,13 @@ const securityHeaders = [
 module.exports = securityHeaders;
 EOF
 
-echo "   ✅ Security headers configuration created"
+echo "    Security headers configuration created"
 
 # 7. Create Emergency Response Procedures
-echo "7. 🚨 Setting up Emergency Response..."
+echo "7.  Setting up Emergency Response..."
 
 cat > /home/smainer/Smainer/SECURITY_EMERGENCY_RESPONSE.md << 'EOF'
-# 🚨 SMAINER SECURITY EMERGENCY RESPONSE
+#  SMAINER SECURITY EMERGENCY RESPONSE
 
 ## IMMEDIATE ACTIONS FOR SECURITY INCIDENTS
 
@@ -354,7 +354,7 @@ starkli call <contract_address> get_recent_events
 EOF
 
 # Make scripts executable
-echo "8. 🔐 Making Security Scripts Executable..."
+echo "8.  Making Security Scripts Executable..."
 chmod +x /home/smainer/Smainer/scripts/*.sh
 chmod +x /home/smainer/Smainer/contracts/run-security-tests.sh
 chmod +x /home/smainer/Smainer/backend/run-security-tests.sh  
@@ -362,29 +362,29 @@ chmod +x /home/smainer/Smainer/frontend/run-security-tests.sh
 
 # Final Security Checklist
 echo ""
-echo "✅ QUICK WINS IMPLEMENTATION COMPLETE"
+echo " QUICK WINS IMPLEMENTATION COMPLETE"
 echo "======================================"
 echo ""
-echo "🔐 Security fixes implemented:"
-echo "   ✅ Constant-time API key comparison"
-echo "   ✅ Log scrubbing for sensitive data"
-echo "   ✅ Rate limiting implementation"
-echo "   ✅ Secure environment configuration"
-echo "   ✅ Webhook CSRF protection"
-echo "   ✅ Security headers for frontend"
-echo "   ✅ Emergency response procedures"
+echo " Security fixes implemented:"
+echo "    Constant-time API key comparison"
+echo "    Log scrubbing for sensitive data"
+echo "    Rate limiting implementation"
+echo "    Secure environment configuration"
+echo "    Webhook CSRF protection"
+echo "    Security headers for frontend"
+echo "    Emergency response procedures"
 echo ""
-echo "🚀 NEXT STEPS (execute today):"
+echo " NEXT STEPS (execute today):"
 echo "1. Update API keys: Generate new production keys"
 echo "2. Apply rate limiter to routes: Uncomment and test"
 echo "3. Test webhook fix: Apply telegram security patch"  
 echo "4. Run security tests: ./scripts/run-all-security-tests.sh"
 echo "5. Update deployment configs with new secure defaults"
 echo ""
-echo "⚡ IMMEDIATE TODO:"
+echo " IMMEDIATE TODO:"
 echo "   • Generate new API key: $(openssl rand -hex 32 | sed 's/^/sk-/')"
 echo "   • Test all endpoints with new security measures"
 echo "   • Deploy to staging and verify security gates"
 echo ""
-echo "🎯 These fixes address the most critical vulnerabilities."
+echo " These fixes address the most critical vulnerabilities."
 echo "   Complete implementation today before mainnet deployment."

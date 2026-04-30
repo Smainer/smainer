@@ -208,44 +208,44 @@ def print_capacity_report(target_providers: int, output_format: str = "text"):
         return
     
     # Text output
-    print(f"🚀 SMAINER CAPACITY PLANNING REPORT")
+    print(f" SMAINER CAPACITY PLANNING REPORT")
     print(f"Target Providers: {target_providers}")
     print(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("=" * 60)
     
     for phase_data in timeline:
-        print(f"\n📅 {phase_data['phase']}")
+        print(f"\n {phase_data['phase']}")
         print(f"Target Date: {phase_data['target_date']}")
         print(f"Providers: {phase_data['target_providers']:,}")
         
         req = phase_data['requirements']
         
-        print(f"\n🖥️  Relayer Cluster:")
+        print(f"\n  Relayer Cluster:")
         print(f"  - Instances: {req['relayer']['instances']}")
         print(f"  - CPU per instance: {req['relayer']['cpu_per_instance']:.1f} cores")
         print(f"  - Memory per instance: {req['relayer']['memory_per_instance_gb']:.1f} GB")
         print(f"  - Storage per instance: {req['relayer']['storage_per_instance_gb']:.0f} GB")
         print(f"  - Bottleneck: {req['relayer']['bottleneck_factor']}")
         
-        print(f"\n🔧 Redis Cluster:")
+        print(f"\n Redis Cluster:")
         print(f"  - Nodes: {req['redis']['cluster_nodes']}")
         print(f"  - Memory per node: {req['redis']['memory_per_node_gb']:.1f} GB")
         print(f"  - Operations/sec: {req['redis']['total_ops_per_second']:,}")
         print(f"  - Bottleneck: {req['redis']['bottleneck_factor']}")
         
-        print(f"\n🗃️  PostgreSQL:")
+        print(f"\n  PostgreSQL:")
         print(f"  - CPU cores: {req['database']['cpu_cores']:.1f}")
         print(f"  - Memory: {req['database']['memory_gb']:.1f} GB")
         print(f"  - Storage: {req['database']['storage_gb']:.0f} GB")
         print(f"  - Daily growth: {req['database']['daily_growth_gb']:.1f} GB/day")
         
-        print(f"\n🌐 Network:")
+        print(f"\n Network:")
         print(f"  - WebSocket: {req['network']['websocket_bandwidth_mbps']:.1f} Mbps")
         print(f"  - P2P overhead: {req['network']['p2p_bandwidth_mbps']:.1f} Mbps")
         print(f"  - Total bandwidth: {req['network']['total_bandwidth_mbps']:.1f} Mbps")
         print(f"  - Monthly data: {req['network']['monthly_data_gb']:.0f} GB")
         
-        print(f"\n💰 Cost Estimate:")
+        print(f"\n Cost Estimate:")
         print(f"  - Total monthly: ${phase_data['monthly_cost_usd']:.0f}")
         print(f"  - Cost per provider: ${phase_data['cost_per_provider_usd']:.2f}")
         
@@ -253,7 +253,7 @@ def print_capacity_report(target_providers: int, output_format: str = "text"):
     
     # Summary recommendations
     final_phase = timeline[-1]
-    print(f"\n🎯 SUMMARY RECOMMENDATIONS")
+    print(f"\n SUMMARY RECOMMENDATIONS")
     print(f"Final Monthly Cost: ${final_phase['monthly_cost_usd']:.0f}")
     print(f"Cost per Provider: ${final_phase['cost_per_provider_usd']:.2f}")
     
@@ -266,10 +266,10 @@ def print_capacity_report(target_providers: int, output_format: str = "text"):
         bottlenecks.append("Redis operations throughput")
     
     if bottlenecks:
-        print(f"\n⚠️  Critical Bottlenecks: {', '.join(bottlenecks)}")
+        print(f"\n  Critical Bottlenecks: {', '.join(bottlenecks)}")
         print("Consider scaling these components first")
     
-    print(f"\n🔄 Infrastructure Automation Required:")
+    print(f"\n Infrastructure Automation Required:")
     print(f"  - Auto-scaling groups for relayer instances")
     print(f"  - Redis cluster automatic failover")
     print(f"  - Database connection pooling and read replicas")

@@ -3,7 +3,7 @@
 # This script must pass 100% before mainnet deployment
 set -e
 
-echo "🔒 SMAINER MAINNET SECURITY VERIFICATION"
+echo " SMAINER MAINNET SECURITY VERIFICATION"
 echo "========================================"
 echo "Running comprehensive security test suite"
 echo "All tests must pass for mainnet deployment"
@@ -21,21 +21,21 @@ START_TIME=$(date +%s)
 
 # Helper functions
 log_pass() {
-    echo -e "${GREEN}✅ PASS${NC}: $1"
+    echo -e "${GREEN} PASS${NC}: $1"
 }
 
 log_fail() {
-    echo -e "${RED}❌ FAIL${NC}: $1"
+    echo -e "${RED} FAIL${NC}: $1"
     FAILED_TESTS+=("$1")
 }
 
 log_warn() {
-    echo -e "${YELLOW}⚠️  WARN${NC}: $1" 
+    echo -e "${YELLOW}  WARN${NC}: $1" 
     WARNINGS+=("$1")
 }
 
 log_info() {
-    echo -e "ℹ️  INFO: $1"
+    echo -e "ℹ  INFO: $1"
 }
 
 run_test_section() {
@@ -43,7 +43,7 @@ run_test_section() {
     local test_command="$2"
     
     echo ""
-    echo "🧪 Testing: $section_name"
+    echo " Testing: $section_name"
     echo "Command: $test_command"
     
     if eval "$test_command"; then
@@ -56,7 +56,7 @@ run_test_section() {
 }
 
 # Pre-flight checks
-echo "🔍 Pre-flight Security Checks"
+echo " Pre-flight Security Checks"
 echo "-------------------------------"
 
 # Check for common security misconfigurations
@@ -86,7 +86,7 @@ fi
 
 # Main test execution
 echo ""
-echo "🔒 MAIN SECURITY TEST EXECUTION"
+echo " MAIN SECURITY TEST EXECUTION"
 echo "================================"
 
 # 1. Contracts Security Tests
@@ -103,7 +103,7 @@ run_test_section "MAINNET_GATES" "cd /home/smainer/Smainer/backend && python -m 
 
 # 5. Secrets scanning across entire codebase
 echo ""
-echo "🔍 SECRETS SCANNING"
+echo " SECRETS SCANNING"
 echo "-------------------"
 SECRET_SCAN_RESULT=0
 
@@ -136,7 +136,7 @@ fi
 
 # 6. Network security verification
 echo ""
-echo "🌐 NETWORK SECURITY"
+echo " NETWORK SECURITY"
 echo "-------------------"
 
 if command -v nmap >/dev/null 2>&1; then
@@ -153,7 +153,7 @@ fi
 
 # 7. File permission security
 echo ""
-echo "🔐 FILE PERMISSIONS"
+echo " FILE PERMISSIONS"
 echo "-------------------"
 
 # Check for overly permissive files
@@ -170,19 +170,19 @@ END_TIME=$(date +%s)
 DURATION=$((END_TIME - START_TIME))
 
 echo ""
-echo "📊 SECURITY TEST SUMMARY"
+echo " SECURITY TEST SUMMARY"
 echo "========================"
 echo "Duration: ${DURATION} seconds"
 echo "Test Categories: 7"
 echo ""
 
 if [ ${#FAILED_TESTS[@]} -eq 0 ]; then
-    echo -e "${GREEN}🎉 ALL SECURITY TESTS PASSED${NC}"
-    echo "✅ Mainnet deployment security gate: CLEAR"
+    echo -e "${GREEN} ALL SECURITY TESTS PASSED${NC}"
+    echo " Mainnet deployment security gate: CLEAR"
     
     if [ ${#WARNINGS[@]} -gt 0 ]; then
         echo ""
-        echo -e "${YELLOW}⚠️  WARNINGS (non-blocking):${NC}"
+        echo -e "${YELLOW}  WARNINGS (non-blocking):${NC}"
         for warning in "${WARNINGS[@]}"; do
             echo "  - $warning"
         done
@@ -198,7 +198,7 @@ Date: $(date)
 Commit: $(git rev-parse HEAD 2>/dev/null || echo "N/A")
 Branch: $(git branch --show-current 2>/dev/null || echo "N/A")
 
-All critical security tests PASSED ✅
+All critical security tests PASSED 
 
 Test Results:
 - Contract Security: PASS
@@ -216,25 +216,25 @@ Attestation: Ready for mainnet deployment from security perspective.
 Signed by: Security Test Suite v1.0
 EOF
     
-    echo "📋 Security attestation written to /tmp/smainer-security-attestation-*.txt"
+    echo " Security attestation written to /tmp/smainer-security-attestation-*.txt"
     exit 0
     
 else
-    echo -e "${RED}❌ SECURITY TESTS FAILED${NC}"
-    echo "🚫 Mainnet deployment security gate: BLOCKED"
+    echo -e "${RED} SECURITY TESTS FAILED${NC}"
+    echo " Mainnet deployment security gate: BLOCKED"
     echo ""
     echo "Failed tests:"
     for failed_test in "${FAILED_TESTS[@]}"; do
-        echo -e "  ${RED}❌${NC} $failed_test"
+        echo -e "  ${RED}${NC} $failed_test"
     done
     
     echo ""
-    echo "🔧 REQUIRED ACTIONS:"
+    echo " REQUIRED ACTIONS:"
     echo "1. Fix all failed security tests"
     echo "2. Re-run this security verification"
     echo "3. Only proceed to mainnet when all tests pass"
     echo ""
-    echo "⛔ DO NOT DEPLOY TO MAINNET WITH FAILING SECURITY TESTS"
+    echo " DO NOT DEPLOY TO MAINNET WITH FAILING SECURITY TESTS"
     
     exit 1
 fi

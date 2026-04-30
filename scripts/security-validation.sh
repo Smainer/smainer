@@ -12,22 +12,22 @@ ERRORS=0
 WARNINGS=0
 
 error() {
-    echo -e "${RED}❌ SECURITY ERROR: $1${NC}"
+    echo -e "${RED} SECURITY ERROR: $1${NC}"
     ((ERRORS++))
 }
 
 warn() {
-    echo -e "${YELLOW}⚠️  SECURITY WARNING: $1${NC}"
+    echo -e "${YELLOW}  SECURITY WARNING: $1${NC}"
     ((WARNINGS++))
 }
 
 info() {
-    echo -e "${GREEN}✅ $1${NC}"
+    echo -e "${GREEN} $1${NC}"
 }
 
 # Check for dangerous default values
 check_dangerous_defaults() {
-    echo "🔍 Checking for dangerous default values..."
+    echo " Checking for dangerous default values..."
     
     # Check for test private keys
     if grep -r "0x00000000.*01$" . --include="*.env*" --exclude-dir=.git 2>/dev/null; then
@@ -51,7 +51,7 @@ check_dangerous_defaults() {
 
 # Check for exposed secrets
 check_exposed_secrets() {
-    echo "🔍 Checking for exposed secrets..."
+    echo " Checking for exposed secrets..."
     
     # Check for bot tokens in non-env files
     if grep -r "[0-9]\{8,\}:AA[A-Za-z0-9_-]\{35\}" . --exclude-dir=.git --exclude="*.env*" 2>/dev/null; then
@@ -76,7 +76,7 @@ check_exposed_secrets() {
 
 # Check network configuration consistency
 check_network_consistency() {
-    echo "🔍 Checking network configuration consistency..."
+    echo " Checking network configuration consistency..."
     
     local mainnet_count=$(grep -c "starknet-mainnet" . -R --include="*.env*" 2>/dev/null || echo 0)
     local sepolia_count=$(grep -c "starknet-sepolia" . -R --include="*.env*" 2>/dev/null || echo 0)
@@ -92,7 +92,7 @@ check_network_consistency() {
 
 # Check file permissions
 check_file_permissions() {
-    echo "🔍 Checking file permissions..."
+    echo " Checking file permissions..."
     
     # Check for world-readable secret files
     find . -name ".env*" -perm +004 2>/dev/null | while read -r file; do
@@ -107,7 +107,7 @@ check_file_permissions() {
 
 # Check deployment script security
 check_deployment_security() {
-    echo "🔍 Checking deployment script security..."
+    echo " Checking deployment script security..."
     
     # Check for unsafe curl usage
     if grep -r "curl.*http://" scripts/ 2>/dev/null; then
@@ -129,7 +129,7 @@ validate_required_vars() {
         return
     fi
     
-    echo "🔍 Validating required variables in $env_file..."
+    echo " Validating required variables in $env_file..."
     
     local required_vars=(
         "REDIS_PASSWORD"
@@ -151,7 +151,7 @@ validate_required_vars() {
 # Security recommendations
 security_recommendations() {
     echo ""
-    echo "🛡️  Security Recommendations:"
+    echo "  Security Recommendations:"
     echo "1. Use hardware security modules for private key storage"
     echo "2. Implement key rotation every 90 days"
     echo "3. Enable audit logging for all deployments"
@@ -162,7 +162,7 @@ security_recommendations() {
 
 # Main execution
 main() {
-    echo "🔒 Smainer Security Validation"
+    echo " Smainer Security Validation"
     echo "==============================="
     
     check_dangerous_defaults
@@ -179,15 +179,15 @@ main() {
     echo "==============================="
     
     if [[ $ERRORS -gt 0 ]]; then
-        echo -e "${RED}🚨 $ERRORS critical security errors detected!${NC}"
+        echo -e "${RED} $ERRORS critical security errors detected!${NC}"
         echo -e "${RED}Deployment blocked until errors are resolved.${NC}"
         exit 1
     elif [[ $WARNINGS -gt 0 ]]; then
-        echo -e "${YELLOW}⚠️  $WARNINGS security warnings detected.${NC}"
+        echo -e "${YELLOW}  $WARNINGS security warnings detected.${NC}"
         echo -e "${YELLOW}Review warnings before proceeding.${NC}"
         exit 2
     else
-        echo -e "${GREEN}✅ No critical security issues detected.${NC}"
+        echo -e "${GREEN} No critical security issues detected.${NC}"
         security_recommendations
         exit 0
     fi

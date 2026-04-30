@@ -4,7 +4,7 @@
 
 set -e
 
-echo "🔒 CRITICAL SECURITY REMEDIATION - Removing Private Keys from .env Files"
+echo " CRITICAL SECURITY REMEDIATION - Removing Private Keys from .env Files"
 echo "========================================================================="
 
 # Backup files with private keys before modification
@@ -58,11 +58,11 @@ echo "3. Verification - checking for remaining exposed keys..."
 REMAINING=$(find . -name ".env*" -not -name "*.example" -not -name "*.template" -exec grep -l "PRIVATE_KEY=0x[0-9a-fA-F]\{40,\}" {} \; || true)
 
 if [[ -n "$REMAINING" ]]; then
-    echo "❌ FAILED: Private keys still found in:"
+    echo " FAILED: Private keys still found in:"
     echo "$REMAINING"
     exit 1
 else
-    echo "✅ SUCCESS: All private keys have been secured"
+    echo " SUCCESS: All private keys have been secured"
 fi
 
 echo ""
@@ -74,4 +74,4 @@ echo "     export RELAYER_PRIVATE_KEY=0x_your_actual_key_here"
 echo "   - Update deployment scripts to use environment variables"
 echo "   - Consider using secret management tools (AWS Secrets Manager, etc.)"
 echo ""
-echo "✅ SECURITY REMEDIATION COMPLETE"
+echo " SECURITY REMEDIATION COMPLETE"

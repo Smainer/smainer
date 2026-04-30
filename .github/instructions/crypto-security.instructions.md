@@ -22,10 +22,10 @@ When you read a file, environment variable, terminal output, or tool result that
 
 **NEVER hardcode private keys or mnemonics**
 ```typescript
-// ❌ WRONG
+//  WRONG
 const PRIVATE_KEY = "0x123abc..."
 
-// ✅ CORRECT
+//  CORRECT
 const privateKey = process.env.WALLET_PRIVATE_KEY;
 if (!privateKey) throw new Error('WALLET_PRIVATE_KEY not set');
 ```
@@ -194,10 +194,10 @@ def create_wallet_connection():
         return wallet
         
     except Exception as e:
-        # ❌ WRONG - exposes private key
+        #  WRONG - exposes private key
         # logger.error(f"Failed to create wallet with key {private_key}: {e}")
         
-        # ✅ CORRECT - generic error
+        #  CORRECT - generic error
         logger.error("Failed to create wallet connection")
         raise Exception("Wallet connection failed") from None
 ```

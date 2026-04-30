@@ -399,10 +399,10 @@ class TrainingEngine(ABC):
 
 | Engine | License | Status | Scope |
 |--------|---------|--------|-------|
-| **Axolotl** | Apache-2.0 | ✅ Implemented (Wave 2) | Multi-engine orchestration |
-| **Unsloth** | AGPL-3.0 | ✅ Implemented (Wave 3) | AGPL + 4-bit quantization |
-| **LLaMA-Factory** | Apache-2.0 | ✅ Implemented (Wave 4) | Flexible config format |
-| **TransformerLab** | AGPL-3.0 | ✅ Implemented (Wave 5) | Research-oriented, subprocess only |
+| **Axolotl** | Apache-2.0 |  Implemented (Wave 2) | Multi-engine orchestration |
+| **Unsloth** | AGPL-3.0 |  Implemented (Wave 3) | AGPL + 4-bit quantization |
+| **LLaMA-Factory** | Apache-2.0 |  Implemented (Wave 4) | Flexible config format |
+| **TransformerLab** | AGPL-3.0 |  Implemented (Wave 5) | Research-oriented, subprocess only |
 
 All four adapters are included in the golden engine contract test matrix (`tests/test_golden_engine_contract.py`).
 
@@ -490,7 +490,7 @@ fi
 
 ```bash
 pip-licenses --format=json | grep -i "agpl" && exit 1
-echo "✓ License scan passed (no AGPL in installed environment)"
+echo " License scan passed (no AGPL in installed environment)"
 ```
 
 ### `docker-publish.yml`

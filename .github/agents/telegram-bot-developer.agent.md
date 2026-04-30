@@ -83,7 +83,7 @@ User ← Bot edits msg ← Vercel callback fn ← Relayer POST ← Result ← Pr
 1. User sends text → Telegram webhook triggers Vercel serverless function
 2. Bot checks wallet linked + $STRK balance (via `wallet.py` → Starknet RPC)
 3. Bot infers model tier from user preference, checks available nodes
-4. Bot shows "💎 Pay & Compute" WebApp button with MiniApp payment URL
+4. Bot shows " Pay & Compute" WebApp button with MiniApp payment URL
 5. User taps button → MiniApp opens with payment params
 6. MiniApp: user approves STRK + calls `create_task()` on escrow contract
 7. MiniApp sends `payment_complete` + `on_chain_task_id` via `sendData()`

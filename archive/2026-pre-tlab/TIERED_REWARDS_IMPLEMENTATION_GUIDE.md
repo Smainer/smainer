@@ -1,10 +1,10 @@
 # Smainer Tiered Reward System - Implementation Guide
 
-## 🎯 **System Overview**
+##  **System Overview**
 
 The Smainer platform now supports **hardware-tier-based rewards** to properly compensate high-performance compute nodes. This documentation guides remaining implementation across the stack.
 
-## ✅ **COMPLETED: Relayer Architecture** 
+##  **COMPLETED: Relayer Architecture** 
 
 **Tier Classification System:**
 - **BASIC Tier**: < 24GB VRAM → 1.0x reward multiplier  
@@ -20,7 +20,7 @@ The Smainer platform now supports **hardware-tier-based rewards** to properly co
 
 ---
 
-## 🔧 **REQUIRED IMPLEMENTATIONS**
+##  **REQUIRED IMPLEMENTATIONS**
 
 ### **1. Smart Contract Updates** 
 **Agent:** `starknet-engineer`
@@ -166,11 +166,11 @@ hardware_spec = {
 
 ---
 
-## 🧪 **Testing Requirements**
+##  **Testing Requirements**
 
 ### **Integration Tests Needed:**
 
-**Relayer Tests:** ✅ Already implemented
+**Relayer Tests:**  Already implemented
 - GPU tier detection accuracy
 - WSL2 environment validation  
 - Hardware-aware task scheduling
@@ -193,9 +193,9 @@ hardware_spec = {
 
 ---
 
-## 🚀 **Deployment Checklist**
+##  **Deployment Checklist**
 
-### **Phase 1: Backend Infrastructure** ✅ COMPLETE
+### **Phase 1: Backend Infrastructure**  COMPLETE
 - [x] Relayer tier-based scheduling
 - [x] Enhanced GPU detection  
 - [x] WSL2 validation
@@ -218,7 +218,7 @@ hardware_spec = {
 
 ---
 
-## ⚡ **Key Benefits**
+##  **Key Benefits**
 
 **For High-Spec Node Operators:**
 - RTX 5090 nodes earn 3.5x rewards for complex AI inference
@@ -237,7 +237,7 @@ hardware_spec = {
 
 ---
 
-## 📋 **Implementation Priority**
+##  **Implementation Priority**
 
 1. **IMMEDIATE**: Smart contract tier system (`starknet-engineer`)
 2. **NEXT**: Frontend tier selection and display (`frontend-engineer`)  

@@ -10,7 +10,7 @@ BLUE='\033[0;34m'
 BOLD='\033[1m'
 NC='\033[0m'
 
-echo -e "${BOLD}🔐 COMPREHENSIVE SECURITY AUDIT${NC}"
+echo -e "${BOLD} COMPREHENSIVE SECURITY AUDIT${NC}"
 echo -e "Deep security scan for production readiness"
 echo -e "Date: $(date)"
 echo ""
@@ -289,16 +289,16 @@ echo ""
 
 if [[ $CRITICAL_FAILURES -eq 0 ]]; then
     if [[ $WARNING_COUNT -eq 0 ]]; then
-        echo -e "${GREEN}${BOLD}✅ PRODUCTION SECURITY CLEARED${NC}"
+        echo -e "${GREEN}${BOLD} PRODUCTION SECURITY CLEARED${NC}"
         echo -e "Zero critical failures, zero warnings detected."
     else
-        echo -e "${YELLOW}${BOLD}⚠️ PRODUCTION READY WITH $WARNING_COUNT WARNINGS${NC}"
+        echo -e "${YELLOW}${BOLD} PRODUCTION READY WITH $WARNING_COUNT WARNINGS${NC}"
         echo -e "No critical failures, but address warnings for optimal security."
     fi
     echo -e "Ready for mainnet deployment."
     exit 0
 else
-    echo -e "${RED}${BOLD}🛑 PRODUCTION BLOCKED${NC}"
+    echo -e "${RED}${BOLD} PRODUCTION BLOCKED${NC}"
     echo -e "$CRITICAL_FAILURES critical security failures must be resolved."
     echo ""
     echo "Next steps:"

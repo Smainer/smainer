@@ -13,17 +13,17 @@ echo "=== Relayer Health Check ==="
 
 # HTTP Health
 if curl -f -s "$RELAYER_URL/health" > /dev/null; then
-    echo -e "${GREEN}✓ HTTP OK${NC}"
+    echo -e "${GREEN} HTTP OK${NC}"
 else
-    echo -e "${RED}✗ HTTP FAILED${NC}"
+    echo -e "${RED} HTTP FAILED${NC}"
     exit 1
 fi
 
 # Redis connectivity  
 if docker exec smainer-redis redis-cli -a "$REDIS_PASSWORD" ping | grep -q PONG; then
-    echo -e "${GREEN}✓ Redis OK${NC}"
+    echo -e "${GREEN} Redis OK${NC}"
 else
-    echo -e "${RED}✗ Redis FAILED${NC}"
+    echo -e "${RED} Redis FAILED${NC}"
     exit 1
 fi
 
@@ -37,9 +37,9 @@ async def test():
         assert 'pong' in resp
 asyncio.run(test())
 " 2>/dev/null; then
-    echo -e "${GREEN}✓ WebSocket OK${NC}"
+    echo -e "${GREEN} WebSocket OK${NC}"
 else
-    echo -e "${RED}✗ WebSocket FAILED${NC}"
+    echo -e "${RED} WebSocket FAILED${NC}"
 fi
 
 echo "Health check complete"

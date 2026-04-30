@@ -1,7 +1,7 @@
 # Pre-Mainnet Security Gate Checklist
 # All items must PASS before mainnet deployment
 
-## Contract Security Gates ✅/❌
+## Contract Security Gates /
 
 ### Critical Contract Security  
 - [ ] **Signature Replay Protection**: `used_signatures` mapping prevents duplicate r,s pairs
@@ -17,7 +17,7 @@
 - [ ] Concurrent task operations are properly serialized
 - [ ] Edge case fee calculations (minimum amounts) work correctly
 
-## Relayer Security Gates ✅/❌
+## Relayer Security Gates /
 
 ### Authentication & Authorization
 - [ ] **API Key Security**: Constant-time comparison prevents timing attacks
@@ -32,7 +32,7 @@
 - [ ] Invalid provider signatures rejected
 - [ ] WebSocket connections authenticate before privileged operations
 
-## Provider Security Gates ✅/❌
+## Provider Security Gates /
 
 ### Cryptographic Security
 - [ ] **Private Key Protection**: Keys never logged or exposed in responses
@@ -46,7 +46,7 @@
 - [ ] Modified task results produce different signatures
 - [ ] Sandbox escapes blocked (basic file system restrictions)
 
-## Infrastructure Security Gates ✅/❌
+## Infrastructure Security Gates /
 
 ### Secrets Management
 - [ ] **No Hardcoded Secrets**: All secrets from environment variables
@@ -60,7 +60,7 @@
 - [ ] Error responses don't leak environment details
 - [ ] Redis connections use authentication
 
-## Frontend Security Gates ✅/❌  
+## Frontend Security Gates /  
 
 ### Web Security
 - [ ] **Wallet Integration**: Secure wallet connection flows
@@ -76,7 +76,7 @@
 
 ---
 
-## Security Incident Response ✅/❌
+## Security Incident Response /
 
 ### Monitoring & Response
 - [ ] **Error Alerting**: Critical errors trigger notifications

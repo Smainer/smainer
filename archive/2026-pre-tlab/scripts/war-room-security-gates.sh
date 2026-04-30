@@ -10,7 +10,7 @@ BLUE='\033[0;34m'
 BOLD='\033[1m'
 NC='\033[0m' # No Color
 
-echo -e "${BOLD}🔒 WAR ROOM SECURITY GATES - PRE-LAUNCH VALIDATION${NC}"
+echo -e "${BOLD} WAR ROOM SECURITY GATES - PRE-LAUNCH VALIDATION${NC}"
 echo -e "Target: First live end-to-end task safety"
 echo -e "Date: $(date)"
 echo ""
@@ -290,11 +290,11 @@ echo ""
 echo -e "${BOLD}FINAL WAR ROOM VERDICT${NC}"
 
 if [[ $FAILED_CHECKS -eq 0 ]]; then
-    echo -e "${GREEN}${BOLD}✅ GO FOR LAUNCH${NC}"
+    echo -e "${GREEN}${BOLD} GO FOR LAUNCH${NC}"
     echo -e "All security gates passed. Ready for first live end-to-end task."
     exit 0
 else
-    echo -e "${RED}${BOLD}🛑 NO-GO - SECURITY BLOCKS DETECTED${NC}"
+    echo -e "${RED}${BOLD} NO-GO - SECURITY BLOCKS DETECTED${NC}"
     echo -e "Failed checks: $FAILED_CHECKS"
     echo -e "Resolve all CRITICAL FAILURE and FAIL items before proceeding."
     exit 1

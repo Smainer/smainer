@@ -68,7 +68,7 @@ STARKNET_ACCOUNT_ADDRESS=0x071cd50ddd9a2d0e1e95e6decd9f0a292b489dc6b9b13e68aac43
 
 ### Working Provider Configuration (backend/provider/.env)
 
-**⚠️ SECURITY WARNING: Never commit actual private keys to version control!**
+** SECURITY WARNING: Never commit actual private keys to version control!**
 
 ```env
 RELAYER_WS_URL=ws://localhost:8000

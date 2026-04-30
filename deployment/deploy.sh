@@ -4,7 +4,7 @@
 
 set -euo pipefail
 
-echo "🚀 Starting Smainer Production Deployment..."
+echo " Starting Smainer Production Deployment..."
 
 # Constants
 DEPLOY_DIR="/opt/smainer"
@@ -74,7 +74,7 @@ if [ ! -f ".env.prod" ]; then
     # Set secure permissions
     chmod 600 .env.prod
     
-    log_warn "⚠️  IMPORTANT: Update .env.prod with your actual RELAYER_PRIVATE_KEY"
+    log_warn "  IMPORTANT: Update .env.prod with your actual RELAYER_PRIVATE_KEY"
     log_info "Generated production secrets and stored them in .env.prod"
 fi
 
@@ -126,7 +126,7 @@ cd telegram/telegram-bot && pip install -e ".[dev]"
 if [ ! -f ".env" ]; then
     cp .env.example .env
     chmod 600 .env
-    log_warn "⚠️  IMPORTANT: Update telegram-bot/.env with your TELEGRAM_BOT_TOKEN"
+    log_warn "  IMPORTANT: Update telegram-bot/.env with your TELEGRAM_BOT_TOKEN"
 fi
 
 # Create systemd service for Telegram bot
@@ -235,7 +235,7 @@ log_info "=== FAIL2BAN STATUS ==="
 sudo fail2ban-client status sshd || true
 
 echo ""
-log_info "🎉 Deployment complete!"
+log_info " Deployment complete!"
 log_info "Next steps:"
 log_info "1. Update .env.prod with actual RELAYER_PRIVATE_KEY"
 log_info "2. Update telegram-bot/.env with TELEGRAM_BOT_TOKEN"

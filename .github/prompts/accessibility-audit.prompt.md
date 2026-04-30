@@ -57,25 +57,25 @@ Check:
 
 Provide results as:
 
-### ✅ Passes
+###  Passes
 - [List items that meet WCAG {{level}} requirements]
 
-### ❌ Failures
+###  Failures
 - **Issue**: [Specific problem]
   - **WCAG Criterion**: [Number and name]
   - **Current**: [What's wrong]
   - **Fix**: [Exact code change needed]
   - **Impact**: [Who this affects and how]
 
-### ⚠️ Warnings
+###  Warnings
 - [Items that technically pass but could be improved]
 
 ### Contrast Report
 - Background: #XXXXXX
 - Foreground: #XXXXXX
 - Ratio: X.XX:1
-- WCAG AA: ✅/❌
-- WCAG AAA: ✅/❌
+- WCAG AA: /
+- WCAG AAA: /
 
 ## Tools
 Use contrast calculators: WebAIM, Accessible Colors, or direct calculation.

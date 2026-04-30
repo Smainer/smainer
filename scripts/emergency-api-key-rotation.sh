@@ -2,7 +2,7 @@
 # EMERGENCY API Key Rotation Playbook
 set -e
 
-echo "🔥 EMERGENCY API Key Rotation - Execute Immediately"
+echo " EMERGENCY API Key Rotation - Execute Immediately"
 echo "Reason: API key potentially exposed in chat/logs"
 
 # Constants
@@ -81,9 +81,9 @@ HEALTH_CHECK=$(curl -s -w "%{http_code}" \
     "http://localhost:8000/health" || echo "FAIL")
 
 if echo "$HEALTH_CHECK" | grep -q "200"; then
-    echo "✅ New API key working correctly"
+    echo " New API key working correctly"
 else
-    echo "❌ New API key test failed: $HEALTH_CHECK"
+    echo " New API key test failed: $HEALTH_CHECK"
     echo "Rolling back..."
     
     # Rollback
@@ -106,9 +106,9 @@ OLD_KEY_TEST=$(curl -s -w "%{http_code}" \
     "http://localhost:8000/health" || echo "401")
 
 if echo "$OLD_KEY_TEST" | grep -q "401"; then
-    echo "✅ Old key properly rejected"
+    echo " Old key properly rejected"
 else
-    echo "⚠️  Old key might still be accepted: $OLD_KEY_TEST"
+    echo "  Old key might still be accepted: $OLD_KEY_TEST"
 fi
 
 echo "Step 8: Log analysis and cleanup..."
@@ -116,7 +116,7 @@ echo "Step 8: Log analysis and cleanup..."
 # Check for any remaining instances of old keys in logs
 OLD_KEY_PATTERN="dev-api-key\|sk-[a-zA-Z0-9]\{20,64\}"
 if find /tmp /var/log -type f -name "*.log" -exec grep -l "$OLD_KEY_PATTERN" {} \; 2>/dev/null | head -5; then
-    echo "⚠️  Found old keys in logs - consider log rotation"
+    echo "  Found old keys in logs - consider log rotation"
 fi
 
 echo "Step 9: Notification and documentation..."
@@ -145,16 +145,16 @@ Next Steps:
 
 EOF
 
-echo "✅ API Key Rotation Complete!"
+echo " API Key Rotation Complete!"
 echo ""
-echo "🔔 IMPORTANT NEXT STEPS:"
+echo " IMPORTANT NEXT STEPS:"
 echo "1. Update any external services using the old API key"
 echo "2. Notify team members of the new key via secure channel"
 echo "3. Update documentation and runbooks"
 echo "4. Consider implementing key rotation automation"
 echo ""
-echo "📋 Summary written to: $BACKUP_DIR/rotation-summary.txt"
-echo "🔑 New API Key: $NEW_API_KEY"
+echo " Summary written to: $BACKUP_DIR/rotation-summary.txt"
+echo " New API Key: $NEW_API_KEY"
 echo ""
-echo "🔍 Services Status:"
+echo " Services Status:"
 ps aux | grep -E "(relayer|provider)" | grep -v grep || echo "No services running"

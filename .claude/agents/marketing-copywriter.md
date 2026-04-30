@@ -55,31 +55,31 @@ When you receive **Meeting Minutes** (`implementation_constraints[]`), treat all
 **Awareness (Top of Funnel)**
 - **Goal**: Stop the scroll, communicate core value in 8 words or less
 - **Tone**: Confident, clear, benefit-focused
-- ❌ "Revolutionizing the Future of Decentralized Computing"
-- ✅ "Run Complex AI Tasks. Pay Only for Results."
+-  "Revolutionizing the Future of Decentralized Computing"
+-  "Run Complex AI Tasks. Pay Only for Results."
 
 **Consideration (Middle of Funnel)**
 - **Goal**: Build trust, address objections, differentiate
 - **Tone**: Informative, specific, proof-backed
-- ❌ "Our platform is the best solution for your needs"
-- ✅ "256-bit verification ensures your task runs exactly as specified"
+-  "Our platform is the best solution for your needs"
+-  "256-bit verification ensures your task runs exactly as specified"
 
 **Conversion (Bottom of Funnel)**
 - **Goal**: Remove friction, make next step obvious
 - **Tone**: Direct, reassuring
-- ❌ "Submit" (button)  ✅ "Start Free Task" (button)
-- ❌ "Click here to continue"  ✅ "Connect Wallet to Continue"
+-  "Submit" (button)   "Start Free Task" (button)
+-  "Click here to continue"   "Connect Wallet to Continue"
 
 **Retention / Advocacy**
 - **Goal**: Delight, educate, reinforce value
-- ❌ "Success!" (empty state)  ✅ "Task Complete. Results verified on Starknet in 12s."
+-  "Success!" (empty state)   "Task Complete. Results verified on Starknet in 12s."
 
 ### Component-Specific Copy Standards
 
 **Headlines**: Primary 8 words max, start with verb or benefit, NO question headlines
 **CTAs**: Start with action verb, 2-4 words, communicate outcome not process
 **Error Messages**: State problem clearly, provide actionable solution, never blame user
-  - ❌ "Invalid input"  ✅ "Wallet address must start with 0x and be 42 characters"
+  -  "Invalid input"   "Wallet address must start with 0x and be 42 characters"
 **Empty States**: Explain why empty + guide to next action
 **Success States**: Celebrate specific achievement, show next step
 

@@ -11,10 +11,10 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-log_info() { echo -e "${BLUE}ℹ️  $1${NC}"; }
-log_success() { echo -e "${GREEN}✅ $1${NC}"; }
-log_warning() { echo -e "${YELLOW}⚠️  $1${NC}"; }
-log_error() { echo -e "${RED}❌ $1${NC}"; }
+log_info() { echo -e "${BLUE}ℹ  $1${NC}"; }
+log_success() { echo -e "${GREEN} $1${NC}"; }
+log_warning() { echo -e "${YELLOW}  $1${NC}"; }
+log_error() { echo -e "${RED} $1${NC}"; }
 
 # Project paths
 PROJECT_ROOT="/home/smainer/Smainer"
@@ -61,7 +61,7 @@ check_result() {
 # Check Redis health
 verify_redis() {
     echo ""
-    log_info "🔍 Verifying Redis..."
+    log_info " Verifying Redis..."
     
     # Check PID file exists
     if [ ! -f "$REDIS_PID_FILE" ]; then
@@ -118,7 +118,7 @@ verify_redis() {
 # Check Relayer health
 verify_relayer() {
     echo ""
-    log_info "🔍 Verifying Relayer..."
+    log_info " Verifying Relayer..."
     
     # Check PID file exists
     if [ ! -f "$RELAYER_PID_FILE" ]; then
@@ -181,7 +181,7 @@ verify_relayer() {
 # Check Provider health
 verify_provider() {
     echo ""
-    log_info "🔍 Verifying Provider..."
+    log_info " Verifying Provider..."
     
     # Check PID file exists
     if [ ! -f "$PROVIDER_PID_FILE" ]; then
@@ -238,7 +238,7 @@ verify_provider() {
 # Check system resources
 verify_system_resources() {
     echo ""
-    log_info "🔍 Verifying System Resources..."
+    log_info " Verifying System Resources..."
     
     # Check CPU usage of our processes
     local cpu_data=""
@@ -287,7 +287,7 @@ verify_system_resources() {
 # Check log files and recent activity
 verify_logs() {
     echo ""
-    log_info "🔍 Verifying Logs..."
+    log_info " Verifying Logs..."
     
     local log_files=("redis.log" "relayer.log" "provider.log")
     
@@ -318,7 +318,7 @@ verify_logs() {
 generate_summary() {
     echo ""
     echo "========================================="
-    log_info "📊 Verification Summary"
+    log_info " Verification Summary"
     echo "========================================="
     
     echo ""
@@ -328,12 +328,12 @@ generate_summary() {
     
     if [ "$FAILED_CHECKS" -eq 0 ]; then
         if [ "$success_rate" -eq 100 ]; then
-            log_success "🎉 All systems operational! Stack is healthy."
+            log_success " All systems operational! Stack is healthy."
         else
-            log_warning "⚠️  All critical systems operational, but some warnings detected."
+            log_warning "  All critical systems operational, but some warnings detected."
         fi
     else
-        log_error "❌ $FAILED_CHECKS critical issues detected. Stack may not be fully operational."
+        log_error " $FAILED_CHECKS critical issues detected. Stack may not be fully operational."
         echo ""
         echo "Recommended actions:"
         echo "1. Check individual service logs in $LOGS_DIR/"
@@ -344,8 +344,8 @@ generate_summary() {
     fi
     
     echo ""
-    echo "📁 Log files location: $LOGS_DIR"
-    echo "🔧 Quick log commands:"
+    echo " Log files location: $LOGS_DIR"
+    echo " Quick log commands:"
     echo "   tail -f $LOGS_DIR/*.log              (monitor all logs)"
     echo "   grep -i error $LOGS_DIR/*.log        (check for errors)"
     echo "   grep -i warn $LOGS_DIR/*.log         (check for warnings)"
@@ -356,7 +356,7 @@ generate_summary() {
 # Main verification
 main() {
     echo ""
-    log_info "🔍 Smainer Stack Verification"
+    log_info " Smainer Stack Verification"
     echo "========================================="
     
     # Run all verification modules
