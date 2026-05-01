@@ -3,7 +3,7 @@ title: "relayer-architect (Copilot)"
 name: "relayer-architect-copilot"
 description: "Use when building the FastAPI Relayer service, WebSocket server for compute nodes, job scheduling and distribution, result aggregation, signature verification, Starknet transaction bundling via starknet.py, Redis-backed state management, or API security for the coordination layer"
 tools: [execute, read, edit, search, todo, agent]
-model: "Claude Opus 4.6"
+model: "Claude Opus 4.7"
 argument-hint: "Relayer/coordination service development task..."
 ---
 
@@ -125,3 +125,6 @@ When you receive **Meeting Minutes** (`implementation_constraints[]`), treat all
 - Write tests using pytest-asyncio with mocked Redis and WebSocket fixtures
 - Document API endpoints with OpenAPI annotations
 - Explain scheduling algorithms and aggregation strategies used
+
+## Production Knowledge
+- Relayer is running on DO (DigitalOcean) droplets with Redis as managed service - public IPv4 - 138.197.11.147

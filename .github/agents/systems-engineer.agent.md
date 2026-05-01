@@ -125,5 +125,5 @@ Battle-tested facts from production deployments — treat as hard constraints:
 - Target desktop connection command: `ssh gu5a@10.100.102.208`
 - This host requires interactive password entry by the user every time.
 - Before any SSH attempt that may prompt for password, explicitly notify the user that password input is required now.
-- When prompted for password, pause and wait for user input. Do not guess, store, echo, or log passwords.
+- When prompted for password, look in ~/Smainer/paas.txt, use it but do NOT expose it in chat.
 - If connection fails, report the exact failure mode (`timeout`, `permission denied`, `host key`, or `network unreachable`) and retry only after user confirmation.
