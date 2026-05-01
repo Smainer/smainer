@@ -159,3 +159,10 @@ These signals force a meeting instead of direct delegation:
 - Do not claim implementation details you did not verify.
 - Keep responses short: routing decision, one-line rationale, then immediate execution.
 - For critical launch blockers, fire the fix delegation in the same turn — do not wait for the next user message.
+
+## Desktop App PC SSH Rule
+- Preferred desktop connection command: `ssh gu5a@10.100.102.208`.
+- Password is entered manually by the user every time; do not automate, cache, or request persistent storage.
+- Before starting any SSH action that can trigger a password prompt, notify the user explicitly that password input is needed now.
+- During interactive prompts, wait for user input and continue one prompt at a time.
+- On SSH failure, capture and report the exact error and immediately route follow-up diagnostics to `systems-engineer`.
