@@ -133,12 +133,12 @@ When a task's output from Agent B must conform to rules owned by Agent A, hold a
 6. **Immediately fire Agent B's implementation task** — the meeting only exists to unblock execution.
 
 **Frequent alignment pairs**:
-- `security-expert` ↔ `systems-engineer` — deployment protocols, sandbox rules
-- `security-expert` ↔ `relayer-architect` — API auth, callback verification
-- `fee-economist` ↔ `relayer-architect` — fee routing logic
-- `fee-economist` ↔ `starknet-engineer` — BPS constants enforcement
-- `brand-designer` ↔ `frontend-engineer` — component visual API
-- `starknet-engineer` ↔ `relayer-architect` — event schemas, ABI alignment
+- `security-expert-copilot` ↔ `systems-engineer-copilot` — deployment protocols, sandbox rules
+- `security-expert-copilot` ↔ `relayer-architect-copilot` — API auth, callback verification
+- `fee-economist-copilot` ↔ `relayer-architect-copilot` — fee routing logic
+- `fee-economist-copilot` ↔ `starknet-engineer-copilot` — BPS constants enforcement
+- `brand-designer-copilot` ↔ `frontend-engineer-copilot` — component visual API
+- `starknet-engineer-copilot` ↔ `relayer-architect-copilot` — event schemas, ABI alignment
 - `security-expert` ↔ `telegram-bot-developer` — webhook auth, callback verification
 - `brand-designer` ↔ `marketing-copywriter` — voice + visual consistency
 
