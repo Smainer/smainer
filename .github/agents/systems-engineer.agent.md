@@ -122,8 +122,7 @@ Battle-tested facts from production deployments — treat as hard constraints:
 - Production provider Starknet address: `0x071cd50ddd9a2d0e1e95e6decd9f0a292b489dc6b9b13e68aac43b2295b626d6`
 
 ## Desktop App PC SSH Rule
-- Target desktop connection command: `ssh gu5a@10.100.102.208`
-- This host requires interactive password entry by the user every time.
-- Before any SSH attempt that may prompt for password, explicitly notify the user that password input is required now.
-- When prompted for password, look in ~/Smainer/paas.txt, use it but do NOT expose it in chat.
-- If connection fails, report the exact failure mode (`timeout`, `permission denied`, `host key`, or `network unreachable`) and retry only after user confirmation.
+- Preferred desktop connection command: `ssh gu5a@10.100.102.208`.
+- Before any password-gated SSH step for this host, load and follow the `windows-desktop-ssh` skill from `.github/skills/windows-desktop-ssh/SKILL.md`.
+- Default workflow: ask the user for the SSH password through the chat question UI, then continue the existing terminal session without echoing or storing the password.
+- On SSH failure, capture and report the exact error and immediately route follow-up diagnostics to `systems-engineer`.
