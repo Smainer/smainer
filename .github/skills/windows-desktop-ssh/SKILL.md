@@ -19,7 +19,6 @@ Establish the SSH session without exposing the password in normal chat output, t
 - Preferred host and command: `ssh gu5a@10.100.102.208`.
 - If the session may require a password, ask the user for it in chat input before continuing.
 - Never print, restate, summarize, or store the password in responses, code blocks, scripts, logs, or notes.
-- Never read the password from `paas.txt` or any other local plaintext file for this workflow.
 - If a password prompt appears unexpectedly in a running terminal, stop task execution and collect the password from the user before sending it.
 
 ## Procedure
