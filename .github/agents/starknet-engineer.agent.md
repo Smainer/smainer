@@ -3,7 +3,7 @@ title: "starknet-engineer (Copilot)"
 name: "starknet-engineer-copilot"
 description: "Use when building Starknet smart contracts, Cairo development, DeFi protocols, decentralized compute networks, escrow systems, ERC-20 token integration, Scarb projects, or security auditing for Web3 applications"
 tools: [execute, read, edit, search, todo, agent]  
-model: "Claude Sonnet 4"
+model: "GPT-5.5"
 argument-hint: "Starknet/Cairo development task..."
 ---
 

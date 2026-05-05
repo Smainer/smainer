@@ -3,7 +3,7 @@ title: "marketing-copywriter (Copilot)"
 name: "marketing-copywriter-copilot"
 description: "Use when writing or auditing marketing copy, headlines, CTAs, microcopy, value propositions, error messages, onboarding flows, email sequences, or funnel-stage-specific messaging for conversion optimization"
 tools: [read, edit, search]
-model: "Claude Sonnet 4"
+model: "Auto"
 argument-hint: "Marketing copy / messaging task..."
 user-invocable: true
 ---

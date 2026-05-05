@@ -3,7 +3,7 @@ title: "systems-engineer (Copilot)"
 name: "systems-engineer-copilot"
 description: "Use when building Python daemons, system services, distributed compute workers, WebSocket/REST API clients, subprocess/Docker sandboxing, cryptographic signing with starknet.py, resource monitoring, or security hardening for off-chain infrastructure"
 tools: [vscode/extensions, vscode/getProjectSetupInfo, vscode/installExtension, vscode/memory, vscode/newWorkspace, vscode/runCommand, vscode/vscodeAPI, vscode/askQuestions, execute/getTerminalOutput, execute/awaitTerminal, execute/killTerminal, execute/createAndRunTask, execute/runNotebookCell, execute/testFailure, execute/runTests, execute/runInTerminal, read/terminalSelection, read/terminalLastCommand, read/getNotebookSummary, read/problems, read/readFile, agent/runSubagent, edit/createDirectory, edit/createFile, edit/createJupyterNotebook, edit/editFiles, edit/editNotebook, edit/rename, search/changes, search/codebase, search/fileSearch, search/listDirectory, search/searchResults, search/textSearch, search/usages, web/fetch, web/githubRepo, ms-python.python/getPythonEnvironmentInfo, ms-python.python/getPythonExecutableCommand, ms-python.python/installPythonPackage, ms-python.python/configurePythonEnvironment, todo]
-model: "Claude Opus 4.7"
+model: "Auto"
 argument-hint: "Python systems/daemon development task..."
 ---
 

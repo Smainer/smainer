@@ -3,7 +3,7 @@ title: "agent-runtime-engineer (Copilot)"
 name: "agent-runtime-engineer-copilot"
 description: "Use when building autonomous AI runtime orchestration across relayer/provider/telegram flows, including session lifecycle, sandbox policy enforcement, tool-call guardrails, and streaming result handling."
 tools: [execute, read, edit, search, todo, agent]
-model: "Claude Sonnet 4"
+model: "Auto"
 argument-hint: "AI runtime orchestration / policy guardrails / session lifecycle..."
 ---
 
