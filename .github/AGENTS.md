@@ -11,6 +11,9 @@ Specialized agents for building the Smainer decentralized compute marketplace.
 **[@chief-director](./agents/chief-director.agent.md)**
 Accepts input from user only. Routes to `planner` for multi-step work or directly to a single specialist for a targeted task. Never implements. Runs meetings via the [chief-director-agent-sync](./prompts/chief-director-agent-sync.prompt.md) prompt.
 
+**[@prompt-engineer](./agents/prompt-engineer.agent.md)**
+Hidden director-only support agent. Rephrases unclear or under-specified user requests into Director-ready prompts, or returns focused clarification questions when user intent is uncertain.
+
 ---
 
 ## TIER 1 — PLANNING
@@ -111,6 +114,8 @@ Meetings are convened by `chief-director` only. Eight canonical alignment pairs:
 - `@planner` Break down [feature] into sprint tasks with owners and dependencies
 - `@agent-runtime-engineer` Define runtime policies and agent execution guardrails
 - `@ai-inference-benchmarker` Produce tiered performance baseline and bottleneck report
+
+`prompt-engineer` is hidden from the user-facing picker and is invoked by `chief-director` only when a request needs clarification or prompt cleanup before routing.
 
 ---
 

@@ -11,6 +11,8 @@ All agent files and skill files derive their structure from this document.
 TIER 0 — GATEWAY
   chief-director           Single point of entry. Routes, orchestrates, facilitates meetings.
                            Never implements. Never writes code or edits files.
+  prompt-engineer          Hidden director-only prompt clarification support.
+                           Returns cleaned Director prompts or clarification questions.
 
 TIER 1 — PLANNING
   planner                  Receives Task Brief from chief-director.
@@ -49,6 +51,25 @@ TIER 4 — UTILITY (read-only, callable from any tier)
 ```
 User
   ↓
+chief-director (TIER 0)
+  ↓ Prompt Clarification Request, when user intent is unclear
+prompt-engineer (TIER 0 support)
+  ↓ Clean Director Prompt or Clarifying Questions
+chief-director (TIER 0)
+  ↓ Task Brief
+planner (TIER 1)
+  ↓ Task Manifests (one per specialist)
+[specialist agents] (TIER 2)
+  ↓ Delivery Reports
+chief-director (TIER 0)
+  ↓ Validation Requests
+security-expert / repository-architect (TIER 3)
+  ↓ Validation Reports
+chief-director (TIER 0)
+  ↓ Final delivery to user
+
+Standard clear-intent flow:
+
 chief-director (TIER 0)
   ↓ Task Brief
 planner (TIER 1)
