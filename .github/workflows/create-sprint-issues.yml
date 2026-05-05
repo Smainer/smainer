@@ -6,7 +6,7 @@ on:
       dry_run:
         description: 'Dry run (print issues without creating)'
         required: false
-        default: 'false'
+        default: false
         type: boolean
 
 jobs:
