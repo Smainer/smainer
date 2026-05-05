@@ -1,1004 +1,567 @@
-# Smainer Privacy AI — End-to-End Data Flow
+# Smainer Privacy AI - End-to-End Data Flow
 
-> **Scope:** Full request lifecycle from Telegram user message to AI result delivery, including
-> wallet/payment gating, relayer scheduling, Redis/PubSub internals, provider WebSocket execution,
-> Ollama inference, and result callback. Wallet charging happens **outside Telegram** via linked
-> wallet / external wallet flow.  
-> **Audience:** Developers who want to follow the code and debug production issues.  
-> **Last updated:** 2026-05-05
+> Scope: Full request lifecycle from Telegram user message to AI result delivery, including
+> wallet/payment gating, relayer scheduling, Redis internals, provider WebSocket execution,
+> Ollama inference, and result callbacks. Wallet charging happens outside Telegram.
+> Audience: Developers who want to follow the code and debug production issues.
+> Last updated: 2026-05-05
 
 ---
 
 ## Table of Contents
 
-1. [System Overview](#1-system-overview)  
-2. [Request Lifecycle (step-by-step)](#2-request-lifecycle)  
-3. [Protocols, Endpoints, and Events Reference](#3-protocols-endpoints-and-events)  
-4. [File / Function Map](#4-file--function-map)  
-5. [Relayer Scheduling and Redis/PubSub Internals](#5-relayer-scheduling-and-redispubsub-internals)  
-6. [Provider WebSocket Execution and Ollama Inference](#6-provider-websocket-execution-and-ollama-inference)  
-7. [Payment and Wallet — Outside-Telegram Design](#7-payment-and-wallet--outside-telegram-design)  
-8. [Debugging Checklist](#8-debugging-checklist)  
-9. [Common Failure Modes](#9-common-failure-modes)  
+1. System Overview
+2. Request Lifecycle (step by step)
+3. Protocols, Endpoints, and Events Reference
+4. File and Function Map
+5. Relayer Scheduling and Redis Internals
+6. Provider WebSocket Execution and Ollama Inference
+7. Payment and Wallet - Outside Telegram Design
+8. Debugging Checklist
+9. Common Failure Modes
 
 ---
 
 ## 1. System Overview
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  User                                                                         │
-│  Telegram Client                                                              │
-└─────────────────────────────────────────────────────────────────────────────┘
-         │  HTTPS POST  (Telegram Bot API)
-         ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  Smainer Bot  (Vercel serverless / webhook)                                   │
-│  telegram/smainer-bot/                                                        │
-│  api/webhook.py → src/handlers.py                                             │
-│  Wallet link stored via Relayer KV API (HMAC-keyed, optional Fernet)         │
-└─────────────────────────────────────────────────────────────────────────────┘
-         │  Wallet/payment gate: user taps "Pay & Compute" button
-         │  → opens MiniApp (smainer-miniapp.vercel.app)
-         │
-         │  MiniApp calls on-chain escrow contract (Starknet, external to Telegram)
-         │  User approves $STRK transfer in ArgentX/Braavos
-         │  MiniApp calls Telegram.WebApp.sendData(JSON) on success
-         │
-         │  Telegram delivers web_app_data back to bot webhook
-         │
-         │  Bot verifies on-chain escrow via PaymentVerifier → Starknet RPC
-         │
-         │  HTTPS POST  (Bearer token)
-         ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  Relayer  (DigitalOcean droplet, uvicorn behind nginx)                        │
-│  backend/relayer/  —  api.smainer.io                                          │
-│  FastAPI app — routes.py / ai_inference.py                                   │
-│  Redis (task queue, node pool, event streams)                                 │
-│  JobScheduler: pending_tasks list → assigns to best node                      │
-│  EventBus: Redis Streams (events:tasks, events:nodes, events:system)          │
-└─────────────────────────────────────────────────────────────────────────────┘
-         │  WebSocket  (wss://api.smainer.io/ws/{node_id})
-         ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  Provider Daemon  (Runpod GPU node)                                           │
-│  backend/provider/                                                             │
-│  EnhancedRelayerAPIClient (websockets, circuit breakers)                      │
-│  EnhancedSandboxedExecutor._execute_ai_inference_task()                       │
-│  → Ollama HTTP API  (localhost:11434/api/generate)                            │
-└─────────────────────────────────────────────────────────────────────────────┘
-         │  WebSocket TASK_COMPLETED event
-         ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  Relayer receives result, calls deliver_result_callback()                     │
-│  HTTPS POST to https://bot.smainer.io/api/callback/complete                  │
-│  (HMAC-SHA256 signed, 300 s replay window)                                   │
-└─────────────────────────────────────────────────────────────────────────────┘
-         │
-         ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  Bot callback endpoint  (Vercel)                                              │
-│  telegram/smainer-bot/api/callback/complete.py                                │
-│  bot.edit_message_text() — AI response shown to user                          │
-│  SettlementManager.settle_task() — on-chain fee split (88% provider, 12% treasury) │
-└─────────────────────────────────────────────────────────────────────────────┘
+User (Telegram client)
+  -> Telegram webhook POST
+  -> Bot (Vercel) telegram/smainer-bot/api/webhook.py
+      -> handlers.py
+      -> Relayer KV API for wallet + session + prefs
+  -> Payment gate
+      - Direct flow (URL button) or MiniApp (WebApp)
+  -> MiniApp (telegram/miniapp)
+      - create_tiered_task on Starknet
+      - notify bot via sendData or POST /api/payment-complete
+  -> Relayer (FastAPI + Redis) backend/relayer/src/relayer
+      - POST /api/v1/tasks
+      - JobScheduler + NodePool + Redis
+  -> Provider (Runpod) backend/provider/src/provider
+      - WebSocket task execution + Ollama
+  -> Relayer callback delivery
+      - POST https://bot.smainer.io/api/callback/complete
+  -> Bot edits Telegram message with result
 ```
 
 ---
 
-## 2. Request Lifecycle
+## 2. Request Lifecycle (step by step)
 
-### Step 1 — Telegram delivers update to bot webhook
+### Step 1 - Telegram update arrives at the bot webhook
 
-**File:** `telegram/smainer-bot/api/webhook.py`  
-**Class:** `handler` (inherits `BaseHTTPRequestHandler`)  
-**Method:** `handler.do_POST`
+File: telegram/smainer-bot/api/webhook.py
 
-1. Reads `Content-Length`, reads body bytes.
-2. Calls `_verify_webhook_secret(secret_header)`:
-   - Reads `X-Telegram-Bot-Api-Secret-Token` header.
-   - Compares with `settings.webhook_secret` using `hmac.compare_digest()` to prevent timing attacks.
-   - If `webhook_secret` is unset in Vercel env, verification is skipped with a warning (dev only).
-3. JSON-parses the body into a `dict`.
-4. Runs `asyncio.run(_process_update(update))`.
+1. handler.do_POST verifies X-Telegram-Bot-Api-Secret-Token via _verify_webhook_secret() using hmac.compare_digest.
+2. Parses JSON and calls asyncio.run(_process_update(update)).
+3. _process_update instantiates Bot, RelayerClient, WalletManager, PaymentManager per invocation.
+4. Routes message.web_app_data to handle_webapp_data() or text to handle_inference() or handle_one_tap_inference() depending on settings.one_tap_flow_enabled.
 
-**Function:** `_process_update(update: dict)`
+### Step 2 - Standard Pay and Compute gate (text prompt)
 
-- Instantiates `Bot(token=settings.telegram_bot_token)`, `RelayerClient`, `WalletManager`, `PaymentManager` **per invocation** (stateless serverless).
-- Checks for `message.web_app_data` first → routes to `handle_webapp_data`.
-- Checks for `callback_query` (inline button press) → acknowledges via `bot.answer_callback_query`.
-- For text messages, dispatches to the appropriate command handler or to `handle_inference` / `handle_one_tap_inference`.
+File: telegram/smainer-bot/src/handlers.py
 
----
+handle_inference(update, bot, wallet_mgr, payment_mgr, relayer):
 
-### Step 2 — Wallet gate (text message → `handle_inference`)
+1. touch_session(user_id) writes a KV-backed session timestamp (sess: prefix; TTL = 15 min + 60 s).
+2. Resolves model from relayer.kv_get(prefs:{user_id}:model) or settings.default_model.
+3. infer_tier(model_name) maps model name to ModelTier.{SMALL, MEDIUM, LARGE}.
+4. list_available_models() calls relayer /api/v1/nodes (Bearer) first, falls back to /api/v1/ai/capable-nodes.
+5. If wallet linked, WalletManager.has_sufficient_balance() checks STRK balance via Starknet RPC.
+6. Sends a placeholder message with a temporary callback button (payment_preparing).
+7. generate_nonce(user_id, chat_id) stores a pay_nonce:{nonce} key in relayer KV with two-phase TTL.
+8. Builds pay URL:
+   - settings.wallet_flow_direct = True: URL button via settings.get_direct_pay_url(...)
+   - settings.wallet_flow_direct = False: WebApp button via settings.get_miniapp_pay_url(...)
+9. Edits the placeholder keyboard to show the final Pay and Compute button and stops.
 
-**File:** `telegram/smainer-bot/src/handlers.py`  
-**Function:** `handle_inference(update, bot, wallet_mgr, payment_mgr, relayer)`
+### Step 2b - One-tap approve flow (session API)
 
-1. **Session touch:** `touch_session(user_id)` — in-process TTL tracking (TM-004, 15-minute idle).
-2. **Model preference lookup:** `await relayer.kv_get(f"prefs:{user_id}:model")` — calls Relayer KV REST endpoint (`GET /api/v1/bot/kv/{key}`). Falls back to `settings.default_model`.
-3. **`infer_tier(model_name)`** — heuristic: names containing `70b/65b/72b` → `ModelTier.LARGE`, `34b/33b/13b/14b` → `ModelTier.MEDIUM`, otherwise `ModelTier.SMALL`.
-4. **Node availability check:** `await relayer.list_available_models()` — calls `GET /api/v1/ai/capable-nodes` on the Relayer. Returns JSON list. If empty, sends "No compute nodes online" and returns.
-5. **Wallet link check:** `await wallet_mgr.get_linked_address(user_id)`.
-   - If linked, calls `await wallet_mgr.has_sufficient_balance(address)` → queries Starknet RPC for `$STRK` balance (see §7).
-   - Insufficient balance → informs user.
-6. **Sends "Pay & Compute" button** — an `InlineKeyboardMarkup` with a `WebAppInfo(url=pay_url)` button. The `pay_url` encodes the prompt, model, and `message_id` so the MiniApp knows what to pay for.
+Files:
+- telegram/smainer-bot/src/handlers.py (handle_one_tap_inference)
+- backend/relayer/src/relayer/api/routes.py (sessions endpoints)
+- backend/relayer/src/relayer/listeners/approval_listener.py
 
-The placeholder message ID is stored in memory (encoded in the URL) so the relayer callback can edit the same message with the AI result.
+1. handle_one_tap_inference registers the prompt via POST /api/v1/sessions/prompt.
+2. MiniApp connects wallet and posts to /api/v1/sessions/wallet.
+3. ApprovalListener polls STRK Approval events and maps dust nonces to sessions.
+4. Session keys are stored under session:prompt, session:wallet, session:dust_lookup, session:status.
 
----
+### Step 3 - MiniApp payment (outside Telegram)
 
-### Step 3 — MiniApp payment (outside Telegram)
+Files:
+- telegram/miniapp/src/hooks/usePayment.ts
+- telegram/miniapp/src/payment/factory.ts
+- telegram/miniapp/src/payment/strategies/AbstractPaymentStrategy.ts
+- telegram/miniapp/src/payment/strategies/StarknetWalletStrategy.ts
+- telegram/miniapp/src/payment/strategies/TelegramWebViewStrategy.ts
+- telegram/miniapp/src/payment/strategies/BotLinkedStrategy.ts
+- telegram/miniapp/src/lib/starknet.ts
 
-**See §7 for full design.** The MiniApp (`telegram/miniapp/src/`) opens in the Telegram WebApp container:
+Flow details:
 
-1. Reads URL params (prompt, model, cost).
-2. Connects wallet via raw `RpcProvider` (not `InjectedConnector`; browser extensions don't work in Telegram WebView).
-3. Calls `create_task()` on the Starknet escrow contract — this transfers $STRK from the user's wallet into escrow. The contract returns an `on_chain_task_id`.
-4. On approval: calls `Telegram.WebApp.sendData(JSON.stringify({ action: "payment_complete", on_chain_task_id, prompt }))`.
-5. Telegram delivers this as a `web_app_data` message to the bot webhook.
+1. usePayment resolves environment (factory.resolveEnvironment):
+   - starknet-wallet: not Telegram WebView and account connected
+   - bot-linked-readonly: botLinkedWallet present
+   - telegram-webview: Telegram WebView without bot linked
+2. StarknetWalletStrategy:
+   - checkAllowance() calls STRK allowance via RPC
+   - builds multicall: optional approve + create_tiered_task
+   - hashPrompt(prompt) uses Web Crypto SHA-256 and reduces to felt252
+   - waits for transaction receipt and parses TaskCreated event to extract on_chain_task_id
+   - fallback: call task_count if TaskCreated not found
+3. TelegramWebViewStrategy opens external browser for wallet signing.
+4. BotLinkedStrategy posts to /api/payment-request on the bot API (note: endpoint not implemented in telegram/smainer-bot).
+5. AbstractPaymentStrategy.notifyBot:
+   - inside Telegram WebView: Telegram.WebApp.sendData(JSON payload)
+   - outside: POST {botApiUrl}/api/payment-complete with init_data and nonce
 
----
+Notification payload fields:
 
-### Step 4 — Bot processes `web_app_data` → verifies escrow → submits task
+```json
+{
+  "action": "payment_complete",
+  "on_chain_task_id": "<u256-as-string>",
+  "prompt": "...",
+  "tier": "BASIC|PRO|PREMIUM",
+  "chat_id": "<telegram chat id>",
+  "message_id": "<telegram message id>",
+  "starknet_address": "<0x...>"
+}
+```
 
-**File:** `telegram/smainer-bot/src/handlers.py`  
-**Function:** `handle_webapp_data(update, bot, wallet_mgr, payment_mgr, relayer)`
+### Step 4 - Bot handles payment completion
 
-1. Reads `message.web_app_data.data` (raw JSON string).
-2. Parses JSON. **TM-003:** `action` value must be in `ALLOWED_WEBAPP_ACTIONS = frozenset({"wallet_connect", "wallet_disconnect", "payment_complete"})` — anything else is rejected.
-3. For `action == "payment_complete"`:
-   - Extracts `on_chain_task_id` and `prompt` from payload.
-   - Looks up `starknet_address` via `wallet_mgr.get_linked_address(user_id)`.
-   - **On-chain verification:** instantiates `PaymentVerifier()` and calls `await verifier.verify_escrow(on_chain_task_id, starknet_address)`.
-     - Retry logic: up to 2 extra delayed attempts (2 s, 4 s backoff) if initial result is "not found" — handles tx propagation lag.
-     - If still failing: sends "Payment verification failed" to user and returns.
-   - Sends typing indicator + placeholder message: `"Payment confirmed (Task #N). Running compute task..."`.
-   - Builds `InferenceRequest` with `telegram_user_id`, `chat_id`, `message_id`, `prompt`, `model`, `model_tier`, `starknet_address`, `cost_strk`.
-   - Calls `await relayer.submit_inference(req, on_chain_task_id=int(on_chain_task_id))`.
-   - On success: calls `await payment_mgr.reserve_payment(...)` to log the pending payment.
-   - Edits placeholder to: `"Task #N submitted (abc12345...). Computing results..."`.
+Files:
+- telegram/smainer-bot/src/handlers.py (handle_webapp_data)
+- telegram/smainer-bot/api/payment_complete.py (POST /api/payment-complete)
 
----
+WebApp path (sendData):
 
-### Step 5 — Relayer receives task
+1. handle_webapp_data enforces ALLOWED_WEBAPP_ACTIONS and touch_session().
+2. For payment_complete:
+   - check_session_active(user_id) with 15-minute idle timeout
+   - resolve wallet address (payload or KV)
+   - PaymentVerifier.verify_escrow(on_chain_task_id, expected_address) with retry (2 s, 4 s) on not found
+   - send placeholder, then relayer.submit_inference(..., on_chain_task_id=...)
+   - payment_mgr.reserve_payment(...) then edit placeholder with task id
 
-**File:** `backend/relayer/src/relayer/api/routes.py`  
-**Function:** `submit_task(task: TaskSubmission, _, redis, scheduler)` — `POST /api/v1/tasks`
+Standalone browser path:
 
-1. Auth: `AuthenticatedUser` dependency checks `Authorization: Bearer {RELAYER_API_KEY}` header.
-2. Validates `TaskSubmission` schema (Pydantic). Returns 422 if invalid.
-3. Calls **payment verification** (Phase 8) via `PaymentVerifier` if `on_chain_task_id` is present.
-4. Calls `await scheduler.submit_task(submission, verified_escrow=...)`.
-5. Returns `HTTP 201` with `{"task_id": "..."}`.
+1. payment_complete.py verifies Telegram initData HMAC or a bot-issued nonce (verify_and_consume_nonce).
+2. Reuses the same escrow verification and relayer submission flow.
 
-**File:** `backend/relayer/src/relayer/api/ai_inference.py`  
-**Function:** `store_callback_url(redis, task_id, callback_url)`
+### Step 5 - Relayer task submission
 
-Called from `submit_task` — stores the bot's callback URL (`https://bot.smainer.io/api/callback/complete`) in Redis:
-- Key: `task_callback:{task_id}` (TTL: 3600 s)
-- Value prefix: `"complete:{url}"` — signals `deliver_result_callback` to use the URL as-is (not append `/callback/complete`).
-- SSRF guard: `is_allowed_callback_url()` enforces HTTPS, allowlist, blocks private IP, loopback, credentials.
+File: backend/relayer/src/relayer/api/routes.py
 
----
+POST /api/v1/tasks (submit_task):
 
-### Step 6 — Scheduler queues and assigns task
+1. Requires Authorization: Bearer $RELAYER_API_KEY.
+2. Validates TaskSubmission schema.
+3. PaymentVerifier.verify_escrow is required when settings.require_payment_verification is true.
+4. Dedup: escrow:task:{on_chain_task_id}:submitted (SET NX, 24h TTL).
+5. scheduler.submit_task(...) writes task data and enqueues pending_tasks.
+6. onchain_task_map:{on_chain_task_id} -> task_id (TTL 48h).
+7. Stores callback URL:
+   - payload.complete_callback_url (exact URL) or payload.callback_url (base)
+   - task_callback:{task_id} with prefix complete: for full URLs
 
-**File:** `backend/relayer/src/relayer/core/scheduler.py`  
-**Class:** `JobScheduler`  
-**Method:** `submit_task(submission, verified_escrow)`
+### Step 6 - Scheduling and assignment
 
-Full detail in §5. Summary:
+File: backend/relayer/src/relayer/core/scheduler.py
 
-1. Generates `task_id = str(uuid.uuid4())`.
-2. Calculates `adjusted_reward = int(base_reward * tier_multiplier)` using `TIER_REWARD_MULTIPLIERS` (`BASIC=1.0x`, `PRO=2.2x`, `PREMIUM=3.5x`).
-3. Builds `task_data` dict and atomically `HSET task:{task_id}` + `LPUSH pending_tasks {task_id}` via a Redis pipeline.
-4. Fires `asyncio.create_task(self._schedule_pending_tasks())`.
+1. submit_task writes task:{task_id} hash and LPUSH pending_tasks.
+2. _schedule_pending_tasks processes up to 10 tasks per sweep.
+3. _schedule_single_task:
+   - reads routing_model and routing_privacy_mode from task hash
+   - validates privacy_mode immutability against payload
+   - evaluates AI eligibility via evaluate_node_ai_eligibility (capability contract required)
+   - chooses best node by tier priority then low current_tasks
+4. assign_task_to_node updates task status, sets task_assignments, task_timeouts, and sends TaskAssignedEvent.
+5. deliver_result_callback sends an intermediate assigned status with final=False.
+6. _pending_task_scheduler runs every 10 s; _timeout_monitor runs every 30 s and marks TIMEOUT.
 
-`_schedule_single_task(task_id)` picks an eligible node using `evaluate_node_ai_eligibility()` (checks model, privacy mode, capability contract freshness) then calls `assign_task_to_node(task_id, node_id)`.
+### Step 7 - Provider executes task
 
-`assign_task_to_node` atomically:
-- Sets status → `ASSIGNED`, records `assigned_node_id`, `assigned_at`.
-- Moves task from `pending_tasks` list → `assigned_tasks` set.
-- Writes `task_assignments` hash: `{task_id: node_id}`.
-- Adds to `task_timeouts` sorted set (score = UTC expiry timestamp).
-- Sends `TaskAssignedEvent` JSON over the open WebSocket to the provider node.
-- Fires an intermediate `"assigned"` callback (via `deliver_result_callback`) for UX feedback.
+Files:
+- backend/provider/src/provider/enhanced_api_client.py
+- backend/provider/src/provider/enhanced_executor.py
+- backend/provider/src/provider/metrics/collector.py
 
----
+1. WebSocket receives task_assigned and maps payload -> TaskPayload args.
+2. EnhancedSandboxedExecutor._execute_ai_inference_task:
+   - POST $OLLAMA_BASE_URL/api/generate
+   - body: model, prompt, stream=false, options.num_predict=512
+   - httpx timeout = 120 s
+3. MetricsCollector.start/finish collects input_tokens, output_tokens, gpu_seconds, execution_time_seconds.
+4. _send_task_result_enhanced creates task_completed event with result_data, execution_time, signature, result_hash, effort_metrics.
 
-### Step 7 — Provider receives task, executes via Ollama
+### Step 8 - Relayer validates result and delivers callback
 
-**File:** `backend/provider/src/provider/enhanced_api_client.py`  
-**Class:** `EnhancedRelayerAPIClient`
+File: backend/relayer/src/relayer/api/websocket.py
 
-1. Receives `TaskAssignedEvent` JSON from the WebSocket.
-2. Parses to `TaskPayload`. Routes to `self.task_handler` → `ProviderDaemon._handle_task(task)`.
+1. _handle_task_completed verifies result signature with SignatureVerifier.verify_node_result_signature.
+2. scheduler.complete_task updates task status and clears timeout tracking.
+3. ResultAggregator.add_verified_result stores result:{task_id} and pushes to verified_results list.
+4. deliver_result_callback posts to the bot callback URL (HMAC signed).
 
-**File:** `backend/provider/src/provider/enhanced_executor.py`  
-**Class:** `EnhancedSandboxedExecutor`  
-**Method:** `execute_task(task)` → `_execute_ai_inference_task(task)`
+Callback signing details:
 
-1. Extracts `prompt = task.args.get("prompt") or task.code`, `model = task.args.get("model") or config.OLLAMA_DEFAULT_MODEL`.
-2. Calls `MetricsCollector().start(model_id=model)` — starts effort tracking (Phase 8).
-3. **Ollama HTTP call:**
-   ```
-   POST {config.OLLAMA_BASE_URL}/api/generate
-   {
-     "model": "<model>",
-     "prompt": "<prompt>",
-     "stream": false,
-     "options": {"num_predict": 512}
-   }
-   ```
-   Timeout: 120 s via `httpx.AsyncClient`.
-4. Extracts `response_text = data["response"]`.
-5. Calls `await metrics_collector.finish(data)` — captures token counts, timing.
-6. Returns `TaskResult(status=COMPLETED, result=response_text, effort_metrics=...)`.
+- Headers: X-Smainer-Signature and X-Smainer-Timestamp
+- Signature: HMAC-SHA256(timestamp + "." + raw request body)
 
-**Back in `EnhancedRelayerAPIClient`:**
+### Step 9 - Bot callback edits the message
 
-7. Signs result via `StarknetSigner.sign_task_result(result)` — Pedersen hash + ECDSA over the result hash.
-8. Sends `TaskCompletedEvent` JSON back to relayer over the same WebSocket.
+File: telegram/smainer-bot/api/callback/complete.py
 
----
+1. Rate limit by IP (60/min).
+2. verify_callback_signature validates HMAC and replay window.
+3. TaskCallback model is parsed; chat_id and message_id are required in the body.
+4. On success: edit message text, call payment_mgr.settle_payment, and fire-and-forget NFT mint.
+5. On failure: edit message with error and mark payment failed.
 
-### Step 8 — Relayer receives result, delivers callback
+### Step 10 - Settlement (post inference)
 
-**File:** `backend/relayer/src/relayer/api/websocket.py`  
-**Class:** `WebSocketManager`  
-**Method:** `_handle_task_completed(websocket, node_id, event)`
+Files:
+- backend/relayer/src/relayer/settlement/settler.py
+- backend/relayer/src/relayer/settlement/refund.py
+- backend/relayer/src/relayer/pricing/constants.py
 
-1. Calls `await self.scheduler.complete_task(task_id, result_data, execution_time, effort_metrics)`.
-   - Atomically: sets status → `COMPLETED`, stores result JSON, removes from `assigned_tasks` and `task_timeouts`.
-   - Decrements node task counter.
-2. Calls `await deliver_result_callback(redis, task_id, payload)`.
-
-**File:** `backend/relayer/src/relayer/api/ai_inference.py`  
-**Function:** `deliver_result_callback(redis, task_id, payload, *, final=True)`
-
-1. Reads callback URL from `task_callback:{task_id}`.
-2. **Enriches payload** with `chat_id`, `message_id`, `model`, `on_chain_task_id` from `task:{task_id}` hash in Redis — so the bot knows which Telegram message to edit.
-3. Signs request: `_build_callback_headers(payload)` — `HMAC-SHA256(timestamp + "." + sorted_json_body, CALLBACK_SIGNING_SECRET)`.
-4. `POST` to `https://bot.smainer.io/api/callback/complete` with headers `X-Smainer-Signature` and `X-Smainer-Timestamp`.
-5. On 2xx: increments `CALLBACK_DELIVERY_TOTAL{result="success"}` Prometheus metric.
-6. `final=True` → deletes callback URL key from Redis.
-
----
-
-### Step 9 — Bot callback endpoint delivers result to Telegram
-
-**File:** `telegram/smainer-bot/api/callback/complete.py`  
-**Class:** `handler`  
-**Method:** `handler.do_POST`
-
-1. **Rate limit:** `check_rate_limit_by_ip("callback-complete", client_ip, max_requests=60, window_seconds=60)` — in-memory sliding window, returns `429` if exceeded.
-2. Reads raw body bytes.
-3. **HMAC verification:** calls `verify_callback_signature(raw_body, timestamp_header, sig_header)`:
-   - `callback_auth.py` — rebuilds `HMAC-SHA256(timestamp + "." + body, secret)`, compares with `X-Smainer-Signature` using `hmac.compare_digest`.
-   - Rejects if `abs(now - timestamp) > 300` (replay protection).
-   - **Fail-closed:** if `CALLBACK_SIGNING_SECRET` is unset and `SMAINER_CALLBACK_DEV_BYPASS` is not `true`, rejects unconditionally.
-4. Parses body as `TaskCallback` Pydantic model.
-5. Calls `_handle_task_complete(callback, chat_id, message_id)`.
-
-**Function:** `_handle_task_complete(callback, chat_id, message_id)`
-
-1. For `status == "completed"`:
-   - Reads result text from `callback.result["result"]` or `["stdout"]`.
-   - Calls `bot.edit_message_text(chat_id, message_id, text, parse_mode=MARKDOWN)`.
-   - Falls back to plain text if Markdown parse fails.
-   - Calls `await payment_mgr.settle_payment(task_id)` — log-only in serverless (no Redis).
-   - Fire-and-forget: `_mint_completion_badge(callback)` — POSTs to `POST /api/v1/nft/mint` on Relayer with `wallet_address` and `category=3` (COMPUTE_CERTIFICATE).
-2. For failure: edits message to `"Compute failed: {error}"`, calls `payment_mgr.fail_payment`.
+1. SettlementManager.settle_task computes actual cost from EffortMetrics.
+2. Reads adjusted_reward and affiliate_address from task:{task_id}.
+3. RefundCalculator.compute_refund applies BPS split (no algorithm details here).
+4. StarknetClient.settle_with_effort submits the on-chain settlement (or settle_with_effort_and_affiliate when affiliate_address is present).
+5. Settlement dedup key: settlement:{on_chain_task_id}:complete (24h).
 
 ---
 
-### Step 10 — On-chain settlement
-
-**File:** `backend/relayer/src/relayer/settlement/settler.py`  
-**Class:** `SettlementManager`  
-**Method:** `settle_task(task_id, on_chain_task_id, provider_address, result_hash, effort_metrics, signature_r, signature_s, tier)`
-
-1. Computes actual cost from `EffortMetrics` via `IEffortCalculator`.
-2. Reads escrowed amount from Redis (`task:{task_id}` → `verified_escrow_amount`).
-3. Computes user refund and fee split via `IRefundCalculator`:
-   - Provider: 88% (`TOTAL_FEE_BPS=1500`, `TREASURY_FEE_BPS=1200`, `GAS_SUBSIDY_BPS=300`).
-   - Treasury: 12%.
-4. Calls `settle_with_effort()` on the escrow contract via `StarknetClient`.
-5. Writes `SettlementRecord` to Redis with `status="settled"`.
-
----
-
-## 3. Protocols, Endpoints, and Events
+## 3. Protocols, Endpoints, and Events Reference
 
 ### REST Endpoints
 
 | Direction | Method | URL | Auth | Purpose |
 |-----------|--------|-----|------|---------|
-| Telegram → Bot | POST | `https://bot.smainer.io/api/webhook` | `X-Telegram-Bot-Api-Secret-Token` | Receive Telegram updates |
-| Bot → Relayer | POST | `https://api.smainer.io/api/v1/tasks` | `Authorization: Bearer {RELAYER_API_KEY}` | Submit compute task |
-| Bot → Relayer | GET | `https://api.smainer.io/api/v1/ai/capable-nodes` | None (public since 2026-03-24) | List online nodes |
-| Bot → Relayer | GET/SET | `https://api.smainer.io/api/v1/bot/kv/{key}` | Bearer | Wallet links, user prefs |
-| Bot → Starknet RPC | `call_contract` | `settings.starknet_rpc_url` | None | Balance check, escrow verify |
-| Relayer → Bot | POST | `https://bot.smainer.io/api/callback/complete` | `X-Smainer-Signature`, `X-Smainer-Timestamp` | Deliver AI result |
-| Bot → Relayer | POST | `https://api.smainer.io/api/v1/nft/mint` | `X-API-Key` | Mint completion badge (fire-and-forget) |
-| Relayer health | GET | `https://api.smainer.io/api/v1/health` | None | Health check |
+| Telegram -> Bot | POST | https://bot.smainer.io/api/webhook | X-Telegram-Bot-Api-Secret-Token | Telegram updates |
+| MiniApp -> Bot | POST | https://bot.smainer.io/api/payment-complete | initData HMAC or nonce | Browser payment completion |
+| Bot -> Relayer | POST | https://api.smainer.io/api/v1/tasks | Authorization: Bearer $RELAYER_API_KEY | Submit task |
+| Bot -> Relayer | GET | https://api.smainer.io/api/v1/nodes | Bearer | Node inventory |
+| Bot -> Relayer | GET | https://api.smainer.io/api/v1/ai/capable-nodes | None | AI eligible nodes |
+| Bot -> Relayer | GET | https://api.smainer.io/api/v1/nodes/summary | Bearer | Node summary |
+| Bot -> Relayer | GET/PUT/DELETE | https://api.smainer.io/api/v1/bot/kv/{key} | Bearer | Wallets, prefs, sessions, nonces |
+| Bot -> Relayer | POST | https://api.smainer.io/api/v1/sessions/prompt | Bearer | One-tap session start |
+| MiniApp -> Relayer | POST | https://api.smainer.io/api/v1/sessions/wallet | Bearer | One-tap session wallet registration |
+| Bot -> Relayer | GET | https://api.smainer.io/api/v1/sessions/{chat_id}/status | Bearer | One-tap session status |
+| Relayer -> Bot | POST | https://bot.smainer.io/api/callback/complete | X-Smainer-Signature + X-Smainer-Timestamp | Task result callback |
+| Bot -> Relayer | POST | https://api.smainer.io/api/v1/nft/mint | X-API-Key | Mint completion badge |
+| Relayer health | GET | https://api.smainer.io/api/v1/health | None | Health check |
 
-### WebSocket Protocol (Relayer ↔ Provider)
+### WebSocket Protocol (Relayer <-> Provider)
 
-**URL:** `wss://api.smainer.io/ws/{node_id}`
+URL: wss://api.smainer.io/ws/node/{node_id}
 
-All messages are JSON objects with an `event_type` discriminator field.
+Relayer models: backend/relayer/src/relayer/models/events.py
 
-| `event_type` | Direction | Struct | When |
-|---|---|---|---|
-| `node_register` | Provider → Relayer | `NodeRegisterEvent` | On connect; includes `node_id`, `starknet_address`, `hardware_spec`, `auth_signature`, `starknet_public_key`, optional `capability_contract` |
-| `ack` | Relayer → Provider | `AckEvent` | After successful register/heartbeat; `ack_event_id` echoes the original `event_id` |
-| `node_heartbeat` | Provider → Relayer | `NodeHeartbeatEvent` | Periodic (config-driven); `cpu_usage`, `memory_usage` |
-| `task_assigned` | Relayer → Provider | `TaskAssignedEvent` | When scheduler assigns a task; includes `task_id`, `payload`, `requirements`, `timeout_seconds`, `token_amount` |
-| `task_completed` | Provider → Relayer | `TaskCompletedEvent` | On successful inference |
-| `task_failed` | Provider → Relayer | `TaskFailedEvent` | On error |
-| `ping` / `pong` | Both | `PingEvent` / `PongEvent` | Keep-alive |
-| `error` | Relayer → Provider | `ErrorEvent` | On parse failure, auth failure |
+| event_type | Direction | Fields |
+|-----------|-----------|--------|
+| node_register | Provider -> Relayer | node_id, starknet_address, hardware_spec, auth_signature, starknet_public_key, capabilities |
+| node_heartbeat | Provider -> Relayer | node_id, cpu_usage, memory_usage, active_tasks, capabilities |
+| task_assigned | Relayer -> Provider | task_id, payload, requirements, timeout_seconds, token_amount |
+| task_completed | Provider -> Relayer | task_id, result_data, execution_time, signature, result_hash, effort_metrics |
+| task_failed | Provider -> Relayer | task_id, error_code, error_message, partial_result |
+| ack | Relayer -> Provider | ack_event_id, success, message |
+| ping / pong | Both | timestamp or ping_timestamp |
+| error | Relayer -> Provider | error_code, error_message |
 
-**Registration authentication:**  
-`SignatureVerifier.verify_node_authentication_signature(node_id, starknet_address, timestamp_iso, auth_signature, starknet_public_key)` — verifies a Starknet ECDSA signature over `pedersen_hash(node_id, starknet_address, timestamp)`.
+Authentication signature (registration):
 
-### Redis Event Streams (Internal PubSub)
+- Provider signs authenticate_node:{node_id}:{starknet_address}:{timestamp_iso}.
+- Hash is SHA-256 reduced to Stark field prime; signature uses message_signature.
+- Relayer verifies with SignatureVerifier.verify_node_authentication_signature.
 
-| Stream | Consumer Groups | Events |
-|--------|----------------|--------|
-| `events:tasks` | `schedulers`, `monitors`, `analytics` | Task lifecycle events |
-| `events:nodes` | `monitors`, `analytics` | Node connect/disconnect/heartbeat |
-| `events:system` | `analytics` | System health events |
+Result signature (completion):
 
-`EventBus.publish(event)` → `redis.xadd(stream, event_data, maxlen=10000, approximate=True)`.  
-Consumers: `EventBus._consume_stream()` via `redis.xreadgroup(group, consumer, {stream: ">"}, count=10, block=1000)`.
+- Provider computes result_hash from canonical JSON of result_data.
+- message_hash = pedersen(pedersen(task_id_felt, provider_address), result_hash).
+- Relayer verifies with SignatureVerifier.verify_node_result_signature.
 
-### Redis Key Schema
+Implementation note:
 
-| Key | Type | Purpose |
-|-----|------|---------|
-| `task:{task_id}` | Hash | Full task state (status, payload, requirements, result, routing fields) |
-| `pending_tasks` | List | Queue of pending task IDs (LPUSH / LRANGE / LREM) |
-| `assigned_tasks` | Set | Currently assigned task IDs |
-| `task_assignments` | Hash | `{task_id: node_id}` mapping |
-| `task_timeouts` | Sorted Set | Score = expiry UTC timestamp |
-| `node:{node_id}` | Hash | Node info (hardware_spec, tier, starknet_address, capability_contract) |
-| `heartbeat:{node_id}` | String | Last heartbeat ISO timestamp (TTL = `node_heartbeat_timeout`) |
-| `tasks:{node_id}` | String | Current task count |
-| `active_nodes` | Set | Registered and active node IDs |
-| `task_callback:{task_id}` | String | Callback URL (TTL 3600 s); prefix `complete:` = full URL |
-| `wallet:{user_id}` or `wallet:hmac:{hash}` | String | Encrypted/HMAC-keyed wallet address (via Relayer KV API) |
-| `prefs:{user_id}:model` | String | User model preference |
-| `events:tasks`, `events:nodes`, `events:system` | Stream | Redis Streams for event bus |
+- Provider sends capabilities in registration and heartbeat payloads.
+- Relayer expects capability_contract in NodeRegisterEvent. Missing field means AI routing treats capabilities as absent.
 
----
+### Redis Event Streams (EventBus)
 
-## 4. File / Function Map
+File: backend/relayer/src/relayer/core/event_bus.py
 
-### Telegram Bot (`telegram/smainer-bot/`)
+- Streams: events:tasks, events:nodes, events:system
+- Consumer groups: schedulers, monitors, analytics
+- EventBus.publish() uses XADD with maxlen = settings.EVENT_STREAM_MAX_LENGTH (default 10000)
+- Consumers read via XREADGROUP with count=10 and block=1000
+- TTL cleanup runs every loop; EVENT_TTL_SECONDS = 7 days
 
-```
-api/
-  webhook.py
-    _verify_webhook_secret(secret_header)       — HMAC compare vs WEBHOOK_SECRET
-    _process_update(update: dict)                — route update to handlers
-    handler.do_POST                              — Vercel entry point
+### Redis Key Schema (exact keys)
 
-  callback/
-    complete.py
-      handler.do_POST                            — Vercel entry point for callbacks
-      _handle_task_complete(callback, chat_id, message_id)  — edit message, settle
-      _mint_completion_badge(callback)           — fire-and-forget NFT mint
+Relayer core keys:
 
-src/
-  handlers.py
-    handle_start(update, bot, wallet_mgr)        — /start, deep-link wallet payload
-    handle_link(update, bot, wallet_mgr)         — /link <address>
-    handle_unlink(update, bot, wallet_mgr)       — /unlink
-    handle_balance(update, bot, wallet_mgr)      — /balance → STRK balance
-    handle_models(update, bot, relayer)          — /models → list nodes
-    handle_set_model(update, bot, relayer)       — /model <name>
-    handle_avail_nodes(update, bot, relayer)     — /availNodes
-    handle_inference(update, bot, wallet_mgr, payment_mgr, relayer) — text → pay gate
-    handle_webapp_data(update, bot, wallet_mgr, payment_mgr, relayer) — MiniApp sendData
-    handle_one_tap_inference(...)                — one-tap flow (no wallet gate)
-    infer_tier(model_name) -> ModelTier          — heuristic tier detection
-    escape_md(text) -> str                       — Telegram MarkdownV1 escaping
-    with_error_handling(handler_name)            — decorator: timeout + error catch
+- task:{task_id} (hash)
+- pending_tasks (list)
+- assigned_tasks (set)
+- task_assignments (hash task_id -> node_id)
+- task_timeouts (zset task_id -> timeout epoch)
+- task_callback:{task_id} (string, TTL 3600s)
+- onchain_task_map:{on_chain_task_id} (string, TTL 48h)
+- escrow:task:{on_chain_task_id}:submitted (string, TTL 24h)
+- settlement:{on_chain_task_id}:complete (string, TTL 24h)
+- node:{node_id} (hash)
+- heartbeat:{node_id} (string, TTL node_heartbeat_timeout)
+- tasks:{node_id} (string)
+- active_nodes (set)
+- result:{task_id} (hash)
+- verified_results (list)
+- batch_queue (list)
+- batch:{batch_id} (hash)
+- events:tasks, events:nodes, events:system (streams)
 
-  wallet.py
-    WalletManager.link_wallet(user_id, address)  — HMAC-keyed KV set, Fernet encrypt
-    WalletManager.unlink_wallet(user_id)         — KV delete (new + legacy key)
-    WalletManager.get_linked_address(user_id)    — KV get with legacy migration
-    WalletManager.get_strk_balance(address)      — Starknet RPC via starknet_py
-    WalletManager.has_sufficient_balance(address) — balance >= min_strk_balance
-    WalletManager._normalize_address(address)    — lowercase 0x + zfill(64)
+Bot KV keys (stored via /api/v1/bot/kv and prefixed with tgbot:kv: in Redis):
 
-  wallet_crypto.py
-    derive_wallet_key(user_id) -> str            — HMAC-SHA256 key derivation
-    encrypt_address(address) -> str              — optional Fernet encryption
-    decrypt_address(stored) -> str               — decrypt or return plaintext
+- wallet:{user_id} or wallet_h:{digest}
+- prefs:{user_id}:model
+- sess:{digest or user_id}
+- rl:{endpoint}:{user_id}:{window}
+- pay_nonce:{nonce}
 
-  callback_auth.py
-    verify_callback_signature(raw_body, timestamp, sig_header) -> bool
-                                                 — HMAC-SHA256, 300 s replay window
+One-tap approval session keys (relayer listener):
 
-  payment_verifier.py
-    PaymentVerifier.verify_escrow(on_chain_task_id, expected_address) -> (bool, Optional[str])
-    PaymentVerifier._rpc_verify(...)             — single Starknet RPC call
-    normalize_address(address)                   — delegates to WalletManager._normalize_address
-
-  relayer_client.py
-    RelayerClient.__init__(callback_base_url)    — sets _complete_callback_url
-    RelayerClient.submit_inference(req, on_chain_task_id) -> SubmitResult
-    RelayerClient.get_task_status(task_id)       — poll task status
-    RelayerClient.list_available_models()        — GET /api/v1/ai/capable-nodes
-    RelayerClient.kv_get(key) / kv_set(key, val) — bot KV API (wallet, prefs)
-
-  models.py
-    InferenceRequest                             — prompt, model, tier, chat routing
-    ModelTier (enum)                             — SMALL / MEDIUM / LARGE
-    MODEL_TIER_REQUIREMENTS                      — tier → ram_gb, gpu_required, gpu_vram_gb
-    SubmitResult                                 — ok, task_id, error_code, http_status
-    TaskCallback                                 — callback body schema
-    TaskSubmissionPayload                        — body for POST /api/v1/tasks
-
-  config.py (Pydantic Settings)
-    telegram_bot_token, webhook_secret
-    relayer_api_url, relayer_api_key
-    callback_signing_secret, callback_dev_bypass
-    starknet_rpc_url, strk_token_address, smainer_contract_address
-    min_strk_balance, prompt_cost_strk
-    default_model, affiliate_address
-    wallet_hmac_key, wallet_encryption_key
-    one_tap_flow_enabled, wallet_flow_direct
-    get_miniapp_connect_url()                    — builds MiniApp URL with params
-
-  session.py
-    touch_session(user_id)                       — update in-process TTL dict
-    check_session_active(user_id) -> bool        — check 15-min idle
-    invalidate_session(user_id)                  — remove session
-```
-
-### Relayer (`backend/relayer/src/relayer/`)
-
-```
-main.py                                          — FastAPI app, lifespan, router registration
-config.py (Settings)                             — task_timeout_seconds, node_heartbeat_timeout,
-                                                   callback_signing_secret, callback_allowed_hosts_list,
-                                                   node_capability_ttl_seconds, enable_batch_submission
-
-api/
-  routes.py
-    submit_task(task, _, redis, scheduler)       — POST /api/v1/tasks
-    get_task(task_id, _, redis)                  — GET /api/v1/tasks/{task_id}
-    list_tasks(_, redis)                         — GET /api/v1/tasks
-    get_node_pool_summary(redis)                 — GET /api/v1/nodes/summary
-    get_node_pool_status(redis)                  — GET /api/v1/nodes
-    health(uptime)                               — GET /api/v1/health
-    get_scheduler / get_node_pool / get_aggregator — FastAPI dependency providers
-
-  ai_inference.py
-    evaluate_node_ai_eligibility(node, model, privacy_mode) -> NodeCapabilityEligibility
-    is_allowed_callback_url(url) -> bool         — SSRF-safe allowlist validation
-    _host_resolves_to_private_ip(hostname)       — DNS + ipaddress check
-    store_callback_url(redis, task_id, url)      — SET task_callback:{task_id}
-    deliver_result_callback(redis, task_id, payload, *, final)  — HMAC POST to bot
-    deliver_stream_chunk(redis, task_id, chunk, done)  — streaming chunk delivery
-    _build_callback_headers(payload) -> dict     — X-Smainer-Signature + Timestamp
-    _serialize_callback_payload(payload) -> bytes — deterministic sorted JSON
-    list_capable_nodes(...)                      — GET /api/v1/ai/capable-nodes
-    _parse_vram_gb(gpu_info) -> int              — regex VRAM extraction
-    _nodes_for_vram(nodes, min_vram_gb)          — VRAM filter
-
-  websocket.py
-    WebSocketManager.connect_node(ws, node_id)
-    WebSocketManager.send_task_to_node(node_id, task_event) -> bool
-    WebSocketManager._handle_node_messages(ws, node_id)  — main WS receive loop
-    WebSocketManager._process_node_event(ws, node_id, event)
-    WebSocketManager._handle_node_register(...)  — verifies Starknet auth sig
-    WebSocketManager._handle_node_heartbeat(...)
-    WebSocketManager._handle_task_completed(...) — calls scheduler.complete_task + deliver_result_callback
-    WebSocketManager._handle_task_failed(...)
-    WebSocketManager._cleanup_connection(node_id, ws)
-
-  dependencies.py
-    AuthenticatedUser                            — Bearer token dependency
-    RedisDB                                      — async Redis pool dependency
-    WebhookVerified                              — HMAC webhook verification
-
-core/
-  scheduler.py
-    JobScheduler.__init__(redis, node_pool, websocket_manager, starknet_client, cost_estimator)
-    JobScheduler.start_background_tasks()        — starts _timeout_monitor + _pending_task_scheduler
-    JobScheduler.submit_task(submission, verified_escrow) -> str  — assign UUID, store in Redis
-    JobScheduler.assign_task_to_node(task_id, node_id) -> bool
-    JobScheduler.complete_task(task_id, result_data, execution_time, effort_metrics)
-    JobScheduler.fail_task(task_id, error_message)
-    JobScheduler.get_task_status(task_id) -> Optional[dict]
-    JobScheduler._schedule_pending_tasks()       — batch=10, loops over pending queue
-    JobScheduler._schedule_single_task(task_id) — evaluates capability, calls assign_task_to_node
-    JobScheduler._timeout_monitor()              — background loop, calls fail_task on expired tasks
-    JobScheduler._pending_task_scheduler()       — background loop, periodically retries unscheduled tasks
-    _normalize_model_id(model) -> Optional[str]  — lowercase, max 64 chars, regex validation
-    TIER_REWARD_MULTIPLIERS                      — {BASIC: 1.0, PRO: 2.2, PREMIUM: 3.5}
-
-  node_pool.py
-    NodePool.register_node(node_id, address, hw_spec, pubkey, capability_contract)
-    NodePool.update_heartbeat(node_id, cpu, memory)
-    NodePool.disconnect_node(node_id)
-    NodePool.get_node_info(node_id) -> Optional[NodeInfo]
-    NodePool.list_active_nodes() -> List[NodeInfo]
-    NodePool.increment_node_tasks(node_id) / decrement_node_tasks(node_id)
-    calculate_tier_from_specs(gpu_vram_gb) -> NodeTier  — authoritative server-side tier
-
-  event_bus.py
-    EventBus.start() / stop()
-    EventBus.subscribe(event_type, handler)
-    EventBus.publish(event: BaseEvent) -> str    — redis.xadd
-    EventBus._consume_stream(stream, group, consumer)  — redis.xreadgroup loop
-    EventBus._cleanup_old_events()               — trim streams
-
-  aggregator.py
-    ResultAggregator                             — collects partial results from multi-node tasks
-
-settlement/
-  settler.py
-    SettlementManager.settle_task(...)           — compute cost, refund, on-chain settle_with_effort()
-
-  refund.py
-    RefundCalculator                             — BPS split: 8800 provider, 1200 treasury
-
-chain/
-  verifier.py
-    SignatureVerifier.verify_node_authentication_signature(...)  — Pedersen + ECDSA
-
-verification/
-  __init__.py
-    PaymentVerifier                              — on-chain escrow pre-check (Phase 8)
-
-pricing/
-  cost_estimator.py
-    CostEstimator.estimate_max_cost(input_tokens, model_id, tier) -> CostEstimate
-```
-
-### Provider (`backend/provider/src/provider/`)
-
-```
-main.py
-  ProviderDaemon.__init__(config)               — initialises executor, signer, api_client
-  ProviderDaemon.start()                        — starts api_client + system_monitor tasks
-  ProviderDaemon._handle_task(task) -> SignedResult — calls executor.execute_task + signer.sign
-  ProviderDaemon._setup_signal_handlers()       — SIGTERM/SIGINT → graceful shutdown
-
-enhanced_api_client.py
-  EnhancedRelayerAPIClient.__init__(config, task_handler)
-  EnhancedRelayerAPIClient.start()              — WS connect loop with circuit breakers
-  EnhancedRelayerAPIClient._send_register()     — sends NodeRegisterEvent with Starknet auth sig
-  EnhancedRelayerAPIClient._handle_messages()   — WS receive loop; TaskAssignedEvent → task_handler
-  EnhancedRelayerAPIClient._send_heartbeat()    — periodic NodeHeartbeatEvent
-  validate_wallet_file_permissions(path)        — checks 0600, owner UID
-  load_wallet_file_secure(wallet_path)          — permission check before json.load
-
-enhanced_executor.py
-  EnhancedSandboxedExecutor.__init__(config)
-  EnhancedSandboxedExecutor.execute_task(task) -> TaskResult
-  EnhancedSandboxedExecutor._execute_task_with_monitoring(task, execution_dir)
-    → _execute_ai_inference_task(task)           — Ollama path (AI_INFERENCE type)
-    → _execute_hash_task_enhanced(task, dir)     — subprocess Python script
-    → _execute_matrix_task_enhanced(task, dir)   — subprocess numpy script
-    → _execute_custom_task_enhanced(task, dir)   — requires ENABLE_CUSTOM_TASKS=true
-  EnhancedSandboxedExecutor.cancel_task(task_id) — SIGTERM → SIGKILL, 5 s guarantee
-  ProcessTracker.register_process / force_terminate_task(task_id, timeout)
-
-signer.py
-  StarknetSigner.sign_task_result(result) -> SignedResult
-    — pedersen_hash(result_hash) + message_signature(hash, priv_key)
-
-config.py (ProviderConfig)
-  NODE_ID, OLLAMA_BASE_URL, OLLAMA_DEFAULT_MODEL
-  MAX_CONCURRENT_TASKS, SANDBOX_TEMP_DIR
-  ENABLE_CUSTOM_TASKS (default False)
-  RESOURCE_MONITORING_INTERVAL
-  get_ws_url_with_node_id() -> str             — wss://api.smainer.io/ws/{NODE_ID}
-
-circuit_breaker.py
-  resilience_manager                           — global CircuitBreakerManager
-  CircuitBreakerManager.create_circuit_breaker(name, failure_threshold, recovery_timeout, ...)
-  CircuitBreakerManager.create_backoff_policy(name, base_delay, max_delay, multiplier, jitter)
-```
+- session:prompt:{chat_id}
+- session:wallet:{chat_id}
+- session:dust_lookup:{dust_value}
+- session:status:{chat_id}
+- processed:approval:{tx_hash}:{log_index}
+- listener:approval:last_block
 
 ---
 
-## 5. Relayer Scheduling and Redis/PubSub Internals
+## 4. File and Function Map
 
-### Task State Machine
+Telegram bot:
+
+- telegram/smainer-bot/api/webhook.py
+  - handler.do_POST
+  - _verify_webhook_secret
+  - _process_update
+- telegram/smainer-bot/api/payment_complete.py
+  - handler.do_POST
+  - _verify_init_data
+- telegram/smainer-bot/api/callback/complete.py
+  - handler.do_POST
+  - _handle_task_complete
+- telegram/smainer-bot/src/handlers.py
+  - handle_inference
+  - handle_webapp_data
+  - handle_one_tap_inference
+- telegram/smainer-bot/src/relayer_client.py
+  - submit_inference
+  - list_available_models
+  - kv_get, kv_set, kv_delete
+- telegram/smainer-bot/src/wallet.py
+  - link_wallet, unlink_wallet, get_linked_address
+  - get_strk_balance, has_sufficient_balance
+- telegram/smainer-bot/src/wallet_crypto.py
+  - derive_wallet_key, encrypt_address, decrypt_address
+- telegram/smainer-bot/src/nonce.py
+  - generate_nonce, verify_and_consume_nonce
+- telegram/smainer-bot/src/session.py
+  - touch_session, check_session_active, invalidate_session
+
+Relayer:
+
+- backend/relayer/src/relayer/api/routes.py
+  - submit_task
+  - get_task_status
+  - list_nodes, get_node_summary
+  - sessions/prompt, sessions/wallet, sessions/{chat_id}/status
+- backend/relayer/src/relayer/api/ai_inference.py
+  - list_capable_nodes
+  - evaluate_node_ai_eligibility
+  - store_callback_url, deliver_result_callback
+- backend/relayer/src/relayer/api/websocket.py
+  - WebSocketManager.connect_node
+  - WebSocketManager._handle_node_register
+  - WebSocketManager._handle_task_completed
+  - WebSocketManager._handle_task_failed
+- backend/relayer/src/relayer/api/bot_kv_router.py
+  - GET/PUT/DELETE /api/v1/bot/kv/{key}
+- backend/relayer/src/relayer/core/scheduler.py
+  - submit_task, assign_task_to_node, complete_task, fail_task
+  - _pending_task_scheduler, _timeout_monitor
+- backend/relayer/src/relayer/core/node_pool.py
+  - register_node, update_heartbeat, list_active_nodes
+- backend/relayer/src/relayer/core/event_bus.py
+  - EventBus.publish, EventBus._consume_stream
+- backend/relayer/src/relayer/core/aggregator.py
+  - add_verified_result, create_batch
+- backend/relayer/src/relayer/chain/verifier.py
+  - SignatureVerifier.verify_node_authentication_signature
+  - SignatureVerifier.verify_node_result_signature
+- backend/relayer/src/relayer/settlement/settler.py
+  - SettlementManager.settle_task
+- backend/relayer/src/relayer/settlement/refund.py
+  - RefundCalculator.compute_refund
+
+Provider:
+
+- backend/provider/src/provider/enhanced_api_client.py
+  - _register_node_enhanced
+  - _handle_task_assigned_event
+  - _send_task_result_enhanced
+  - _generate_auth_signature
+- backend/provider/src/provider/enhanced_executor.py
+  - _execute_ai_inference_task
+- backend/provider/src/provider/metrics/collector.py
+  - MetricsCollector.start, MetricsCollector.finish
+
+MiniApp:
+
+- telegram/miniapp/src/hooks/usePayment.ts
+- telegram/miniapp/src/payment/strategies/StarknetWalletStrategy.ts
+- telegram/miniapp/src/payment/strategies/TelegramWebViewStrategy.ts
+- telegram/miniapp/src/payment/strategies/BotLinkedStrategy.ts
+
+---
+
+## 5. Relayer Scheduling and Redis Internals
+
+Task state transitions:
 
 ```
-                         submit_task()
-                              │
-                         [PENDING] ──── lpush pending_tasks
-                              │
-                    _schedule_single_task()
-                              │
-            evaluate_node_ai_eligibility()
-             ┌────────────────┴────────────────────┐
-           ELIGIBLE                          INELIGIBLE (wait)
-             │
-        assign_task_to_node()
-             │
-         [ASSIGNED] ──── assigned_tasks (set)
-                    ──── task_timeouts (zset, score=expiry)
-                    ──── TaskAssignedEvent → WebSocket → Provider
-             │
-       Provider executes, sends TaskCompletedEvent
-             │
-        complete_task()
-             │
-        [COMPLETED] ──── result stored in task:{id}.result (JSON)
-                    ──── removed from assigned_tasks, task_timeouts
-             │
-        deliver_result_callback()
-             │
-         Relayer POSTs to bot callback URL
-                                          ── OR ──
-       Provider sends TaskFailedEvent
-             │
-        fail_task()
-             │
-         [FAILED] ──── error_message stored
-             │
-        deliver_result_callback()
-                                          ── OR ──
-       _timeout_monitor() sees expiry
-             │
-        fail_task() with "Task timed out"
+submit_task
+  -> task:{id} status=pending
+  -> LPUSH pending_tasks
+
+assign_task_to_node
+  -> status=assigned, assigned_node_id
+  -> task_assignments + task_timeouts
+  -> TaskAssignedEvent to provider
+  -> callback status=assigned (final=False)
+
+complete_task
+  -> status=completed, result stored
+  -> callback status=completed
+
+fail_task
+  -> status=failed, error_message stored
+  -> callback status=failed
+
+_timeout_monitor
+  -> status=timeout
+  -> callback status=timeout
 ```
 
-### Scheduling Algorithm Detail
+Scheduling behavior:
 
-**`_schedule_pending_tasks()`** (`scheduler.py:_schedule_pending_tasks`):
-
-```python
-pending_count = await redis.llen("pending_tasks")
-batch_size = min(10, pending_count)
-task_ids = await redis.lrange("pending_tasks", 0, batch_size - 1)
-for task_id in task_ids:
-    await _schedule_single_task(task_id)
-```
-
-**`_schedule_single_task(task_id)`** (`scheduler.py:_schedule_single_task`):
-
-1. Reads `task:{task_id}` hash from Redis.
-2. Checks `routing_is_ai_task`, `routing_model`, `routing_privacy_mode`, `routing_reason_code`.
-3. Calls `node_pool.list_active_nodes()` — filters by `heartbeat:{node_id}` TTL presence + grace period.
-4. For each active node, calls `evaluate_node_ai_eligibility(node, model, privacy_mode)`:
-   - Returns `CapabilityEligibilityReason.ELIGIBLE` if:
-     - `node.capability_contract` exists and is not stale (`declared_at` within TTL).
-     - `requested_model in contract.supported_models`.
-     - `requested_privacy_mode in contract.supported_privacy_modes`.
-   - Returns specific denial codes otherwise (`MODEL_NOT_SUPPORTED`, `CAPABILITY_CONTRACT_STALE`, etc.).
-5. Picks first eligible node with fewest `current_tasks` (load balance).
-6. Calls `assign_task_to_node(task_id, node_id)` (atomic pipeline).
-
-### Background Scheduler Loops
-
-**`_timeout_monitor()`**: runs every 30 s. Reads `task_timeouts` sorted set, finds tasks with score ≤ `time.time()`, calls `fail_task(task_id, "Task timed out")`.
-
-**`_pending_task_scheduler()`**: runs every 5 s. Calls `_schedule_pending_tasks()` so tasks that couldn't be scheduled immediately (no eligible node) are retried.
-
-### Event Bus (Redis Streams)
-
-`EventBus` (`event_bus.py`) uses `XADD` / `XREADGROUP` for fan-out between scheduler, monitor, and analytics consumer groups:
-
-- **`publish(event)`**: `redis.xadd(stream, {"event_id": ..., "event_type": ..., "timestamp": ..., "data": json}, maxlen=10000)`.
-- **Consumers** call `redis.xreadgroup(group, consumer_name, {stream: ">"}, count=10, block=1000)` in a while loop.
-- On successful processing: `redis.xack(stream, group, message_id)`.
-- Consumer groups created at startup with `xgroup_create(..., mkstream=True)`.
-- Old events cleaned up by `_cleanup_old_events()` via periodic `xdel`.
+- _schedule_pending_tasks reads up to 10 pending tasks per sweep.
+- _pending_task_scheduler sleeps 10 s between sweeps.
+- _timeout_monitor sleeps 30 s and checks task_timeouts zset.
+- Node selection: higher tier first, then lower current_tasks.
+- AI routing requires capability_contract and supported models/privacy modes.
 
 ---
 
 ## 6. Provider WebSocket Execution and Ollama Inference
 
-### WebSocket Connection Lifecycle
+Registration and heartbeat (provider side):
 
-**Provider side** (`enhanced_api_client.py`):
+1. _register_node_enhanced builds NodeRegisterEvent.
+2. auth_signature = _generate_auth_signature(timestamp_iso).
+3. Sends event_type=node_register with node_id, starknet_address, starknet_public_key, hardware_spec, capabilities.
+4. Waits for ack before starting heartbeat loop.
+5. Heartbeat sends event_type=node_heartbeat with cpu_usage, memory_usage, active_tasks.
 
-1. `start()` enters reconnect loop (circuit breaker: 3 failures → 30 s recovery).
-2. `websockets.connect(wss://api.smainer.io/ws/{NODE_ID}, extra_headers={"Authorization": ...})`.
-3. Sends `NodeRegisterEvent`:
-   ```json
-   {
-     "event_type": "node_register",
-     "event_id": "<uuid>",
-     "node_id": "<NODE_ID>",
-     "starknet_address": "<0x...>",
-     "starknet_public_key": "<0x...>",
-     "timestamp": "<ISO>",
-     "auth_signature": {"r": "0x...", "s": "0x..."},
-     "hardware_spec": { "gpu_info": "...", "gpu_vram_gb": 24, "ram_gb": 64, "cpu_threads": 16, ... },
-     "capability_contract": { "contract_version": "1.0", "supported_models": [...], "supported_privacy_modes": [...], "declared_at": "..." }
-   }
-   ```
-4. Awaits `AckEvent` (timeout: `REGISTRATION_ACK_TIMEOUT = 30 s`).
-5. After ack: starts heartbeat loop (periodic `NodeHeartbeatEvent`) and message receive loop.
+Task execution (AI inference):
 
-**Relayer side** (`websocket.py`):
-
-`_handle_node_register` verifies the Starknet ECDSA signature via `SignatureVerifier.verify_node_authentication_signature`. On success, calls `node_pool.register_node(...)` (server-side tier calculation is authoritative — provider-reported tier is logged but not trusted).
-
-### Ollama Inference Path
-
-**`_execute_ai_inference_task(task)`** (`enhanced_executor.py`):
-
-```python
-ollama_url = f"{config.OLLAMA_BASE_URL}/api/generate"
-# default: http://localhost:11434/api/generate
-
-body = {
-    "model": model,         # e.g. "llama3.1:8b"
-    "prompt": prompt,
-    "stream": False,
-    "options": {"num_predict": 512},
-}
-
-async with httpx.AsyncClient(timeout=httpx.Timeout(120.0)) as client:
-    resp = await client.post(ollama_url, json=body)
-    resp.raise_for_status()
-    data = resp.json()
-
-response_text = data["response"]
-```
-
-On `httpx.ConnectError`: returns `TaskResult(status=FAILED, stderr="AI inference engine not available -- Ollama is not running")`. This is the most common failure mode — Ollama must be running before the provider daemon.
-
-**Phase 8 effort metrics**: `MetricsCollector` wraps `start(model_id)` / `finish(ollama_response_json)` to extract `eval_count` (output tokens) and `prompt_eval_count` (input tokens) from Ollama's response. Used for effort-based settlement.
-
-### Task Signing
-
-**`StarknetSigner.sign_task_result(result)`** (`signer.py`):
-
-1. Computes `SHA-256(result.result or result.stdout)` → result hash.
-2. Computes Pedersen hash over `(node_id_felt, result_hash_felt)`.
-3. Signs with `message_signature(msg_hash=pedersen_hash, priv_key=int(private_key, 16))` (starknet_py).
-4. Returns `SignedResult` with `signature_r`, `signature_s`.
-
-The provider's wallet private key is loaded from `~/.smainer/wallet.json` (permission check: must be `0600`, owned by current user).
+- TaskAssignedEvent payload is mapped to TaskPayload args (prompt, model).
+- _execute_ai_inference_task calls OLLAMA_BASE_URL/api/generate with stream=false.
+- MetricsCollector captures tokens and GPU time from Ollama response.
+- _send_task_result_enhanced sends task_completed with result_data, execution_time, signature, result_hash, effort_metrics.
 
 ---
 
-## 7. Payment and Wallet — Outside-Telegram Design
+## 7. Payment and Wallet - Outside Telegram Design
 
-Wallet charging happens entirely **outside Telegram**. The bot never sees private keys, never initiates transactions, and never holds user funds.
+Wallet linking (bot):
 
-### Wallet Linking Flow
+- wallet_crypto.derive_wallet_key uses HMAC-SHA256 if WALLET_HMAC_KEY is set.
+- wallet_crypto.encrypt_address uses Fernet if WALLET_ENCRYPTION_KEY is set.
+- WalletManager stores values via relayer KV API (tgbot:kv: prefix in Redis).
 
-```
-User runs /link 0x...  (or MiniApp wallet_connect action)
-  │
-  ▼ WalletManager.link_wallet(user_id, address)
-  │  1. _normalize_address(address): lowercase 0x + zfill(64), rejects non-hex
-  │  2. derive_wallet_key(user_id):
-  │       if WALLET_HMAC_KEY set → HMAC-SHA256(WALLET_HMAC_KEY, str(user_id)) → "wallet:hmac:{hex}"
-  │       else → "wallet:{user_id}"
-  │  3. encrypt_address(normalized):
-  │       if WALLET_ENCRYPTION_KEY set → Fernet(key).encrypt(address.encode())
-  │       else → plaintext
-  │  4. await kv_client.kv_set(kv_key, encrypted_value)
-  │       → PUT https://api.smainer.io/api/v1/bot/kv/{key}
-  │         (backed by Relayer's Redis)
-  ▼
-Wallet address stored: HMAC-keyed key + optional ciphertext value
-```
+Balance check:
 
-### Balance Check
+- WalletManager.get_strk_balance uses Starknet RPC and STRK token contract from settings.
 
-`WalletManager.get_strk_balance(starknet_address)`:
+Escrow verification:
 
-```python
-from starknet_py.contract import Contract
-from starknet_py.net.full_node_client import FullNodeClient
+- relayer.verification.PaymentVerifier calls get_task(on_chain_task_id) via Starknet RPC.
+- Verifies task creator address (does not validate escrow amount); fails closed on RPC errors.
 
-client = FullNodeClient(node_url=settings.starknet_rpc_url)
-token_addr = int(settings.strk_token_address, 16)
-# 0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d
-contract = await Contract.from_address(address=token_addr, provider=client)
-(balance,) = await contract.functions["balance_of"].call(int(address, 16))
-# Returns wei (1 STRK = 1e18)
-```
+Nonce-based browser fallback:
 
-On RPC failure → raises `BalanceUnavailableError`.
+- Nonces are stored as pay_nonce:{nonce} with two-phase TTL (5 min untouched, 5 min active).
 
-### On-Chain Escrow Verification
+Settlement and fee split:
 
-`PaymentVerifier._rpc_verify(on_chain_task_id, normalized_expected)`:
-
-```python
-from starknet_py.net.client_models import Call
-from starknet_py.hash.selector import get_selector_from_name
-
-result = await client.call_contract(
-    Call(
-        to_addr=int(settings.smainer_contract_address, 16),
-        selector=get_selector_from_name("get_task"),
-        calldata=[on_chain_task_id],
-    )
-)
-# result[0] = task creator address (felt252)
-task_creator = hex(result[0])
-# Verify normalized_expected == normalize_address(task_creator)
-```
-
-- 3 retries with `0.5 s * 2^attempt` backoff.
-- Fail-closed: if all retries exhausted, returns `(False, "Payment verification failed: ...")`.
-- Address validation before any RPC call: `normalize_address(expected_address)` (SEC-002).
-
-### MiniApp Payment Flow (Outside Telegram)
-
-The React MiniApp (`telegram/miniapp/src/`) opens in `WebApp.openWebApp()`:
-
-1. **Wallet detection:** `connectors.filter(c => c.available())` — if empty (Telegram WebView has no extensions), shows "Open in Browser" via `Telegram.WebApp.openLink(url)`.
-2. **If browser:** user connects ArgentX/Braavos, approves `$STRK` allowance.
-3. **Contract call:** `create_task(token_address, base_amount, required_tier, task_hash)` on the escrow contract. Returns `on_chain_task_id`.
-4. **Sends result to bot:** `Telegram.WebApp.sendData(JSON.stringify({ action: "payment_complete", on_chain_task_id, prompt }))`.
-
-The MiniApp **never sends** private keys to the bot. The bot never holds user funds. The only on-chain action the bot takes is reading (via `call_contract`) to verify the task exists and was created by the expected address.
-
-### Settlement (Post-Inference)
-
-After result delivery, `SettlementManager.settle_task()` calls `settle_with_effort()` on the escrow contract:
-
-- **Provider:** 8800 BPS (88%) of the escrowed amount.
-- **Treasury:** 1200 BPS (12%) — split into `TREASURY_FEE_BPS=1200`, `GAS_SUBSIDY_BPS=300` internally.
-
-The settlement transaction is submitted by the Relayer's own Starknet account, not the user's wallet.
+- Fee split constants are in pricing/constants.py (do not document cost model algorithm here).
+- Provider total is 88 percent (85 percent base + 3 percent gas subsidy).
+- Treasury total is 12 percent (6 percent treasury + 6 percent affiliate when present).
 
 ---
 
 ## 8. Debugging Checklist
 
-### 1. Webhook not receiving updates
+Check webhook configuration:
 
 ```bash
-# Verify webhook is registered
-curl "https://api.telegram.org/bot{TOKEN}/getWebhookInfo"
-# Expected: "url": "https://bot.smainer.io/api/webhook", "pending_update_count": 0
-
-# Check Vercel function logs
-vercel logs --app smainer-bot --since 1h
-
-# Re-register webhook if needed
-curl -X POST "https://api.smainer.io/api/v1/bot/setup-webhook" \
-  -H "Authorization: Bearer {RELAYER_API_KEY}"
+curl "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/getWebhookInfo"
 ```
 
-**`WEBHOOK_SECRET` mismatch** → `handler.do_POST` returns 403. Check Vercel env var matches `setWebhook` call's `secret_token`.
-
-### 2. Task never appears in relayer
+Check relayer health and task status:
 
 ```bash
-# Check bot can reach relayer
-curl https://api.smainer.io/api/v1/health
-
-# Verify bearer token is set in Vercel env
-# Look for "Relayer rejected task" in bot function logs
-
-# Check relayer logs on DO
-ssh root@138.197.11.147
-journalctl -u smainer-relayer -f
+curl "$RELAYER_URL/api/v1/health"
+curl -H "Authorization: Bearer $RELAYER_API_KEY" "$RELAYER_URL/api/v1/tasks/$TASK_ID"
 ```
 
-Key log lines to look for:
-- `"Task submitted" task_id=...` — relayer accepted
-- `"Failed to submit task"` — check `status_code` in log
-
-### 3. Task stuck in PENDING (no nodes)
+Inspect Redis task state:
 
 ```bash
-# List active nodes
-curl https://api.smainer.io/api/v1/ai/capable-nodes
-
-# Check node pool directly in Redis on DO
-redis-cli SMEMBERS active_nodes
-redis-cli EXISTS heartbeat:{node_id}   # should have TTL
-redis-cli LLEN pending_tasks           # how many waiting
-redis-cli HGETALL task:{task_id}       # check routing_reason_code
+redis-cli -u $REDIS_URL HGETALL "task:$TASK_ID"
+redis-cli -u $REDIS_URL LLEN pending_tasks
+redis-cli -u $REDIS_URL ZRANGE task_timeouts 0 -1 WITHSCORES
 ```
 
-If `routing_reason_code` is non-empty, the task has a capability mismatch. Common values:
-- `REQUEST_PRIVACY_MODE_MISSING` — payload missing `privacy_mode`
-- `MODEL_NOT_SUPPORTED` — node's `capability_contract.supported_models` doesn't include requested model
-- `CAPABILITY_CONTRACT_STALE` — node's contract TTL expired (provider must re-register)
-
-### 4. Task assigned but no result callback
+Verify callback URL stored:
 
 ```bash
-# Check if callback URL is still in Redis
-redis-cli GET "task_callback:{task_id}"
-
-# Check WebSocket logs on provider (Runpod)
-ssh -i ~/.ssh/runpod_smainer hhh3ywqmbc978g-64410d45@ssh.runpod.io
-tail -f /root/smainer-backend/provider/provider.log
-
-# Check Ollama is running
-curl http://localhost:11434/api/tags
+redis-cli -u $REDIS_URL GET "task_callback:$TASK_ID"
 ```
 
-If `task_callback:{task_id}` is empty, the callback URL was never stored (check `store_callback_url` was called in `submit_task`).
-
-### 5. Callback arrives but HMAC fails
-
-Check in bot function logs: `"SEC-001: CALLBACK_SIGNING_SECRET not set"` or `"Timestamp too old/future"`.
-
-- `CALLBACK_SIGNING_SECRET` must match between Relayer (`backend/relayer/.env`) and Bot (Vercel env var).
-- Clock skew > 300 s between DO and Vercel → timestamp rejected. Check NTP on DO: `timedatectl show`.
-
-```python
-# Reproduce HMAC locally
-import hmac, hashlib, time, json
-
-secret = "your_secret"
-payload = {"task_id": "...", "status": "completed", ...}
-body = json.dumps(payload, separators=(",",":"), sort_keys=True).encode()
-timestamp = str(int(time.time()))
-sig = hmac.new(secret.encode(), timestamp.encode() + b"." + body, hashlib.sha256).hexdigest()
-```
-
-### 6. Payment verification fails
+Provider logs:
 
 ```bash
-# In bot logs look for:
-# "metric.verification-failed user=... task=... reason=..."
-# "Escrow verification failed after 3 retries"
-
-# Confirm contract address is set in Vercel env
-# SMAINER_CONTRACT_ADDRESS=0x...
-
-# Manual RPC check (starknet-py)
-from starknet_py.net.full_node_client import FullNodeClient
-from starknet_py.net.client_models import Call
-from starknet_py.hash.selector import get_selector_from_name
-
-client = FullNodeClient(node_url="https://starknet-mainnet.infura.io/...")
-result = await client.call_contract(Call(
-    to_addr=int("0x...", 16),
-    selector=get_selector_from_name("get_task"),
-    calldata=[on_chain_task_id],
-))
-print(hex(result[0]))  # should match user's wallet address
+journalctl -u smainer-provider -f
 ```
 
-### 7. Ollama connection error
-
-Provider log shows: `"AI inference engine not available -- Ollama is not running"`.
+Ollama check:
 
 ```bash
-# On Runpod
-curl http://localhost:11434/api/tags  # should list models
-# If not running:
-ollama serve &
-# Check OLLAMA_BASE_URL in provider .env
-cat /root/smainer-backend/provider/.env | grep OLLAMA
+curl http://127.0.0.1:11434/api/tags
 ```
 
-### 8. Provider WebSocket disconnect loop
-
-Look for repeated `"Starting Enhanced Relayer API client"` in provider logs — indicates circuit breaker tripping.
+Bot logs:
 
 ```bash
-# Check WS endpoint is reachable
-curl -v https://api.smainer.io/api/v1/health
-
-# Check nginx WS upgrade headers on DO
-nginx -T | grep -A3 "location /ws"
-
-# Check auth signature — wallet.json permissions
-ls -la ~/.smainer/wallet.json  # must be 0600
+journalctl -u smainer-bot -f
 ```
 
 ---
@@ -1007,20 +570,15 @@ ls -la ~/.smainer/wallet.json  # must be 0600
 
 | Symptom | Root Cause | Where to Look | Fix |
 |---------|-----------|---------------|-----|
-| Bot ignores all messages | Webhook not registered or secret mismatch | `getWebhookInfo`, Vercel function logs | Re-register webhook, fix `WEBHOOK_SECRET` |
-| "No compute nodes online" | No provider connected or heartbeat expired | `GET /api/v1/ai/capable-nodes`, Redis `active_nodes` | Restart provider daemon on Runpod |
-| "Payment verification failed" | On-chain tx not indexed yet | Bot logs `metric.verification-failed` | Wait 30 s, retry; check `SMAINER_CONTRACT_ADDRESS` |
-| Task stuck in PENDING forever | Capability mismatch (model/privacy_mode) | Redis `HGET task:{id} routing_reason_code` | Update node `capability_contract` with correct models |
-| Callback never arrives | Relayer can't reach bot URL | Relayer logs `Callback delivery failed` | Verify `bot.smainer.io` DNS, Vercel deployment live |
-| Callback rejected (403) | HMAC secret mismatch or clock skew | Bot logs `SEC-001`, `Timestamp too old` | Sync secrets, check NTP on DO |
-| AI response is empty | Ollama model not loaded | Provider logs `httpx.ConnectError` or empty `response` | `ollama pull llama3.1:8b`, check `OLLAMA_DEFAULT_MODEL` |
-| Node registers but tasks never sent | WS manager not wired to scheduler | Relayer startup logs, `global_scheduler` check | Ensure `main.py` sets `scheduler.websocket_manager` |
-| `BalanceUnavailableError` | Starknet RPC unreachable | Bot logs `Balance check failed` | Check `STARKNET_RPC_URL` in Vercel env |
-| `WalletSecurityError` on provider | wallet.json permissions not 0600 | Provider startup logs | `chmod 600 ~/.smainer/wallet.json` |
-| Vercel returns stale response | Build failed, Vercel serving cached | Compare asset hash vs previous deploy | Check Vercel build logs for Python import errors |
-| NFT mint silent failure | Relayer `/api/v1/nft/mint` not implemented or error | Bot logs `NFT badge mint skipped` | Non-blocking — user still gets result; fix relayer endpoint separately |
-| Provider sends task but result never appears | `task_callback:{task_id}` already deleted | Redis `GET task_callback:{id}` empty | Investigate if `deliver_result_callback` ran twice (duplicate completion) |
+| Bot ignores messages | Webhook secret mismatch | Bot logs, getWebhookInfo | Align WEBHOOK_SECRET with setWebhook secret_token |
+| No compute nodes online | No active nodes | /api/v1/nodes, /api/v1/ai/capable-nodes | Restart provider daemon |
+| Task stuck in pending | Missing or stale capability contract | task:{id} routing fields | Re-register node with capability_contract |
+| Callback rejected | HMAC secret mismatch or clock skew | Bot logs | Sync CALLBACK_SIGNING_SECRET and system time |
+| AI response empty | Ollama not running or model missing | Provider logs | Start Ollama and download model |
+| Payment verification failed | On-chain task not indexed yet | Bot logs | Wait and retry prompt |
+| Settlement duplicate blocked | Duplicate callback/worker | Relayer logs | Ensure single settlement path |
 
 ---
 
-*Document generated from source code inspection of `telegram/smainer-bot/`, `backend/relayer/`, and `backend/provider/`. All file paths are relative to the monorepo root.*
+Document updated from source code inspection of telegram/smainer-bot, telegram/miniapp,
+backend/relayer, and backend/provider.
