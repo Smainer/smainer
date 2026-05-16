@@ -21,11 +21,11 @@ log() {
 }
 
 success() {
-    echo -e "${GREEN}✓${NC} $*"
+    echo -e "${GREEN}${NC} $*"
 }
 
 warning() {
-    echo -e "${YELLOW}⚠${NC} $*"
+    echo -e "${YELLOW}${NC} $*"
 }
 
 echo "=============================================="
@@ -55,7 +55,7 @@ echo ""
 
 # Look for GPU indicators in the response
 if [[ "$nodes_response" == *"gpu_info"* ]]; then
-    success "🎯 FOUND GPU CAPABILITIES in nodes response!"
+    success " FOUND GPU CAPABILITIES in nodes response!"
     success "Detected GPU indicators: gpu_info, gpu_vram_gb, node_tier"
 elif [[ "$nodes_response" == *"active_count"* ]]; then
     warning "Nodes response received but no GPU capabilities found yet"
@@ -132,7 +132,7 @@ if [[ "$http_code" == "201" ]]; then
     fi
 elif [[ "$http_code" == "400" ]]; then
     warning "GPU task requirements validation failed: $response_body"
-    success "✓ Validation working - relayer correctly handles GPU requirements"
+    success " Validation working - relayer correctly handles GPU requirements"
 else
     warning "Task submission failed (HTTP $http_code): $response_body"
 fi
@@ -157,15 +157,15 @@ echo ""
 echo "=============================================="
 echo "VERIFICATION CONCLUSION"
 echo "=============================================="
-success "✅ Relayer service is running and healthy"
-success "✅ API endpoints accessible with authentication"
-success "✅ Node listing endpoint functional"  
-success "✅ GPU task requirements validation working"
-success "✅ Task submission system operational"
+success " Relayer service is running and healthy"
+success " API endpoints accessible with authentication"
+success " Node listing endpoint functional"  
+success " GPU task requirements validation working"
+success " Task submission system operational"
 echo ""
 
 if [[ "$nodes_response" == *"gpu_info"* ]]; then
-    success "🎯 CONFIRMED: GPU node detection is IMPLEMENTED and WORKING"
+    success " CONFIRMED: GPU node detection is IMPLEMENTED and WORKING"
     success "   GPU hardware specs are tracked in node registrations"
     success "   VRAM capabilities are monitored and reported"
 else
@@ -178,5 +178,5 @@ fi
 
 echo ""
 echo "=============================================="
-echo "GPU NODE DETECTION: VERIFIED IMPLEMENTATION ✅"
+echo "GPU NODE DETECTION: VERIFIED IMPLEMENTATION "
 echo "=============================================="

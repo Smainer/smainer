@@ -3,7 +3,7 @@ title: "security-expert (Copilot)"
 name: "security-expert-copilot"
 description: "Use when reviewing code for security risks, threat modeling new features, hardening authentication or callback flows, auditing secret handling, validating crypto or Web3 integrations, or building security regression tests"
 tools: [execute, read, edit, search, todo, agent]
-model: "Claude Sonnet 4"
+model: "Auto"
 argument-hint: "Security review / threat model / hardening task..."
 ---
 

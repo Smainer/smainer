@@ -11,10 +11,10 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-log_info() { echo -e "${BLUE}ℹ️  $1${NC}"; }
-log_success() { echo -e "${GREEN}✅ $1${NC}"; }
-log_warning() { echo -e "${YELLOW}⚠️  $1${NC}"; }
-log_error() { echo -e "${RED}❌ $1${NC}"; }
+log_info() { echo -e "${BLUE}ℹ  $1${NC}"; }
+log_success() { echo -e "${GREEN} $1${NC}"; }
+log_warning() { echo -e "${YELLOW}  $1${NC}"; }
+log_error() { echo -e "${RED} $1${NC}"; }
 
 # Project paths
 PROJECT_ROOT="/home/smainer/Smainer"
@@ -45,7 +45,7 @@ initialize_scripts() {
 
 # Quick status check
 status_check() {
-    log_info "🔍 Smainer Stack Status Check"
+    log_info " Smainer Stack Status Check"
     echo "========================================="
     
     # Check PID files
@@ -76,7 +76,7 @@ status_check() {
     
     echo ""
     if [ $running_services -eq $total_services ]; then
-        log_success "🎉 All services running ($running_services/$total_services)"
+        log_success " All services running ($running_services/$total_services)"
         
         # Quick connectivity tests
         if curl -s "http://localhost:8000/api/v1/health" >/dev/null 2>&1; then
@@ -93,13 +93,13 @@ status_check() {
             log_warning "Redis not responding"
         fi
     else
-        log_warning "⚠️  Partial service status ($running_services/$total_services running)"
+        log_warning "  Partial service status ($running_services/$total_services running)"
     fi
 }
 
 # Quick launch wrapper
 quick_launch() {
-    log_info "🚀 Quick Launch - Smainer Stack"
+    log_info " Quick Launch - Smainer Stack"
     echo "========================================="
     
     # Check if environment is configured
@@ -128,7 +128,7 @@ quick_launch() {
 
 # Full deployment workflow
 full_deploy() {
-    log_info "📦 Full Deployment Workflow"
+    log_info " Full Deployment Workflow"
     echo "========================================="
     
     # Step 1: Setup environment
@@ -162,9 +162,9 @@ full_deploy() {
     log_info "Step 4: Verifying Deployment"
     sleep 5  # Give services time to fully start
     if "$SCRIPTS_DIR/verify-smainer-stack.sh"; then
-        log_success "🎉 Full deployment successful!"
+        log_success " Full deployment successful!"
     else
-        log_error "❌ Deployment verification failed"
+        log_error " Deployment verification failed"
         log_info "Check logs and try: $0 stop && $0 deploy"
         exit 1
     fi
@@ -172,7 +172,7 @@ full_deploy() {
 
 # Development mode (with debug logging)
 dev_mode() {
-    log_info "🧪 Development Mode Launch"
+    log_info " Development Mode Launch"
     echo "========================================="
     
     # Override some settings for development
@@ -201,7 +201,7 @@ dev_mode() {
 # Show comprehensive help
 show_help() {
     echo ""
-    echo "🎛️  Smainer Stack Master Controller"
+    echo "  Smainer Stack Master Controller"
     echo "========================================="
     echo ""
     echo "USAGE:"
@@ -330,7 +330,7 @@ main() {
             ;;
             
         "doctor"|"diagnose")
-            log_info "🏥 Running Smainer Stack Diagnostics"
+            log_info " Running Smainer Stack Diagnostics"
             echo "========================================="
             
             # Run all checks
@@ -342,12 +342,12 @@ main() {
             ;;
             
         "cleanup")
-            log_info "🧹 Cleaning up Smainer stack..."
+            log_info " Cleaning up Smainer stack..."
             "$SCRIPTS_DIR/stop-smainer-stack.sh" "$@"
             ;;
             
         "reset")
-            log_warning "⚠️  This will completely reset Smainer stack configuration"
+            log_warning "  This will completely reset Smainer stack configuration"
             read -p "Are you sure? Type 'yes' to continue: " confirmation
             if [ "$confirmation" = "yes" ]; then
                 log_info "Stopping services..."

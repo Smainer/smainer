@@ -11,10 +11,10 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-log_info() { echo -e "${BLUE}ℹ️  $1${NC}"; }
-log_success() { echo -e "${GREEN}✅ $1${NC}"; }
-log_warning() { echo -e "${YELLOW}⚠️  $1${NC}"; }
-log_error() { echo -e "${RED}❌ $1${NC}"; }
+log_info() { echo -e "${BLUE}ℹ  $1${NC}"; }
+log_success() { echo -e "${GREEN} $1${NC}"; }
+log_warning() { echo -e "${YELLOW}  $1${NC}"; }
+log_error() { echo -e "${RED} $1${NC}"; }
 
 # Project paths
 PROJECT_ROOT="/home/smainer/Smainer"
@@ -343,7 +343,7 @@ main() {
     done
     
     echo ""
-    log_info "🛑 Smainer Stack Rollback/Stop"
+    log_info " Smainer Stack Rollback/Stop"
     echo "========================================="
     
     if [ "$force_mode" = true ]; then
@@ -398,32 +398,32 @@ main() {
     echo ""
     echo "========================================="
     if [ "$still_running" -eq 0 ] && [ "$stop_errors" -eq 0 ]; then
-        log_success "🎉 Smainer stack stopped successfully!"
+        log_success " Smainer stack stopped successfully!"
         echo ""
         echo "All services terminated cleanly:"
-        echo "  ✅ Provider daemon stopped"
-        echo "  ✅ Relayer API stopped"
-        echo "  ✅ Redis server stopped"
+        echo "   Provider daemon stopped"
+        echo "   Relayer API stopped"
+        echo "   Redis server stopped"
         echo ""
         if [ "$archive_logs_flag" = true ]; then
-            echo "📁 Log files archived in: $LOGS_DIR/archived_*"
+            echo " Log files archived in: $LOGS_DIR/archived_*"
         fi
         if [ "$cleanup_temp_flag" = true ]; then
-            echo "🧹 Temporary files cleaned up"
+            echo " Temporary files cleaned up"
         fi
         echo ""
         echo "Ready for fresh start with: scripts/launch-smainer-stack.sh"
     else
-        log_error "❌ Shutdown completed with issues"
+        log_error " Shutdown completed with issues"
         echo ""
         if [ "$stop_errors" -gt 0 ]; then
-            echo "  ⚠️  $stop_errors service(s) had stop errors"
+            echo "    $stop_errors service(s) had stop errors"
         fi
         if [ "$still_running" -gt 0 ]; then
-            echo "  ⚠️  $still_running process(es) still running"
+            echo "    $still_running process(es) still running"
         fi
         echo ""
-        echo "🔧 Manual cleanup may be required:"
+        echo " Manual cleanup may be required:"
         echo "   ps aux | grep -E 'redis|relayer|provider'"
         echo "   kill -9 <PID>   # for stubborn processes"
         echo "   lsof -i :6379   # check Redis port"

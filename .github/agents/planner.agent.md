@@ -3,7 +3,7 @@ title: "planner (Copilot)"
 name: "planner-copilot"
 description: "Use when breaking down a product goal into actionable tasks, writing sprint plans, creating GitHub issues, prioritizing a backlog, mapping dependencies between components, or distributing work to specialist agents. Call this agent whenever you need to turn ambiguous direction into a concrete, executable task list."
 tools: [read, search, todo, agent]
-model: "Claude Sonnet 4"
+model: "Auto"
 argument-hint: "Product goal / sprint plan / backlog prioritization / task breakdown..."
 ---
 

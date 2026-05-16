@@ -17,7 +17,7 @@ Security fixes are applied to:
 
 ## Reporting a Vulnerability
 
-> ⚠️ Please **do not** disclose vulnerabilities publicly before triage.
+>  Please **do not** disclose vulnerabilities publicly before triage.
 
 Report security issues by email to **[security@smainer.io](mailto:security@smainer.io)**.
 

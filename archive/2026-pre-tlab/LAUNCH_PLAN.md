@@ -321,7 +321,7 @@ The bot cannot compute `keccak(chat_id ‖ wallet)` at prompt time because the w
 2. **Send `/start`** — bot replies with welcome + "Send any prompt to begin."
 3. **Send any prompt**, e.g. `Summarize this article: <text>`.
 4. **Bot responds** with the cost line and a single button:
-   > 💎 0.12 STRK required
+   >  0.12 STRK required
    > Tap below to approve in Braavos. No second confirmation needed.
    > **[ Approve in Wallet ]**
 5. **Tap the button** — Telegram opens the Smainer MiniApp briefly. The MiniApp handshakes with your connected Braavos wallet, then deep-links you into the Braavos app.
@@ -330,7 +330,7 @@ The bot cannot compute `keccak(chat_id ‖ wallet)` at prompt time because the w
    - Amount: e.g. `0.120042 STRK` (the trailing dust is the chat-binding nonce — this is normal, do not modify).
 7. **Tap "Confirm"** in Braavos. You return to Telegram automatically.
 8. **Bot updates** to: `⏳ Waiting for your approval on-chain…` (spinner). You do nothing here.
-9. **Within 6–15 seconds** (Starknet block time), bot updates to: `✅ Payment confirmed. Running your prompt…`.
+9. **Within 6–15 seconds** (Starknet block time), bot updates to: ` Payment confirmed. Running your prompt…`.
 10. **Result arrives** as a normal Telegram message, e.g.:
     > Here is the summary: …
     > _Computed in 2.3s · model: llama3 · 0.10 STRK billed_
@@ -341,11 +341,11 @@ The bot cannot compute `keccak(chat_id ‖ wallet)` at prompt time because the w
 
 | What you see | What to do |
 |---|---|
-| Bot says `⏱️ Approval not detected within 90 seconds` | Tap the **[Retry]** button. Your previous approval is still valid; the bot re-rolls a fresh dust-nonce for safety. |
+| Bot says `⏱ Approval not detected within 90 seconds` | Tap the **[Retry]** button. Your previous approval is still valid; the bot re-rolls a fresh dust-nonce for safety. |
 | Braavos shows "Insufficient balance" | Top up STRK (the bot includes a deep-link to Ekubo if balance is too low). |
-| Bot says `❌ Transaction cancelled in wallet` | Tap **[Approve in Wallet]** again — nothing was charged. |
+| Bot says ` Transaction cancelled in wallet` | Tap **[Approve in Wallet]** again — nothing was charged. |
 | Bot stays silent after approval signed | Wait up to 30s for the next Starknet block. If still silent, send `/status` — bot will report whether the approval landed and whether the job is queued. |
-| Bot says `🔌 Network error` | Tap **[Retry]** — relayer recovery is automatic from the last `continuation_token`. |
+| Bot says ` Network error` | Tap **[Retry]** — relayer recovery is automatic from the last `continuation_token`. |
 
 ### For operators (you, monitoring during live test)
 

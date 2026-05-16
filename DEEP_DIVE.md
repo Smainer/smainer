@@ -809,56 +809,56 @@ A forged result requires either:
 ### Smart Contract (Cairo)
 | Feature | Status |
 |---------|--------|
-| Provider Registry (register/deactivate/suspend) | ✅ Implemented + tested |
-| Escrow (create/cancel with refund) | ✅ Implemented + tested |
-| Proof submission and fee split | ✅ Implemented + tested |
-| Access control (owner/relayer gates) | ✅ Implemented + tested |
-| Events (all 10 event types) | ✅ Implemented |
-| Contract compilation (Scarb) | ✅ Compiles |
+| Provider Registry (register/deactivate/suspend) |  Implemented + tested |
+| Escrow (create/cancel with refund) |  Implemented + tested |
+| Proof submission and fee split |  Implemented + tested |
+| Access control (owner/relayer gates) |  Implemented + tested |
+| Events (all 10 event types) |  Implemented |
+| Contract compilation (Scarb) |  Compiles |
 | Deployed to testnet | ⬛ Not yet |
 
 ### Relayer (FastAPI)
 | Feature | Status |
 |---------|--------|
-| NodePool (Redis-backed) | ✅ 114 tests passing |
-| JobScheduler (task lifecycle) | ✅ Implemented + tested |
-| ResultAggregator (batching) | ✅ Implemented + tested |
-| WebSocketManager (node comms) | ✅ Implemented + tested |
-| SignatureVerifier (Starknet ECDSA) | ✅ Implemented + tested |
-| REST API routes (tasks, nodes, health) | ✅ Implemented + tested |
-| StarknetClient (proof submission) | ✅ Implemented (uses minimal ABI) |
+| NodePool (Redis-backed) |  114 tests passing |
+| JobScheduler (task lifecycle) |  Implemented + tested |
+| ResultAggregator (batching) |  Implemented + tested |
+| WebSocketManager (node comms) |  Implemented + tested |
+| SignatureVerifier (Starknet ECDSA) |  Implemented + tested |
+| REST API routes (tasks, nodes, health) |  Implemented + tested |
+| StarknetClient (proof submission) |  Implemented (uses minimal ABI) |
 | Batch multicall (true single tx) | ⬛ Planned |
-| API authentication (API key) | ✅ Implemented |
-| CORS configuration | ✅ Implemented |
+| API authentication (API key) |  Implemented |
+| CORS configuration |  Implemented |
 
 ### Provider Daemon (Python)
 | Feature | Status |
 |---------|--------|
-| ProviderDaemon orchestration | ✅ 87 tests passing |
-| SandboxedExecutor (HASH tasks) | ✅ Implemented + tested |
-| SandboxedExecutor (MATRIX tasks) | ✅ Implemented + tested |
-| SandboxedExecutor (CUSTOM tasks) | ✅ Implemented (opt-in, disabled by default) |
-| Resource monitoring (psutil) | ✅ Implemented + tested |
-| StarknetSigner (ECDSA result signing) | ✅ Implemented + tested |
-| RelayerAPIClient (WS with backoff) | ✅ Implemented + tested |
-| Hardware spec detection | ✅ Implemented (CPU, RAM, GPU) |
-| Graceful shutdown (SIGTERM) | ✅ Implemented |
-| Packaged as pip installable (`provider-daemon` CLI) | ✅ Via pyproject.toml |
+| ProviderDaemon orchestration |  87 tests passing |
+| SandboxedExecutor (HASH tasks) |  Implemented + tested |
+| SandboxedExecutor (MATRIX tasks) |  Implemented + tested |
+| SandboxedExecutor (CUSTOM tasks) |  Implemented (opt-in, disabled by default) |
+| Resource monitoring (psutil) |  Implemented + tested |
+| StarknetSigner (ECDSA result signing) |  Implemented + tested |
+| RelayerAPIClient (WS with backoff) |  Implemented + tested |
+| Hardware spec detection |  Implemented (CPU, RAM, GPU) |
+| Graceful shutdown (SIGTERM) |  Implemented |
+| Packaged as pip installable (`provider-daemon` CLI) |  Via pyproject.toml |
 
 ### Frontend (Next.js)
 | Feature | Status |
 |---------|--------|
-| Homepage (hero, stats, how it works) | ✅ Implemented |
-| Dashboard (provider + demander overview) | ✅ Implemented |
-| Task submission form (multi-step) | ✅ Implemented |
-| Task list page | ✅ Implemented |
-| Provider onboarding page | ✅ Implemented |
-| Docs page (API + contract reference) | ✅ Implemented |
-| Wallet connect (Argent X / Braavos) | ✅ Implemented |
-| ERC-20 approve + create_task flow | ✅ Implemented |
-| Cost estimator with fee breakdown | ✅ Implemented |
-| Contract reads (node status, tasks) | ✅ Implemented |
-| Relayer API hooks | ✅ Implemented |
+| Homepage (hero, stats, how it works) |  Implemented |
+| Dashboard (provider + demander overview) |  Implemented |
+| Task submission form (multi-step) |  Implemented |
+| Task list page |  Implemented |
+| Provider onboarding page |  Implemented |
+| Docs page (API + contract reference) |  Implemented |
+| Wallet connect (Argent X / Braavos) |  Implemented |
+| ERC-20 approve + create_task flow |  Implemented |
+| Cost estimator with fee breakdown |  Implemented |
+| Contract reads (node status, tasks) |  Implemented |
+| Relayer API hooks |  Implemented |
 | Live network stats (real API) | ⬛ Currently simulated |
 | Contract deployed (real addresses) | ⬛ Pending deployment |
 

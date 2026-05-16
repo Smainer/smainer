@@ -161,17 +161,17 @@ cd vendors/axolotl && git describe --tags && cd ../..
 ## Notes for Contributors
 
 **DO:**
-- ✅ Test thoroughly before updating a vendor
-- ✅ Use `--squash` to keep our history clean
-- ✅ Document breaking changes in commit message
-- ✅ Update adapter code and tests together
-- ✅ Run full CI before pushing
+-  Test thoroughly before updating a vendor
+-  Use `--squash` to keep our history clean
+-  Document breaking changes in commit message
+-  Update adapter code and tests together
+-  Run full CI before pushing
 
 **DON'T:**
-- ❌ Directly edit files inside `vendors/` — they'll be overwritten on next pull
-- ❌ Skip testing after a vendor bump
-- ❌ Use `--no-squash` (creates messy history)
-- ❌ Pull from `main`/unstable branches without testing (use stable tags)
+-  Directly edit files inside `vendors/` — they'll be overwritten on next pull
+-  Skip testing after a vendor bump
+-  Use `--no-squash` (creates messy history)
+-  Pull from `main`/unstable branches without testing (use stable tags)
 
 ---
 

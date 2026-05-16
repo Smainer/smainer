@@ -61,20 +61,18 @@ RELAYER_WS_URL=ws://localhost:8000  # NOT ws://localhost:8000/ws
 #### 4. Missing Account Address
 **File**: `backend/provider/.env`
 **Problem**: Missing `STARKNET_ACCOUNT_ADDRESS` caused auth failure
-**Solution**: Added production account address:
+**Solution**: Set the account address that matches your local private key:
 ```
-STARKNET_ACCOUNT_ADDRESS=0x071cd50ddd9a2d0e1e95e6decd9f0a292b489dc6b9b13e68aac43b2295b626d6
+STARKNET_ACCOUNT_ADDRESS=<YOUR_ACCOUNT_ADDRESS>
 ```
 
 ### Working Provider Configuration (backend/provider/.env)
 
-**⚠️ SECURITY WARNING: Never commit actual private keys to version control!**
-
 ```env
 RELAYER_WS_URL=ws://localhost:8000
-STARKNET_PRIVATE_KEY=<REDACTED - generate your own test key for local dev>
-STARKNET_ACCOUNT_ADDRESS=<YOUR_ACCOUNT_ADDRESS_CORRESPONDING_TO_PRIVATE_KEY>
-NODE_ID=<GENERATE_UNIQUE_UUID_FOR_NODE>
+STARKNET_PRIVATE_KEY=<YOUR_PRIVATE_KEY>
+STARKNET_ACCOUNT_ADDRESS=<YOUR_ACCOUNT_ADDRESS>
+NODE_ID=<GENERATE_UNIQUE_UUID>
 MAX_CONCURRENT_TASKS=2
 HEARTBEAT_INTERVAL=30
 LOG_LEVEL=INFO
@@ -86,7 +84,7 @@ ENABLE_CUSTOM_TASKS=false
 
 **Working Command**:
 ```bash
-curl -s -H "X-API-Key: lduph40yLQQQI1ql64cajqdYKBsok1k9" http://localhost:8000/api/v1/nodes
+curl -s -H "X-API-Key: <YOUR_RELAYER_API_KEY>" http://localhost:8000/api/v1/nodes
 ```
 
 **Note**: Use `X-API-Key` header, not `Authorization: Bearer` (relayer API auth issue).

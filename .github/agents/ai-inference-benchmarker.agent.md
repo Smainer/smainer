@@ -3,7 +3,7 @@ title: "ai-inference-benchmarker (Copilot)"
 name: "ai-inference-benchmarker-copilot"
 description: "Use when benchmarking AI inference performance across Smainer tiers, including p50/p95 latency, throughput, cost-per-task in STRK, success rates, and bottleneck analysis for live-test readiness."
 tools: [execute, read, edit, search, todo, agent]
-model: "Claude Sonnet 4"
+model: "Auto"
 argument-hint: "Inference benchmarking / latency analysis / throughput optimization..."
 ---
 

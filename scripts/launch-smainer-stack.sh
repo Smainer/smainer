@@ -12,10 +12,10 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-log_info() { echo -e "${BLUE}ℹ️  $1${NC}"; }
-log_success() { echo -e "${GREEN}✅ $1${NC}"; }
-log_warning() { echo -e "${YELLOW}⚠️  $1${NC}"; }
-log_error() { echo -e "${RED}❌ $1${NC}"; }
+log_info() { echo -e "${BLUE}ℹ  $1${NC}"; }
+log_success() { echo -e "${GREEN} $1${NC}"; }
+log_warning() { echo -e "${YELLOW}  $1${NC}"; }
+log_error() { echo -e "${RED} $1${NC}"; }
 
 # Project paths
 PROJECT_ROOT="/home/smainer/Smainer"
@@ -298,7 +298,7 @@ start_provider() {
 # Main execution
 main() {
     echo ""
-    log_info "🚀 Smainer Stack Launcher"
+    log_info " Smainer Stack Launcher"
     echo "========================================="
     
     # Pre-flight checks
@@ -340,16 +340,16 @@ main() {
     fi
     
     echo ""
-    log_success "🎉 All Smainer stack components started successfully!"
+    log_success " All Smainer stack components started successfully!"
     echo ""
-    echo "📊 Service Status:"
+    echo " Service Status:"
     echo "   Redis:    Running (PID: $(cat "$REDIS_PID_FILE" 2>/dev/null || echo 'N/A'))"
     echo "   Relayer:  Running (PID: $(cat "$RELAYER_PID_FILE" 2>/dev/null || echo 'N/A')) - http://localhost:8000"
     echo "   Provider: Running (PID: $(cat "$PROVIDER_PID_FILE" 2>/dev/null || echo 'N/A'))"
     echo ""
-    echo "📝 Logs location: $LOGS_DIR"
+    echo " Logs location: $LOGS_DIR"
     echo ""
-    echo "🔧 Management commands:"
+    echo " Management commands:"
     echo "   Verify:   $SCRIPTS_DIR/verify-smainer-stack.sh"
     echo "   Stop:     $SCRIPTS_DIR/stop-smainer-stack.sh"
     echo "   Monitor:  tail -f $LOGS_DIR/*.log"

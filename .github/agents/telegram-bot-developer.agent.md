@@ -3,7 +3,7 @@ title: "telegram-bot-developer (Copilot)"
 description: "Use when building the Telegram bot, MiniApp, wallet flows, AI chat UX, NFT minting, payment integration, MiniApp deployment on Vercel, or any Telegram-related design/development/debugging. Full-stack Telegram product owner with design sense, systems access, and agent orchestration."
 name: "telegram-bot-developer-copilot"
 tools: [vscode/extensions, vscode/getProjectSetupInfo, vscode/installExtension, vscode/memory, vscode/newWorkspace, vscode/runCommand, vscode/vscodeAPI, vscode/askQuestions, execute/getTerminalOutput, execute/awaitTerminal, execute/killTerminal, execute/createAndRunTask, execute/runNotebookCell, execute/testFailure, execute/runTests, execute/runInTerminal, read/terminalSelection, read/terminalLastCommand, read/getNotebookSummary, read/problems, read/readFile, agent/runSubagent, edit/createDirectory, edit/createFile, edit/createJupyterNotebook, edit/editFiles, edit/editNotebook, edit/rename, search/changes, search/codebase, search/fileSearch, search/listDirectory, search/searchResults, search/textSearch, search/usages, web/fetch, web/githubRepo, ms-python.python/getPythonEnvironmentInfo, ms-python.python/getPythonExecutableCommand, ms-python.python/installPythonPackage, ms-python.python/configurePythonEnvironment, todo]
-model: "Claude Opus 4.5"
+model: "Auto"
 argument-hint: "Telegram bot / miniapp / UX design / remote ops / integration task..."
 user-invocable: true
 ---
@@ -83,7 +83,7 @@ User ← Bot edits msg ← Vercel callback fn ← Relayer POST ← Result ← Pr
 1. User sends text → Telegram webhook triggers Vercel serverless function
 2. Bot checks wallet linked + $STRK balance (via `wallet.py` → Starknet RPC)
 3. Bot infers model tier from user preference, checks available nodes
-4. Bot shows "💎 Pay & Compute" WebApp button with MiniApp payment URL
+4. Bot shows " Pay & Compute" WebApp button with MiniApp payment URL
 5. User taps button → MiniApp opens with payment params
 6. MiniApp: user approves STRK + calls `create_task()` on escrow contract
 7. MiniApp sends `payment_complete` + `on_chain_task_id` via `sendData()`

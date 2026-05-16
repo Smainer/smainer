@@ -1,6 +1,6 @@
 <div align="center">
 
-# ⚡ Smainer
+#  Smainer
 
 ### Decentralized Compute-Sharing Protocol on Starknet
 

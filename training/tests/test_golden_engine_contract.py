@@ -460,7 +460,7 @@ def test_add_your_engine_here():
     assert fake_engine.name == "fake_engine"
     assert len(fake_engine.supported_methods) > 0
     
-    print(f"\n📋 GOLDEN CONTRACT TEST SUMMARY:")
+    print(f"\n GOLDEN CONTRACT TEST SUMMARY:")
     print(f"   • Total engines under test: {len(ENGINES_TO_TEST)}")
     print(f"   • Contract tests per engine: {len(TestEngineContract.__dict__) - 1}")  # Exclude __init__
     print(f"   • Add your adapter to ENGINES_TO_TEST list to validate!")

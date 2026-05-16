@@ -19,7 +19,7 @@ error() { echo -e "${RED}[ERROR]${NC} $1"; }
 PROVIDER_DIR="/home/smainer/Smainer/backend/provider"
 SANDBOX_PATH="/var/lib/smainer-provider/sandbox"
 
-echo -e "${BOLD}🔧 FIXING PROVIDER CONFIGURATION MISMATCHES${NC}"
+echo -e "${BOLD} FIXING PROVIDER CONFIGURATION MISMATCHES${NC}"
 echo "=============================================="
 
 cd "$PROVIDER_DIR" || exit 1
@@ -27,12 +27,12 @@ cd "$PROVIDER_DIR" || exit 1
 # 1. Fix .env.example
 log "Updating .env.example with corrected sandbox path..."
 sed -i "s|SANDBOX_TEMP_DIR=.*|SANDBOX_TEMP_DIR=${SANDBOX_PATH}|" .env.example
-success "✅ Updated .env.example"
+success " Updated .env.example"
 
 # 2. Fix launch_provider.sh
 log "Updating launch_provider.sh with corrected sandbox path..."
 sed -i "s|SANDBOX_TEMP_DIR=\${SANDBOX_TEMP_DIR:-.*}|SANDBOX_TEMP_DIR=\"\${SANDBOX_TEMP_DIR:-${SANDBOX_PATH}}\"|" launch_provider.sh
-success "✅ Updated launch_provider.sh"
+success " Updated launch_provider.sh"
 
 # 3. Create production-ready .env template
 log "Creating production .env template..."
@@ -69,7 +69,7 @@ RECONNECT_BACKOFF_MULTIPLIER=2.0
 RESOURCE_MONITORING_INTERVAL=1.0
 EOF
 
-success "✅ Created .env.production-template"
+success " Created .env.production-template"
 
 # 4. Create sandbox directory setup script
 log "Creating sandbox directory setup script..."
@@ -95,12 +95,12 @@ fi
 # Set restrictive permissions
 chmod 700 "$SANDBOX_PATH"
 
-echo "✅ Sandbox directory ready: $SANDBOX_PATH"
+echo " Sandbox directory ready: $SANDBOX_PATH"
 ls -la "$SANDBOX_PATH"
 EOF
 
 chmod +x setup-sandbox.sh
-success "✅ Created setup-sandbox.sh"
+success " Created setup-sandbox.sh"
 
 # 5. Validate configuration loading
 log "Testing updated configuration loading..."
@@ -111,21 +111,21 @@ from provider.config import ProviderConfig
 
 print('Testing default configuration...')
 config = ProviderConfig()
-print(f'✓ Sandbox path: {config.SANDBOX_TEMP_DIR}')
-print(f'✓ Max tasks: {config.MAX_CONCURRENT_TASKS}')
-print('✓ Configuration loads successfully')
-" && success "✅ Configuration validation passed" || error "❌ Configuration validation failed"
+print(f' Sandbox path: {config.SANDBOX_TEMP_DIR}')
+print(f' Max tasks: {config.MAX_CONCURRENT_TASKS}')
+print(' Configuration loads successfully')
+" && success " Configuration validation passed" || error " Configuration validation failed"
 
 echo ""
-echo -e "${BOLD}🎯 CONFIGURATION FIXES COMPLETE${NC}"
+echo -e "${BOLD} CONFIGURATION FIXES COMPLETE${NC}"
 echo "================================="
 echo ""
 
 success "Fixed files:"
-success "  ✅ .env.example - corrected sandbox path"  
-success "  ✅ launch_provider.sh - corrected default sandbox"
-success "  ✅ .env.production-template - ready for deployment"
-success "  ✅ setup-sandbox.sh - sandbox directory setup"
+success "   .env.example - corrected sandbox path"  
+success "   launch_provider.sh - corrected default sandbox"
+success "   .env.production-template - ready for deployment"
+success "   setup-sandbox.sh - sandbox directory setup"
 
 echo ""
 log "Next steps for deployment:"
@@ -135,7 +135,7 @@ echo "  3. Edit: nano .env (set RELAYER_WS_URL, NODE_ID, STARKNET_PRIVATE_KEY)"
 echo "  4. Test: ./launch_provider.sh"
 
 echo ""
-warning "⚠️  Remember to update:"
+warning "  Remember to update:"
 warning "     - RELAYER_WS_URL with your DO droplet hostname"
 warning "     - NODE_ID with unique identifier" 
 warning "     - STARKNET_PRIVATE_KEY with real private key"

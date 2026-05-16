@@ -12,7 +12,7 @@ echo "==== Applying Redis Timeout Fix to Batch Processor ===="
 
 # Backup original file
 cp "$AGGREGATOR_FILE" "$AGGREGATOR_FILE.backup"
-echo "✅ Backed up original file to $AGGREGATOR_FILE.backup"
+echo " Backed up original file to $AGGREGATOR_FILE.backup"
 
 # Create the patch
 cat > batch_processor_fix.patch << 'EOF'
@@ -122,16 +122,16 @@ if old_method in content:
     # Write back
     with open("backend/relayer/src/relayer/core/aggregator.py", "w") as f:
         f.write(new_content)
-    print("✅ Applied batch processor timeout fix")
+    print(" Applied batch processor timeout fix")
 else:
-    print("❌ Could not find exact method to replace")
+    print(" Could not find exact method to replace")
     print("Manual patch required - see batch_processor_fix.patch")
     sys.exit(1)
 PYTHON_EOF
 
-echo "✅ Fixed batch processor error handling"
+echo " Fixed batch processor error handling"
 echo "   - Redis timeouts now logged as debug instead of error"
 echo "   - Specific handling for connection vs timeout errors"
 echo "   - Reduced log spam while preserving error visibility"
 echo 
-echo "🚀 Deploy this fix after contract deployment to clean up logs"
+echo " Deploy this fix after contract deployment to clean up logs"

@@ -185,11 +185,11 @@ def test_get_supported_models(engine):
 ```
 
 **Golden Test Suite**: All new engine adapters must pass:
-- ✅ Config validation (valid inputs pass, invalid fail)
-- ✅ Successful train() execution (or mock if you don't have the framework installed)
-- ✅ Error handling (graceful failure on bad config)
-- ✅ Expected return structure (job_id, engine, status, metrics, error)
-- ✅ Type hints on all public methods (enforced by mypy)
+-  Config validation (valid inputs pass, invalid fail)
+-  Successful train() execution (or mock if you don't have the framework installed)
+-  Error handling (graceful failure on bad config)
+-  Expected return structure (job_id, engine, status, metrics, error)
+-  Type hints on all public methods (enforced by mypy)
 
 ### 4. License & Dependency Check
 
@@ -202,7 +202,7 @@ def test_get_supported_models(engine):
 ```bash
 # In your feature branch
 pip install -e ".[your_engine]"
-pip-licenses --format=json | grep -i "agpl" || echo "✓ No AGPL"
+pip-licenses --format=json | grep -i "agpl" || echo " No AGPL"
 ```
 
 ### 5. Update Documentation
@@ -352,4 +352,4 @@ If your adapter depends on AGPL libraries, that's allowed **as long as it runs i
 - File an issue with your question or suggestion
 - Tag `security-expert` or `relayer-architect` for license/architecture concerns
 
-Happy contributing! 🚀
+Happy contributing! 

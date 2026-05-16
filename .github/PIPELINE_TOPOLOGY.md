@@ -11,6 +11,8 @@ All agent files and skill files derive their structure from this document.
 TIER 0 — GATEWAY
   chief-director           Single point of entry. Routes, orchestrates, facilitates meetings.
                            Never implements. Never writes code or edits files.
+  prompt-engineer          Hidden director-only prompt clarification support.
+                           Returns cleaned Director prompts or clarification questions.
 
 TIER 1 — PLANNING
   planner                  Receives Task Brief from chief-director.
@@ -50,6 +52,25 @@ TIER 4 — UTILITY (read-only, callable from any tier)
 User
   ↓
 chief-director (TIER 0)
+  ↓ Prompt Clarification Request, when user intent is unclear
+prompt-engineer (TIER 0 support)
+  ↓ Clean Director Prompt or Clarifying Questions
+chief-director (TIER 0)
+  ↓ Task Brief
+planner (TIER 1)
+  ↓ Task Manifests (one per specialist)
+[specialist agents] (TIER 2)
+  ↓ Delivery Reports
+chief-director (TIER 0)
+  ↓ Validation Requests
+security-expert / repository-architect (TIER 3)
+  ↓ Validation Reports
+chief-director (TIER 0)
+  ↓ Final delivery to user
+
+Standard clear-intent flow:
+
+chief-director (TIER 0)
   ↓ Task Brief
 planner (TIER 1)
   ↓ Task Manifests (one per specialist)
@@ -71,13 +92,13 @@ Any tier → ai-inference-benchmarker (TIER 4) [read-only, any time]
 ## Forbidden Call Patterns
 
 ```
-❌ Tier 2 → Tier 2   (no peer-to-peer between specialists)
-❌ Tier 2 → Tier 0   (specialists cannot escalate to chief-director directly)
-❌ Tier 2 → Tier 1   (specialists cannot call planner)
-❌ Tier 1 → Tier 0   (planner cannot call chief-director back)
-❌ Tier 0 → Tier 2   (chief-director must route multi-task work through planner)
-❌ Tier 3 implementing anything (audit only — no code, no file edits)
-❌ Any Tier 0/1 writing code or editing files
+ Tier 2 → Tier 2   (no peer-to-peer between specialists)
+ Tier 2 → Tier 0   (specialists cannot escalate to chief-director directly)
+ Tier 2 → Tier 1   (specialists cannot call planner)
+ Tier 1 → Tier 0   (planner cannot call chief-director back)
+ Tier 0 → Tier 2   (chief-director must route multi-task work through planner)
+ Tier 3 implementing anything (audit only — no code, no file edits)
+ Any Tier 0/1 writing code or editing files
 ```
 
 ---

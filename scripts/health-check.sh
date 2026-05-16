@@ -34,7 +34,7 @@ case "$ENVIRONMENT" in
     DB_HOST="postgres.smainer.com:5432"
     ;;
   *)
-    echo -e "${RED}❌ Unknown environment: $ENVIRONMENT${NC}"
+    echo -e "${RED} Unknown environment: $ENVIRONMENT${NC}"
     echo "Available: dev, staging, prod"
     exit 1
     ;;
@@ -53,13 +53,13 @@ log_status() {
 }
 
 check_relayer_health() {
-  echo -e "${BLUE}🔍 Checking Relayer Health...${NC}"
+  echo -e "${BLUE} Checking Relayer Health...${NC}"
   
   # Basic health endpoint
   if curl -s -o /dev/null -w "%{http_code}" "$RELAYER_URL/health" | grep -q "200"; then
-    log_status "✅" "RELAYER" "Health endpoint responding" "$GREEN"
+    log_status "" "RELAYER" "Health endpoint responding" "$GREEN"
   else
-    log_status "❌" "RELAYER" "Health endpoint failed" "$RED"
+    log_status "" "RELAYER" "Health endpoint failed" "$RED"
     return 1
   fi
   
@@ -81,71 +81,71 @@ async def test_ws():
 
 asyncio.run(test_ws())
 " 2>/dev/null; then
-    log_status "✅" "WEBSOCKET" "Connection test passed" "$GREEN"
+    log_status "" "WEBSOCKET" "Connection test passed" "$GREEN"
   else
-    log_status "❌" "WEBSOCKET" "Connection test failed" "$RED"
+    log_status "" "WEBSOCKET" "Connection test failed" "$RED"
     return 1
   fi
   
   # API response time test
   RESPONSE_TIME=$(curl -o /dev/null -s -w "%{time_total}" "$RELAYER_URL/health")
   if (( $(echo "$RESPONSE_TIME < 0.1" | bc -l) )); then
-    log_status "✅" "LATENCY" "Response time: ${RESPONSE_TIME}s (<100ms)" "$GREEN"
+    log_status "" "LATENCY" "Response time: ${RESPONSE_TIME}s (<100ms)" "$GREEN"
   elif (( $(echo "$RESPONSE_TIME < 0.5" | bc -l) )); then
-    log_status "⚠️" "LATENCY" "Response time: ${RESPONSE_TIME}s (warning)" "$YELLOW"
+    log_status "" "LATENCY" "Response time: ${RESPONSE_TIME}s (warning)" "$YELLOW"
   else
-    log_status "❌" "LATENCY" "Response time: ${RESPONSE_TIME}s (>500ms)" "$RED"
+    log_status "" "LATENCY" "Response time: ${RESPONSE_TIME}s (>500ms)" "$RED"
   fi
 }
 
 check_redis_health() {
-  echo -e "${BLUE}🔍 Checking Redis Health...${NC}"
+  echo -e "${BLUE} Checking Redis Health...${NC}"
   
   # Basic connectivity
   if redis-cli -h "$(echo $REDIS_HOST | cut -d: -f1)" -p "$(echo $REDIS_HOST | cut -d: -f2)" ping | grep -q "PONG"; then
-    log_status "✅" "REDIS" "Connectivity OK" "$GREEN"
+    log_status "" "REDIS" "Connectivity OK" "$GREEN"
   else
-    log_status "❌" "REDIS" "Connection failed" "$RED"
+    log_status "" "REDIS" "Connection failed" "$RED"
     return 1
   fi
   
   # Memory usage check
   MEMORY_USED=$(redis-cli -h "$(echo $REDIS_HOST | cut -d: -f1)" -p "$(echo $REDIS_HOST | cut -d: -f2)" info memory | grep used_memory_human | cut -d: -f2 | tr -d '\r')
   MEMORY_PEAK=$(redis-cli -h "$(echo $REDIS_HOST | cut -d: -f1)" -p "$(echo $REDIS_HOST | cut -d: -f2)" info memory | grep used_memory_peak_human | cut -d: -f2 | tr -d '\r')
-  log_status "ℹ️" "REDIS_MEMORY" "Used: $MEMORY_USED, Peak: $MEMORY_PEAK" "$BLUE"
+  log_status "ℹ" "REDIS_MEMORY" "Used: $MEMORY_USED, Peak: $MEMORY_PEAK" "$BLUE"
   
   # Check cluster state if applicable
   if [[ "$ENVIRONMENT" != "dev" ]]; then
     CLUSTER_STATE=$(redis-cli -h "$(echo $REDIS_HOST | cut -d: -f1)" -p "$(echo $REDIS_HOST | cut -d: -f2)" cluster info | grep cluster_state | cut -d: -f2)
     if [[ "$CLUSTER_STATE" == "ok" ]]; then
-      log_status "✅" "REDIS_CLUSTER" "Cluster state OK" "$GREEN"
+      log_status "" "REDIS_CLUSTER" "Cluster state OK" "$GREEN"
     else
-      log_status "❌" "REDIS_CLUSTER" "Cluster state: $CLUSTER_STATE" "$RED"
+      log_status "" "REDIS_CLUSTER" "Cluster state: $CLUSTER_STATE" "$RED"
       return 1
     fi
   fi
 }
 
 check_database_health() {
-  echo -e "${BLUE}🔍 Checking Database Health...${NC}"
+  echo -e "${BLUE} Checking Database Health...${NC}"
   
   # Basic connectivity (requires PGPASSWORD env var or .pgpass file)
   if pg_isready -h "$(echo $DB_HOST | cut -d: -f1)" -p "$(echo $DB_HOST | cut -d: -f2)" >/dev/null 2>&1; then
-    log_status "✅" "DATABASE" "Connectivity OK" "$GREEN"
+    log_status "" "DATABASE" "Connectivity OK" "$GREEN"
   else
-    log_status "❌" "DATABASE" "Connection failed" "$RED"
+    log_status "" "DATABASE" "Connection failed" "$RED"
     return 1
   fi
   
   # Check disk usage
   if command -v psql >/dev/null 2>&1; then
     DB_SIZE=$(psql -h "$(echo $DB_HOST | cut -d: -f1)" -p "$(echo $DB_HOST | cut -d: -f2)" -d smainer -t -c "SELECT pg_size_pretty(pg_database_size('smainer'));" 2>/dev/null | xargs || echo "Unknown")
-    log_status "ℹ️" "DATABASE_SIZE" "Size: $DB_SIZE" "$BLUE"
+    log_status "ℹ" "DATABASE_SIZE" "Size: $DB_SIZE" "$BLUE"
   fi
 }
 
 check_provider_network() {
-  echo -e "${BLUE}🔍 Checking Provider Network Health...${NC}"
+  echo -e "${BLUE} Checking Provider Network Health...${NC}"
   
   # Get connected providers count
   CONNECTED_PROVIDERS=$(curl -s "$RELAYER_URL/api/stats/providers" 2>/dev/null | jq -r '.connected_count' || echo "0")
@@ -153,9 +153,9 @@ check_provider_network() {
   
   if [[ "$CONNECTED_PROVIDERS" -gt 0 ]]; then
     CONNECTION_RATIO=$(echo "scale=1; $CONNECTED_PROVIDERS * 100 / $TOTAL_PROVIDERS" | bc -l)
-    log_status "✅" "PROVIDERS" "Connected: $CONNECTED_PROVIDERS/$TOTAL_PROVIDERS (${CONNECTION_RATIO}%)" "$GREEN"
+    log_status "" "PROVIDERS" "Connected: $CONNECTED_PROVIDERS/$TOTAL_PROVIDERS (${CONNECTION_RATIO}%)" "$GREEN"
   else
-    log_status "❌" "PROVIDERS" "No providers connected" "$RED"
+    log_status "" "PROVIDERS" "No providers connected" "$RED"
     return 1
   fi
   
@@ -164,19 +164,19 @@ check_provider_network() {
   TASKS_PROCESSING=$(curl -s "$RELAYER_URL/api/stats/tasks" 2>/dev/null | jq -r '.processing_count' || echo "0")
   
   if [[ "$TASKS_PENDING" -lt 100 ]]; then
-    log_status "✅" "TASK_QUEUE" "Pending: $TASKS_PENDING, Processing: $TASKS_PROCESSING" "$GREEN"
+    log_status "" "TASK_QUEUE" "Pending: $TASKS_PENDING, Processing: $TASKS_PROCESSING" "$GREEN"
   elif [[ "$TASKS_PENDING" -lt 500 ]]; then
-    log_status "⚠️" "TASK_QUEUE" "Pending: $TASKS_PENDING, Processing: $TASKS_PROCESSING" "$YELLOW"
+    log_status "" "TASK_QUEUE" "Pending: $TASKS_PENDING, Processing: $TASKS_PROCESSING" "$YELLOW"
   else
-    log_status "❌" "TASK_QUEUE" "Queue backlog: $TASKS_PENDING pending tasks" "$RED"
+    log_status "" "TASK_QUEUE" "Queue backlog: $TASKS_PENDING pending tasks" "$RED"
   fi
 }
 
 check_consensus_layer() {
-  echo -e "${BLUE}🔍 Checking Consensus Layer Health...${NC}"
+  echo -e "${BLUE} Checking Consensus Layer Health...${NC}"
   
   if [[ "$ENVIRONMENT" == "dev" ]]; then
-    log_status "ℹ️" "CONSENSUS" "Simulated mode in dev environment" "$BLUE"
+    log_status "ℹ" "CONSENSUS" "Simulated mode in dev environment" "$BLUE"
     return 0
   fi
   
@@ -185,14 +185,14 @@ check_consensus_layer() {
   ELECTION_STATUS=$(curl -s "$RELAYER_URL/api/consensus/election" 2>/dev/null | jq -r '.status' || echo "unknown")
   
   if [[ "$COORDINATOR_COUNT" -ge 3 && "$ELECTION_STATUS" == "stable" ]]; then
-    log_status "✅" "CONSENSUS" "Coordinators: $COORDINATOR_COUNT, Status: $ELECTION_STATUS" "$GREEN"
+    log_status "" "CONSENSUS" "Coordinators: $COORDINATOR_COUNT, Status: $ELECTION_STATUS" "$GREEN"
   else
-    log_status "⚠️" "CONSENSUS" "Coordinators: $COORDINATOR_COUNT, Status: $ELECTION_STATUS" "$YELLOW"
+    log_status "" "CONSENSUS" "Coordinators: $COORDINATOR_COUNT, Status: $ELECTION_STATUS" "$YELLOW"
   fi
 }
 
 generate_health_report() {
-  echo -e "${BLUE}📊 Health Check Summary for $ENVIRONMENT${NC}"
+  echo -e "${BLUE} Health Check Summary for $ENVIRONMENT${NC}"
   echo "======================================"
   
   if [[ -f "/tmp/smainer_health_${ENVIRONMENT}.csv" ]]; then
@@ -209,7 +209,7 @@ generate_health_report() {
 
 # Main execution logic
 main() {
-  echo -e "${BLUE}🚀 Smainer Infrastructure Health Check${NC}"
+  echo -e "${BLUE} Smainer Infrastructure Health Check${NC}"
   echo "Environment: $ENVIRONMENT"
   echo "Timestamp: $TIMESTAMP"
   echo "======================================"

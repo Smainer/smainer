@@ -61,7 +61,7 @@ jobs:
           # Check if 'latest' is in the tags
           TAGS="${{ steps.meta.outputs.tags }}"
           if echo "$TAGS" | grep -q "latest"; then
-            echo "❌ FAIL: 'latest' tag is forbidden by HC-5"
+            echo " FAIL: 'latest' tag is forbidden by HC-5"
             echo "Reason: Prevents accidental production rollbacks"
             echo "Solution: Use explicit semantic version tags (vX.Y.Z)"
             exit 1
@@ -71,13 +71,13 @@ jobs:
           if [[ "${{ github.ref }}" == refs/tags/* ]]; then
             TAG="${GITHUB_REF#refs/tags/}"
             if ! [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-              echo "❌ FAIL: Tag '$TAG' does not match semver format vX.Y.Z"
+              echo " FAIL: Tag '$TAG' does not match semver format vX.Y.Z"
               exit 1
             fi
-            echo "✓ Tag '$TAG' matches semver format"
+            echo " Tag '$TAG' matches semver format"
           fi
           
-          echo "✓ HC-5 validation passed"
+          echo " HC-5 validation passed"
 
       - name: Build and push
         uses: docker/build-push-action@v4
@@ -106,5 +106,5 @@ jobs:
           TAG_NAME="${GITHUB_REF#refs/tags/}"
           
           echo "Image: $IMAGE_REF:$TAG_NAME"
-          echo "✓ Semver tag deployment successful"
+          echo " Semver tag deployment successful"
           echo "  (No 'latest' tag present)"

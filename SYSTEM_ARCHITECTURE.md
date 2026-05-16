@@ -281,21 +281,21 @@ flowchart TD
 ## Operational Status (as of Mar 13, 2026)
 
 ### Smart Contract Deployment
-**Status**: ✅ LIVE on Starknet Sepolia testnet  
+**Status**:  LIVE on Starknet Sepolia testnet  
 **Address**: `0x0366d48173adee841c666569fc03ba654a720aa83dfe117393c1b8866c1ea893`  
 **Verification**: Payments working, escrow tested, fee distribution confirmed
 
 ### Backend Components
-**Relayer API**: ⚠️ HIGH test readiness, pending release-gate hardening  
-**Provider Daemon**: ⚠️ HIGH test readiness, WebSocket coordination stable  
+**Relayer API**:  HIGH test readiness, pending release-gate hardening  
+**Provider Daemon**:  HIGH test readiness, WebSocket coordination stable  
 **Integration Gaps**: Enhanced orchestration needs end-to-end validation, Redis Streams coordination requires load testing
 
 ### Telegram Bot  
-**Status**: ⚠️ READY for polling-mode deployment now
+**Status**:  READY for polling-mode deployment now
 **Blocker**: For automatic final inference result messages, relayer must reach bot callback endpoint (`/callback/complete`). Telegram webhook URL is not required for polling mode.
 
 ### Frontend
-**Status**: ⚠️ READY with wallet integration, task submission flows tested  
+**Status**:  READY with wallet integration, task submission flows tested  
 **Blocker**: Production RPC configuration and contract address updates
 
 ### Infrastructure
