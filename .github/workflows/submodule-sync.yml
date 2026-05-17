@@ -16,22 +16,36 @@ permissions:
 jobs:
   sync-submodule:
     runs-on: ubuntu-latest
+    env:
+      SUBMODULE_SYNC_TOKEN: ${{ secrets.SUBMODULE_SYNC_TOKEN }}
 
     steps:
       - name: Checkout monorepo
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          submodules: true
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Update telegram submodule
+      - name: Check submodule sync token
+        id: token
         run: |
+          if [ -z "$SUBMODULE_SYNC_TOKEN" ]; then
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "SUBMODULE_SYNC_TOKEN is not configured; skipping cross-repo submodule sync."
+          else
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Update telegram submodule
+        if: steps.token.outputs.available == 'true'
+        run: |
+          git config --global url."https://x-access-token:${SUBMODULE_SYNC_TOKEN}@github.com/".insteadOf "https://github.com/"
           git submodule sync -- telegram
           git submodule update --remote telegram
 
       - name: Check for changes
         id: changes
+        if: steps.token.outputs.available == 'true'
         run: |
           if git diff --quiet -- telegram .gitmodules; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
@@ -40,7 +54,7 @@ jobs:
           fi
 
       - name: Commit and push submodule update
-        if: steps.changes.outputs.changed == 'true'
+        if: steps.token.outputs.available == 'true' && steps.changes.outputs.changed == 'true'
         run: |
           git config user.name "Smainer Bot"
           git config user.email "bot@smainer.io"
