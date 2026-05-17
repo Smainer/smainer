@@ -9,6 +9,8 @@ name: Submodule Sync and Deploy
       - 'telegram'
       - 'telegram/**'
       - '.gitmodules'
+      - '.github/workflows/submodule-sync.yml'
+  workflow_dispatch:
 
 permissions:
   contents: write
