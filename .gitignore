@@ -30,3 +30,18 @@ target/
 # Generated operational outputs
 artifacts/
 logs/
+
+# Generated inventory files
+md_files.txt
+
+# TypeScript incremental build metadata
+*.tsbuildinfo
+
+# Local release/package outputs
+*.msi
+*.exe
+*.dmg
+*.AppImage
+
+# Avoid accidental SSH key drops
+*.pub

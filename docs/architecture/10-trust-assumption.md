@@ -9,7 +9,7 @@
 
 ## 1. Problem Statement
 
-In V1, effort metrics (input token count, output token count, GPU time, model ID) are self-reported by the compute node and signed with its Starknet private key. As documented in [09-security-review.md](09-security-review.md) under SEC-001, this creates three active attack surfaces:
+In V1, effort metrics (input token count, output token count, GPU time, model ID) are self-reported by the compute node and signed with its Starknet private key. The public security posture for this model centers on three active attack surfaces:
 
 **Metric Inflation** — Provider inflates `input_tokens`, `output_tokens`, or `gpu_seconds` to drive up the effort multiplier toward the 7.5x cap. The `MAX_EFFORT_MULTIPLIER` bounds check limits per-task exposure but does not detect systematic max-claiming. A provider consistently reporting 7.5x on tasks that genuinely cost 1.2x extracts STRK from the treasury and user escrow at scale.
 
@@ -327,6 +327,6 @@ All private key variables must be injected at runtime via environment. They must
 | Document | Relevance |
 |---|---|
 | [08-zk-effort-verification.md](08-zk-effort-verification.md) | Predecessor: ZK roadmap; defines V2.0 as Option D (optimistic + slashing) |
-| [09-security-review.md](09-security-review.md) | SEC-001 bounds validation; ZK roadmap security constraints in Section 4 |
+| Public security posture | Bounds validation and ZK roadmap security constraints |
 | [05-settlement-system.md](05-settlement-system.md) | Settlement pipeline that verifier integrates into |
 | [00-overview.md](00-overview.md) | System constants: `BASE_PROMPT_COST`, `MAX_EFFORT_MULT`, fee splits |

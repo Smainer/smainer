@@ -34,7 +34,7 @@ A complete redesign of Smainer's payment system from flat per-tier pricing to dy
 | 06 | [MiniApp Cost Estimation](06-miniapp-cost-estimation.md) | `miniapp/src/` | frontend-engineer |
 | 07 | [Integration Wiring](07-integration-wiring.md) | Cross-cutting | relayer-architect |
 | 08 | [ZK Effort Verification](08-zk-effort-verification.md) | Future (V2/V3) | starknet-engineer |
-| 09 | [Security Review](09-security-review.md) | Cross-cutting | security-expert |
+| 09 | Public security posture | Cross-cutting | security-expert |
 | 10 | [Trust Assumption](10-trust-assumption.md) | `contracts/src/smainer_staking.cairo` + `relayer/verifier/` | starknet-engineer + relayer-architect |
 
 ## Implementation Order

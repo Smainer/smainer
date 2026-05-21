@@ -133,11 +133,11 @@ cd telegram && pip install -e ".[dev]"
 | Document | Description |
 |----------|-------------|
 | [`DEEP_DIVE.md`](DEEP_DIVE.md) | Detailed architecture and implementation status |
-| [`TESTNET_DEPLOYMENT_INSTRUCTIONS.md`](TESTNET_DEPLOYMENT_INSTRUCTIONS.md) | Testnet deployment runbook |
-| [`FIRST_NODE_PRIVACY_AI_TEST_GUIDE.md`](FIRST_NODE_PRIVACY_AI_TEST_GUIDE.md) | First provider node setup and validation |
-| [`LAUNCH_ACTION_CHECKLIST.md`](LAUNCH_ACTION_CHECKLIST.md) | Operational launch checklist |
-| [`SUCCESS_METRICS.md`](SUCCESS_METRICS.md) | Live test success targets |
-| [`TIERED_REWARDS_IMPLEMENTATION_GUIDE.md`](TIERED_REWARDS_IMPLEMENTATION_GUIDE.md) | Tier/reward implementation notes |
+| [`REPO_VISION_PUBLIC_RELAYER.md`](REPO_VISION_PUBLIC_RELAYER.md) | Public relayer and open-source boundary vision |
+| [`docs/PAYMENT_SYSTEM.md`](docs/PAYMENT_SYSTEM.md) | Payment, escrow, settlement, and fee model |
+| [`docs/architecture/00-overview.md`](docs/architecture/00-overview.md) | Architecture overview and component map |
+| [`docs/architecture/05-settlement-system.md`](docs/architecture/05-settlement-system.md) | Starknet settlement flow and accounting model |
+| [`docs/architecture/10-trust-assumption.md`](docs/architecture/10-trust-assumption.md) | Public trust assumptions and verification roadmap |
 
 ---
 
