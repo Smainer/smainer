@@ -22,19 +22,25 @@ jobs:
     name: HC-10 AGPL Rejection
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git init .
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --no-tags --prune origin "${GITHUB_SHA}"
+          git checkout --detach FETCH_HEAD
 
       - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.11"
-          cache: "pip"
+        run: |
+          python3 --version
+          python3 -m pip --version
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install -e ".[dev]"
-          pip install pip-licenses
+          python3 -m pip install --upgrade pip
+          python3 -m pip install -e ".[dev]"
+          python3 -m pip install pip-licenses
 
       - name: Scan installed packages for AGPL licenses
         run: |
